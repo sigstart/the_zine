@@ -1,0 +1,881 @@
+6/22 2020
+
+
+   ___       _                       _   
+  |_ _|_ __ | |_ ___ _ __ _ __   ___| |_ 
+   | || '_ \| __/ _ \ '__| '_ \ / _ \ __|
+   | || | | | ||  __/ |  | | | |  __/ |_ 
+  |___|_| |_|\__\___|_|  |_| |_|\___|\__|
+                                        
+    ____ _                          _   _                                
+   / ___| |__   ___ _ __ ___   ___ | |_| |__   ___ _ __ __ _ _ __  _   _ 
+  | |   | '_ \ / _ \ '_ ` _ \ / _ \| __| '_ \ / _ \ '__/ _` | '_ \| | | |
+  | |___| | | |  __/ | | | | | (_) | |_| | | |  __/ | | (_| | |_) | |_| |
+   \____|_| |_|\___|_| |_| |_|\___/ \__|_| |_|\___|_|  \__,_| .__/ \__, |
+                                                            |_|    |___/ 
+
+                                                                  PART 10
+
+                                     The XiongMai Backdoor Saga Continues
+
+ by Dr Cyborkian a.k.a. janit0r - conditioner of 'terminally ill' devices
+
+
+
+Previous postings can be found at least here:
+
+Original (Project Introduction): 
+(Was at https://0x00sec.org/t/internet-chemotherapy/4664, regrettably no 
+ longer available - thanks for hosting it as long as you could)
+
+Part 2 (ISPs: Lessons from the Rogers Hi-Speed Internet incident): 
+http://depastedihrn3jtw.onion.pet/show.php?md5=ee7136ac48fa59fba803b9fbcbc6d7b9 (Clearnet)
+http://depastedihrn3jtw.onion/show.php?md5=ee7136ac48fa59fba803b9fbcbc6d7b9 (Tor)
+
+Part 3 (ISPs: The baffling case of Optify/Keycom's mismanagement):
+http://depastedihrn3jtw.onion.pet/show.php?md5=7e7bfe406315f120d8ed325ffb87670b (Clearnet)
+http://depastedihrn3jtw.onion/show.php?md5=7e7bfe406315f120d8ed325ffb87670b (Tor)
+
+Part 4 (ISPs: The dirty case of Telkom South Africa)
+http://depastedihrn3jtw.onion.pet/show.php?md5=11830bc79a079f5b7be33bcca84641f6 (Clearnet)
+http://depastedihrn3jtw.onion/show.php?md5=11830bc79a079f5b7be33bcca84641f6 (Tor)
+
+Part 5 (The IoT Battlefield: Device Stability)
+http://depastedihrn3jtw.onion.pet/show.php?md5=8ca2bcadeb75137725557a24848d3c17 (Clearnet)
+http://depastedihrn3jtw.onion/show.php?md5=8ca2bcadeb75137725557a24848d3c17 (Tor)
+
+Part 6 (The IoT Battlefield: Mitigation Methods)
+http://depastedihrn3jtw.onion.pet/show.php?md5=2c822a990ff22d56f3b9eb89ed722c3f (Clearnet)
+http://depastedihrn3jtw.onion/show.php?md5=2c822a990ff22d56f3b9eb89ed722c3f (Tor)
+
+Part 7 (The IoT Battlefield: Default Passwords)
+http://depastedihrn3jtw.onion.pet/show.php?md5=a4232ae8f56034348323ab4483187abb (Clearnet)
+http://depastedihrn3jtw.onion/show.php?md5=a4232ae8f56034348323ab4483187abb (Tor)
+
+Part 8 (The IoT Battlefield: The Where and Why)
+http://depastedihrn3jtw.onion.pet/show.php?md5=2a7d5afa2731381a6ead8dbda3005e5d (Clearnet)
+http://depastedihrn3jtw.onion/show.php?md5=2a7d5afa2731381a6ead8dbda3005e5d (Tor)
+
+Part 9 (Bricking Basics and DIY)
+http://depastedihrn3jtw.onion.pet/show.php?md5=bfe590279a2a77e0a3438b596653ab85 (Clearnet)
+http://depastedihrn3jtw.onion/show.php?md5=bfe590279a2a77e0a3438b596653ab85 (Tor)
+
+
+--[ Table of contents
+
+  1 - Introduction
+  2 - The Internet Two Years Later
+  3 - The XiongMai Backdoor Saga Continues
+  4 - Parting (?) thoughts
+  5 - Appendix: Raw XiongMai /proc/version samples
+
+
+--[ 1 - Introduction
+
+After I wrote Part 9 of my Internet Chemotherapy posts and shut down the C&C I
+ended up side-tracked with new and more constructive projects. I felt the urge 
+to keep writing but as IoT botnets did not seem to be a big problem anymore it
+felt like it was maybe time to move on. It wasn't clear to me if anyone was 
+reading my DeepPaste postings anyway. 
+
+However during Q1 2020 new IoT botnets and exploits made mainstream news and 
+this piqued my interest in booting up the C&C along with a few sensors to check 
+what the Internet looked like nearly 2 years after my previous janitorial
+effort. 
+
+
+--[ 2 - The Internet Two Years Later
+
+At first it did not seem like there was much new activity at all. A tiny ISP 
+in Brazil called Cotesma had a few hundred vulnerable Alcatel-Nokia GPON ONT 
+routers which got bricked very quickly (perhaps they got a good deal buying 
+used routers from Wind in Italy ;) and for a few days there were elevated 
+numbers of vulnerable devices compared to metrics from early July 2018. On the 
+incoming scan activity front there also didn't seem to be much new things 
+going on. Back in July 2018 the inbound scan counts for port 23 were typically 
+over 100K unique src IPs per day, yet in April 2020 the numbers were just over 
+40K unique src IPs per day. Port 2323 activity had correspondingly dropped from
+over 5000 unique src IPs per day to just over 1000. If anything, the IoT realm 
+looked pretty quiet.
+
+There were still a few vulnerable devices online that my sensor network 
+attempted to brick. Below is a table of bricking attempts made back in July 
+2018 vs attempts in the first few days of April 2020 (listing 9 most common 
+payload executions):
+
+             tr069 xiongmai busybox  rt069 broadcom  hikweb  dahua linux avtech
+
+2018-07-01  273408       64     755  14562      448   22482   2574   233    687
+2018-07-02   23442       43     162   6287      158    3214    425   107    489
+2018-07-03    3675       23     108   3005      110    1195    247    26    417
+2018-07-04    1507        9      51     76       85     440    138    17    248
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+2020-04-04    2178     1286     396    272      105     236    437   352    245
+2020-04-05    3050     1106     291    323      232     302    327   272    246
+2020-04-06    3123      927     228    342      191     254    217   240    191
+2020-04-07    2889      720     197    206      183     263    201   377     98
+2020-04-08    2535      777     316    290      209     274    224   166     83
+2020-04-09    2745      733     323    232      361     252    207   194    100
+2020-04-10    2911      659     235    178      301     204    162   310     76
+2020-04-11    2240      515     215    172      335     195    194    21     62
+2020-04-12    1807      498     250    237      278     206    202    18     43
+2020-04-13    2293      504     189    213      235     215    210    35     53
+
+The big numbers of TR069 hits in early July 2018 were a side effect of my 
+botnet being in active scanning mode (sweeping the more interesting networks of
+the Internet). I discuss the difficulties of measuring the effects of such 
+payloads in Part 8 of my writeup titled 'The IoT Battlefield: The Where and 
+Why' and these numbers should be taken with a grain of salt. On July 3 on the 
+other hand the botnet was in passive mode and only listening to incoming scans 
+(which it still responded to by carrying out hack-back bricking attempts). 
+The metrics of July 3 2018 should thus be relatively comparable with the 
+metrics of April 4 2020. 
+
+There was however one big outlier in the 2020 data - the number of devices
+vulnerable to the well-known XiongMai telnet backdoor (hardcoded login 
+root/xc3511) had increased noticeably since 2018. Considering XiongMai's widely 
+publicized recall back in September 2016 it was a little surprising that so 
+many new vulnerable devices could have appeared on the Internet since 2018. 
+
+To start to understand the picture better, let's look at which countries these
+backdoored XiongMai devices were in. This is what the country of origin
+distrubtion looked like in the first few days of April 2020:
+
+ Rank   Country                            Number (Ratio)
+
+    1   South Korea                          2548 (59.8%)
+    2   Vietnam                               406 (9.5%)
+    3   Taiwan                                257 (6.0%)
+    4   Turkey                                190 (4.5%)
+    5   Brazil                                183 (4.3%)
+    6   Russia                                 98 (2.3%)
+    7   Iran                                   59 (1.4%)
+    8   Romania                                51 (1.2%)
+    9   Egypt                                  49 (1.1%)
+   10   USA                                    33 (0.8%)
+
+Also notable in the above distribution is what is NOT on the list, which is of
+course China (home of XiongMai) itself. 
+
+I wondered if this large number of backdoored XiongMai products in neighboring 
+countries could be pure coincidence. One theory which came to mind was that 
+maybe these were all just some old devices which had been accidentally exposed 
+to the public Internet after unlucky ISP-related updates. This could plausibly 
+explain the South Korean anomaly.
+
+As I was busy dealing with some new vulnerabilities (sorry Merit Lilin etc 
+owners ;) I did not think about the XiongMai outlier for a while, but the 
+XiongMai anomaly would continue to haunt me.
+
+
+--[ 3 - The XiongMai Backdoor Saga Continues
+
+The re-emergence of such a relatively large number of backdoored XiongMai 
+products kept bothering me. I thought I had cleaned most of them off the 
+Internet and by the time I shut down my C&C in July 2018 over 1.5 years had 
+passed since the widely publicized product recall. I was also puzzled by 
+there seemingly being a steady stream of new vulnerable XM devices appearing 
+on the Internet, so on a whim I started collecting /proc/version outputs on 
+vulnerable products on June 7 2020. Due to the nature of the Xiongmai 
+bricking payload and the prevalence of "telnet killers" I did not get a 
+return string back from most devices, but over the next three weeks I managed 
+to accumulate /proc/version samplings from over 500 backdoored XiongMai 
+devices.
+
+As most of you know the /proc/version string contains information about the
+firmware build and looks like this:
+
+Linux version 3.0.8 (chenyun@localhost) (gcc version 4.4.1 
+  (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) 
+   #1 Fri May 29 14:47:10 CST 2015
+
+In the above string we can see that user "chenyun" on a system called 
+"localhost" built the stack/kernel on May 29 2015. There is also some info
+about the kernel and compiler version that was used.
+
+Something odd immediately struck me about the collected XiongMai device 
+/proc/version outputs featuring the hardcoded telnet backdoor. They included 
+system build dates AFTER the supposed backdoor recall event in September 2016! 
+In other words, devices with the hardcoded telnet backdoor were still being 
+created and sold to some countries long after XiongMai claimed they had fixed 
+their "mistake". Perhaps even more interestingly, most of the backdoored 
+systems built in 2018 ended up in - you guessed it - South Korea. 
+
+I have included the raw /proc/version dumps along with the IP address they 
+came from at the end of this posting in case anyone wants to dig into these
+themselves. 
+
+Let's look at at some additional details of potential interest in the system
+build data. For example, we can note that the usernames of engineers who built 
+the backdoored systems are completely different pre-recall and post-recall.
+
+Backdoored system building usernames before recall:
+
+chenyun
+danson
+jinweiwei
+leixinyuan
+luzs
+root
+tongchao
+wangchenggang
+xiaochangzhen
+zhangqing
+zhaoqiting
+zoujiali
+
+No system builds from Oct 2016 have been encountered yet, perhaps suggesting
+that there was a temporary halt in backdoored system builds around the time of 
+the XiongMai device recall. 
+
+After the recall, a completely new group of users have continued building 
+backdoored systems. The usernames of this small exclusive group were:
+
+wutao        (Nov-Dec 2016, these devices ended up world-wide - and perhaps
+              unsurprisingly none of them ended up in China)
+zhaojianghua (Dec 2016, these devices ended up in Taiwan)
+chenwenrong  (Nov 2016 - Feb 2018, the prolific backdoorer - the 2017 device 
+              ended up in Iran, and the 2018 devices all ended up in South 
+              Korea)
+shaoweidong  (Mar 2018 - Apr 2018, a new name, perhaps taking over from dev
+              chenwenrong - these devices ended up in Russia and South Korea)
+
+It is perhaps all too easy to start speculating on conspiracy theories and 
+such, but here is how I see it:
+
+* It's difficult to rationally explain how the continued creation of backdoored 
+  products could have been a mistake not caught by XiongMai's QA and OQC. To 
+  me it looks like the telnet backdoor was deliberately "forgotten" in the XM 
+  products intended for certain markets.
+  
+* Forgetting a known backdoor in a product is less risky than creating a brand 
+  new backdoor. The latter would look like the act was deliberate, whereas the 
+  former can be chalked off as an innocent mistake by some new employees who 
+  did not get the memo or read the news.
+  
+* The above conclusion sheds new light on the Huawei controversy. Products
+  made by XiongMai should probably also be on banlists for sensitive environments. 
+  I have a hard time believing that the inclusion of the telnet backdoor wasn't
+  deliberate in the post-recall builds.
+
+* It's probably no coincidence that no backdoored system builds were created
+  in October 2016, and that the users who built them from November 2016 onward
+  were a select small group of trusted engineers separate from the regular
+  XM workforce who normally carried out such tasks.
+  
+* There is a need for more robust IQC by vendors who resell IoT products made 
+  in China, and the IQC needs to be an ongoing random sampling of every batch 
+  shipment and firmware update. Yes, this adds cost, but on the other hand so 
+  does the facilitation of industrial espionage and DDoS.
+  
+* Friendly security researchers who investigate IoT products for backdoors 
+  should not simply look at products sourced from one country, but purchase 
+  the same product from a few countries (especially ones that are interesting 
+  to the Chinese government), and/or examine firmware updates intended for 
+  other languages/countries.
+
+* It's probably no coincidence that South Korea stands out as a major victim 
+  of new backdoored XiongMai products. In 2017 there was the whole THAAD 
+  crisis, and there has been some uneasy tension between the two countries. 
+  South Korea is also a lucrative soft target for industrial espionage.
+  
+* It's probably also no coincidence that none of the post-recall backdoored 
+  XiongMai products ended up in mainland China itself.
+  
+* It's perhaps also no coincidence that backdoored firmwares with a build date
+  later than April 2018 have not been found yet. As most of you probably 
+  recall, NDAA 2019 (which banned the federal government from purchasing
+  equipment from Dahua, Hytera and Hikvision due to security concerns)
+  would have no doubt made XiongMai's top brass nervous around that time.
+
+Back in 2016 there was discussion over whether or not XiongMai's telnet 
+backdoor was deliberate or not, and then I felt that incompetence could have 
+been a reasonable explanation for its existence. However now I'm not so sure. 
+The new evidence suggests that the backdoor was preserved for devices shipping 
+to neighboring countries of interest to the Chinese government, and that a
+small eclusive group of XM engineers were assigned to create these 'dirty' 
+stack builds. These backdoored builds have seemingly not ended up in China 
+itself. Given the above I am finding it hard believe that the influx of a 
+large number of vulnerable XM devices on South Korean networks since 2018 
+was an accident. It looks like a deliberate act of sabotage and espionage.
+
+The dump of /proc/version outputs at the end of this posting will hopefully 
+add some credibility to my claims. These might also give researchers clues on 
+what to look for if they wanted to validate my findings further. 
+
+
+--[ 4 - Parting (?) thoughts
+
+Back in April 2020 I intended to do a quick review of the state of the 
+Internet, and as things currently look pretty stable I'll probably shut down 
+my C&C and go back into hibernation. I'll leave my sensors running and they 
+will probably provide some added safety for a few months. I have not decided 
+on any next steps for now. Who knows, maybe I will find some other topics 
+interesting enough to write about in the future. 
+
+* Perhaps the Treck TCP stack vulnerability will result in something 
+  interesting down the road? I have not looked at this one closely yet. 
+  Maybe I should?
+  
+* Perhaps I should publish some of my source code? Would it make any difference
+  now? I am undecided.
+
+* Maybe I should write more about my work on the SSH side and the taking over 
+  of various ISP networks? I still seem to have access to a good amount of them 
+  2-3 years later and this bothers me. Why don't the ISPs notice or care? 
+  
+Whatever happens next, I wish to thank all of you who have done work to improve
+the safety of the Internet as a whole. Much has been achieved since 2016 and
+the IoT side looks reasonably healthy for now.
+
+
+"There is no limit to the good you can do if you don't care who gets the 
+ credit."                                   
+                                               - General George Marshall
+                                               
+
+--[ 5 - Appendix: Raw XiongMai /proc/version samples
+
+A sampling of /proc/version outputs from backdoored XiongMai products since 
+June 7 2020. The schema is CSV with device IP followed by telnet login and the
+extracted /proc/version string. All of these devices were accessed through the 
+well-known hardcoded root/xc3511 telnet backdoor (after which the evidence was 
+promptly destroyed, sorry about that ;)
+
+103.110.20.4,root/xc3511,Linux version 3.10.0 (leixinyuan@root) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #8 Mon Jan 18 16:34:34 CST 2016
+103.217.247.230,root/xc3511,Linux version 3.0.8 (zhaoqiting@node02.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #6 Wed Jul 17 11:02:35 CST 2013
+105.225.234.75,root/xc3511,Linux version 3.0.8 (leixinyuan@localhost.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #1 Tue Mar 1 15:44:56 CST 2016
+107.10.24.152,root/xc3511,Linux version 3.0.8 (leixinyuan@localhost.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #1 Tue Mar 1 15:44:56 CST 2016
+108.58.221.170,root/xc3511,Linux version 3.10.0 (chenwenrong@localhost.localdomain) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #7 Thu Nov 10 18:20:25 CST 2016
+109.162.197.252,root/xc3511,Linux version 3.0.8 (root@node02.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #29 Tue Nov 13 19:24:16 CST 2012
+109.166.146.187,root/xc3511,Linux version 3.0.8 (zhaoqiting@node02.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #6 Wed Jul 17 11:02:35 CST 2013
+109.173.174.198,root/xc3511,Linux version 3.10.0 (leixinyuan@localhost) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #41 Thu Nov 5 14:50:25 CST 2015
+109.225.16.194,root/xc3511,Linux version 3.10.0 (wutao@localhost.localdomain) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #3 Mon Dec 19 20:19:13 CST 2016
+109.226.248.146,root/xc3511,Linux version 3.0.8 (zhaoqiting@node02.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #6 Wed Jul 17 11:02:35 CST 2013
+109.226.27.240,root/xc3511,Linux version 3.10.0 (leixinyuan@localhost) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #44 Tue Nov 24 09:22:16 CST 2015
+109.235.25.116,root/xc3511,Linux version 3.0.8 (zhangqing@localhost.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #4 Sat May 28 09:02:08 CST 2016
+109.75.44.34,root/xc3511,Linux version 3.10.0 (leixinyuan@root) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #8 Mon Jan 18 16:34:34 CST 2016
+109.80.90.10,root/xc3511,Linux version 3.0.8 (leixinyuan@localhost.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #1 Tue Mar 1 15:44:56 CST 2016
+109.98.95.125,root/xc3511,Linux version 3.0.8 (zhaoqiting@node02.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #6 Wed Jul 17 11:02:35 CST 2013
+109.99.211.199,root/xc3511,Linux version 3.10.0 (wutao@localhost.localdomain) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #3 Mon Dec 19 20:19:13 CST 2016
+109.99.98.114,root/xc3511,Linux version 3.0.8 (zhaoqiting@node02.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #6 Wed Jul 17 11:02:35 CST 2013
+110.138.35.251,root/xc3511,Linux version 3.0.8 (jinweiwei@node02.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #10 Wed Oct 30 16:43:57 CST 2013
+110.5.78.141,root/xc3511,Linux version 3.0.8 (zhaoqiting@node02.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #6 Wed Jul 17 11:02:35 CST 2013
+110.77.161.142,root/xc3511,Linux version 3.0.8 (zhaoqiting@node02.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #6 Wed Jul 17 11:02:35 CST 2013
+112.135.87.74,root/xc3511,Linux version 3.10.0 (leixinyuan@localhost) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #44 Tue Nov 24 09:22:16 CST 2015
+112.161.126.162,root/xc3511,Linux version 3.0.8 (jinweiwei@node02.localdomain) (gcc version 4.4.1 (Hisilicon_v100(gcc4.4-290+uclibc_0.9.32.1+eabi+linuxpthread)) ) #10 Wed Oct 30 16:43:57 CST 2013
+112.161.243.182,root/xc3511,Linux version 3.10.0 (leixinyuan@root) (gcc version 4.8.3 20131202 (prerelease) (Hisilicon_v300) ) #8 Mon Jan 18 16:34:34 CST 2016
+112.167.227.27,root/xc3511,Linux version 3.10.0 (chenwenrong@xm-5) (gcc version 4.8.3 20131202 (prerelease) (Hisilicon_v300) ) #15 Fri Feb 23 20:25:41 CST 2018
+112.167.232.242,root/xc3511,Linux version 3.0.8 (root@localhost.localdomain) (gcc version 4.4.1 (Hisilicon_v100(gcc4.4-290+uclibc_0.9.32.1+eabi+linuxpthread)) ) #1 SMP Wed Feb 17 13:38:07 CST 2016
+112.167.85.149,root/xc3511,Linux version 3.0.8 (leixinyuan@localhost.localdomain) (gcc version 4.4.1 (Hisilicon_v100(gcc4.4-290+uclibc_0.9.32.1+eabi+linuxpthread)) ) #5 Fri Apr 22 12:49:32 CST 2016
+112.184.85.100,root/xc3511,Linux version 3.10.0 (leixinyuan@root) (gcc version 4.8.3 20131202 (prerelease) (Hisilicon_v300) ) #8 Mon Jan 18 16:34:34 CST 2016
+112.185.184.73,root/xc3511,Linux version 3.10.0 (chenwenrong@xm-5) (gcc version 4.8.3 20131202 (prerelease) (Hisilicon_v300) ) #15 Fri Feb 23 20:25:41 CST 2018
+112.186.144.181,root/xc3511,Linux version 3.0.8 (root@localhost.localdomain) (gcc version 4.4.1 (Hisilicon_v100(gcc4.4-290+uclibc_0.9.32.1+eabi+linuxpthread)) ) #1 SMP Wed Feb 17 13:38:07 CST 2016
+113.119.84.211,root/xc3511,Linux version 3.0.8 (jinweiwei@node02.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #10 Wed Oct 30 16:43:57 CST 2013
+113.179.74.176,root/xc3511,Linux version 3.10.0 (chenwenrong@localhost.localdomain) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #7 Thu Nov 10 18:20:25 CST 2016
+113.182.148.244,root/xc3511,Linux version 3.10.0 (chenwenrong@localhost.localdomain) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #7 Thu Nov 10 18:20:25 CST 2016
+113.188.208.164,root/xc3511,Linux version 3.0.8 (zhaoqiting@node02.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #6 Wed Jul 17 11:02:35 CST 2013
+113.22.216.114,root/xc3511,Linux version 3.0.8 (zhangqing@localhost.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #4 Sat May 28 09:02:08 CST 2016
+113.22.249.180,root/xc3511,Linux version 3.10.0 (chenwenrong@localhost.localdomain) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #7 Thu Nov 10 18:20:25 CST 2016
+114.152.17.125,root/xc3511,Linux version 3.10.0 (leixinyuan@root) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #8 Mon Jan 18 16:34:34 CST 2016
+114.33.187.118,root/xc3511,Linux version 3.0.8 (zhaojianghua@localhost.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #72 Wed Dec 21 16:31:26 CST 2016
+114.34.172.121,root/xc3511,Linux version 3.0.8 (wutao@localhost.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #5 Wed Nov 9 15:40:53 CST 2016
+114.34.225.175,root/xc3511,Linux version 3.10.0 (wutao@localhost.localdomain) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #3 Mon Dec 19 20:19:13 CST 2016
+114.34.9.11,root/xc3511,Linux version 3.10.0 (leixinyuan@root) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #8 Mon Jan 18 16:34:34 CST 2016
+114.35.55.156,root/xc3511,Linux version 3.10.0 (wutao@localhost.localdomain) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #3 Mon Dec 19 20:19:13 CST 2016
+115.22.9.213,root/xc3511,Linux version 3.0.8 (zhangqing@localhost.localdomain) (gcc version 4.4.1 (Hisilicon_v100(gcc4.4-290+uclibc_0.9.32.1+eabi+linuxpthread)) ) #4 Sat May 28 09:02:08 CST 2016
+115.72.227.165,root/xc3511,Linux version 3.0.8 (zhangqing@localhost.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #4 Sat May 28 09:02:08 CST 2016
+115.73.33.250,root/xc3511,Linux version 3.0.8 (jinweiwei@node02.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #33 Thu Jan 16 14:08:53 CST 2014
+115.77.193.201,root/xc3511,Linux version 3.10.0 (wutao@localhost.localdomain) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #3 Mon Dec 19 20:19:13 CST 2016
+115.77.218.226,root/xc3511,Linux version 3.10.0 (wutao@localhost.localdomain) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #3 Mon Dec 19 20:19:13 CST 2016
+115.77.230.46,root/xc3511,Linux version 3.0.8 (zhangqing@localhost.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #4 Sat May 28 09:02:08 CST 2016
+115.77.55.215,root/xc3511,Linux version 3.0.8 (wutao@localhost.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #5 Wed Nov 9 15:40:53 CST 2016
+115.77.57.71,root/xc3511,Linux version 3.10.0 (leixinyuan@localhost.localdomain) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #1 SMP Wed Mar 23 16:01:18 CST 2016
+115.77.61.228,root/xc3511,Linux version 3.0.8 (jinweiwei@node02.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #33 Thu Jan 16 14:08:53 CST 2014
+115.79.117.180,root/xc3511,Linux version 3.10.0 (leixinyuan@root) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #8 Mon Jan 18 16:34:34 CST 2016
+115.94.191.117,root/xc3511,Linux version 3.10.0 (leixinyuan@localhost) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #44 Tue Nov 24 09:22:16 CST 2015
+116.101.138.132,root/xc3511,Linux version 3.0.8 (jinweiwei@node02.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #33 Thu Jan 16 14:08:53 CST 2014
+116.102.1.146,root/xc3511,Linux version 3.0.8 (leixinyuan@localhost.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #1 Tue Mar 1 15:44:56 CST 2016
+116.109.106.164,root/xc3511,Linux version 3.10.0 (wutao@localhost.localdomain) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #3 Mon Dec 19 20:19:13 CST 2016
+116.109.110.175,root/xc3511,Linux version 3.10.0 (jinweiwei@localhost) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #8 Fri Aug 7 16:36:29 CST 2015
+116.109.137.123,root/xc3511,Linux version 3.10.0 (chenwenrong@localhost.localdomain) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #7 Thu Nov 10 18:20:25 CST 2016
+116.111.89.155,root/xc3511,Linux version 3.10.0 (leixinyuan@localhost) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #5 SMP Wed Oct 21 16:41:22 CST 2015
+1.162.229.172,root/xc3511,Linux version 3.0.8 (zhangqing@localhost.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #4 Sat May 28 09:02:08 CST 2016
+116.241.130.201,root/xc3511,Linux version 3.10.0 (leixinyuan@root) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #8 Mon Jan 18 16:34:34 CST 2016
+116.96.84.204,root/xc3511,Linux version 3.0.8 (zhaoqiting@node02.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #6 Wed Jul 17 11:02:35 CST 2013
+116.98.60.41,root/xc3511,Linux version 3.0.8 (leixinyuan@localhost) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #10 SMP Wed Dec 2 14:08:33 CST 2015
+1.172.157.115,root/xc3511,Linux version 3.0.8 (zhaojianghua@localhost.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #72 Wed Dec 21 16:31:26 CST 2016
+117.2.203.13,root/xc3511,Linux version 3.0.8 (zhaoqiting@node02.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #6 Wed Jul 17 11:02:35 CST 2013
+118.103.131.116,root/xc3511,Linux version 3.10.0 (leixinyuan@root) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #8 Mon Jan 18 16:34:34 CST 2016
+118.232.126.93,root/xc3511,Linux version 3.10.0 (leixinyuan@root) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #8 Mon Jan 18 16:34:34 CST 2016
+118.232.237.92,root/xc3511,Linux version 3.0.8 (jinweiwei@node02.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #33 Thu Jan 16 14:08:53 CST 2014
+118.33.114.238,root/xc3511,Linux version 3.10.0 (leixinyuan@root) (gcc version 4.8.3 20131202 (prerelease) (Hisilicon_v300) ) #8 Mon Jan 18 16:34:34 CST 2016
+118.33.236.123,root/xc3511,Linux version 3.10.0 (leixinyuan@root) (gcc version 4.8.3 20131202 (prerelease) (Hisilicon_v300) ) #8 Mon Jan 18 16:34:34 CST 2016
+118.34.224.202,root/xc3511,Linux version 3.10.0 (leixinyuan@root) (gcc version 4.8.3 20131202 (prerelease) (Hisilicon_v300) ) #8 Mon Jan 18 16:34:34 CST 2016
+118.35.21.136,root/xc3511,Linux version 3.0.8 (leixinyuan@localhost.localdomain) (gcc version 4.4.1 (Hisilicon_v100(gcc4.4-290+uclibc_0.9.32.1+eabi+linuxpthread)) ) #5 Fri Apr 22 12:49:32 CST 2016
+118.37.22.18,root/xc3511,Linux version 3.0.8 (jinweiwei@node02.localdomain) (gcc version 4.4.1 (Hisilicon_v100(gcc4.4-290+uclibc_0.9.32.1+eabi+linuxpthread)) ) #10 Wed Oct 30 16:43:57 CST 2013
+118.39.204.161,root/xc3511,Linux version 3.0.8 (chenyun@localhost) (gcc version 4.4.1 (Hisilicon_v100(gcc4.4-290+uclibc_0.9.32.1+eabi+linuxpthread)) ) #1 Fri May 29 14:47:10 CST 2015
+118.40.183.176,root/xc3511,Linux version 3.10.0 (chenwenrong@xm-5) (gcc version 4.8.3 20131202 (prerelease) (Hisilicon_v300) ) #15 Fri Feb 23 20:25:41 CST 2018
+118.40.77.236,root/xc3511,Linux version 3.10.0 (leixinyuan@root) (gcc version 4.8.3 20131202 (prerelease) (Hisilicon_v300) ) #8 Mon Jan 18 16:34:34 CST 2016
+118.41.209.157,root/xc3511,Linux version 3.10.0 (leixinyuan@root) (gcc version 4.8.3 20131202 (prerelease) (Hisilicon_v300) ) #8 Mon Jan 18 16:34:34 CST 2016
+118.41.210.245,root/xc3511,Linux version 3.10.0 (leixinyuan@root) (gcc version 4.8.3 20131202 (prerelease) (Hisilicon_v300) ) #8 Mon Jan 18 16:34:34 CST 2016
+118.43.190.116,root/xc3511,Linux version 3.0.8 (jinweiwei@node02.localdomain) (gcc version 4.4.1 (Hisilicon_v100(gcc4.4-290+uclibc_0.9.32.1+eabi+linuxpthread)) ) #33 Thu Jan 16 14:08:53 CST 2014
+118.46.29.189,root/xc3511,Linux version 3.10.0 (leixinyuan@root) (gcc version 4.8.3 20131202 (prerelease) (Hisilicon_v300) ) #8 Mon Jan 18 16:34:34 CST 2016
+118.68.175.236,root/xc3511,Linux version 3.0.8 (wutao@localhost.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #5 Wed Nov 9 15:40:53 CST 2016
+119.192.63.49,root/xc3511,Linux version 3.10.0 (leixinyuan@root) (gcc version 4.8.3 20131202 (prerelease) (Hisilicon_v300) ) #8 Mon Jan 18 16:34:34 CST 2016
+119.192.83.43,root/xc3511,Linux version 3.0.8 (leixinyuan@localhost.localdomain) (gcc version 4.4.1 (Hisilicon_v100(gcc4.4-290+uclibc_0.9.32.1+eabi+linuxpthread)) ) #5 Fri Apr 22 12:49:32 CST 2016
+119.193.97.167,root/xc3511,Linux version 3.10.0 (leixinyuan@root) (gcc version 4.8.3 20131202 (prerelease) (Hisilicon_v300) ) #8 Mon Jan 18 16:34:34 CST 2016
+119.193.98.150,root/xc3511,Linux version 3.0.8 (chenyun@localhost) (gcc version 4.4.1 (Hisilicon_v100(gcc4.4-290+uclibc_0.9.32.1+eabi+linuxpthread)) ) #1 Fri May 29 14:47:10 CST 2015
+119.194.206.40,root/xc3511,Linux version 3.0.8 (jinweiwei@node02.localdomain) (gcc version 4.4.1 (Hisilicon_v100(gcc4.4-290+uclibc_0.9.32.1+eabi+linuxpthread)) ) #10 Wed Oct 30 16:43:57 CST 2013
+119.194.70.108,root/xc3511,Linux version 3.0.8 (root@localhost.localdomain) (gcc version 4.4.1 (Hisilicon_v100(gcc4.4-290+uclibc_0.9.32.1+eabi+linuxpthread)) ) #1 SMP Wed Feb 17 13:38:07 CST 2016
+119.195.85.11,root/xc3511,Linux version 3.0.8 (zhangqing@localhost.localdomain) (gcc version 4.4.1 (Hisilicon_v100(gcc4.4-290+uclibc_0.9.32.1+eabi+linuxpthread)) ) #4 Sat May 28 09:02:08 CST 2016
+119.196.162.83,root/xc3511,Linux version 3.0.8 (chenyun@localhost) (gcc version 4.4.1 (Hisilicon_v100(gcc4.4-290+uclibc_0.9.32.1+eabi+linuxpthread)) ) #1 Fri May 29 14:47:10 CST 2015
+119.202.43.138,root/xc3511,Linux version 3.0.8 (chenyun@localhost) (gcc version 4.4.1 (Hisilicon_v100(gcc4.4-290+uclibc_0.9.32.1+eabi+linuxpthread)) ) #1 Fri May 29 14:47:10 CST 2015
+119.204.134.218,root/xc3511,Linux version 3.0.8 (jinweiwei@node02.localdomain) (gcc version 4.4.1 (Hisilicon_v100(gcc4.4-290+uclibc_0.9.32.1+eabi+linuxpthread)) ) #33 Thu Jan 16 14:08:53 CST 2014
+119.204.86.61,root/xc3511,Linux version 3.10.0 (leixinyuan@root) (gcc version 4.8.3 20131202 (prerelease) (Hisilicon_v300) ) #8 Mon Jan 18 16:34:34 CST 2016
+119.206.211.106,root/xc3511,Linux version 3.0.8 (leixinyuan@localhost.localdomain) (gcc version 4.4.1 (Hisilicon_v100(gcc4.4-290+uclibc_0.9.32.1+eabi+linuxpthread)) ) #5 Fri Apr 22 12:49:32 CST 2016
+119.56.195.11,root/xc3511,Linux version 3.0.8 (jinweiwei@node02.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #10 Wed Oct 30 16:43:57 CST 2013
+121.122.98.160,root/xc3511,Linux version 2.6.24-rt1-hi3515v100 (zhaoqiting@node02.localdomain) (gcc version 3.4.3 (release) (CodeSourcery ARM Q3cvs 2004)) #50 Thu Oct 18 15:31:57 CST 2012
+121.130.221.41,root/xc3511,Linux version 3.0.8 (leixinyuan@localhost.localdomain) (gcc version 4.4.1 (Hisilicon_v100(gcc4.4-290+uclibc_0.9.32.1+eabi+linuxpthread)) ) #1 Mon Feb 15 18:45:48 CST 2016
+121.137.128.200,root/xc3511,Linux version 3.0.8 (chenyun@localhost) (gcc version 4.4.1 (Hisilicon_v100(gcc4.4-290+uclibc_0.9.32.1+eabi+linuxpthread)) ) #1 Fri May 29 14:47:10 CST 2015
+121.137.39.106,root/xc3511,Linux version 3.0.8 (leixinyuan@localhost.localdomain) (gcc version 4.4.1 (Hisilicon_v100(gcc4.4-290+uclibc_0.9.32.1+eabi+linuxpthread)) ) #1 Mon Feb 15 18:45:48 CST 2016
+121.144.26.120,root/xc3511,Linux version 3.0.8 (zhangqing@localhost.localdomain) (gcc version 4.4.1 (Hisilicon_v100(gcc4.4-290+uclibc_0.9.32.1+eabi+linuxpthread)) ) #4 Sat May 28 09:02:08 CST 2016
+121.146.106.74,root/xc3511,Linux version 3.10.0 (leixinyuan@root) (gcc version 4.8.3 20131202 (prerelease) (Hisilicon_v300) ) #8 Mon Jan 18 16:34:34 CST 2016
+121.146.157.102,root/xc3511,Linux version 3.0.8 (jinweiwei@node02.localdomain) (gcc version 4.4.1 (Hisilicon_v100(gcc4.4-290+uclibc_0.9.32.1+eabi+linuxpthread)) ) #33 Thu Jan 16 14:08:53 CST 2014
+121.150.203.88,root/xc3511,Linux version 3.0.8 (zhangqing@localhost.localdomain) (gcc version 4.4.1 (Hisilicon_v100(gcc4.4-290+uclibc_0.9.32.1+eabi+linuxpthread)) ) #4 Sat May 28 09:02:08 CST 2016
+121.153.218.41,root/xc3511,Linux version 3.10.0 (leixinyuan@root) (gcc version 4.8.3 20131202 (prerelease) (Hisilicon_v300) ) #8 Mon Jan 18 16:34:34 CST 2016
+121.153.251.124,root/xc3511,Linux version 3.0.8 (leixinyuan@localhost.localdomain) (gcc version 4.4.1 (Hisilicon_v100(gcc4.4-290+uclibc_0.9.32.1+eabi+linuxpthread)) ) #52 Fri Apr 22 12:33:57 CST 2016
+121.154.236.99,root/xc3511,Linux version 3.0.8 (chenyun@localhost) (gcc version 4.4.1 (Hisilicon_v100(gcc4.4-290+uclibc_0.9.32.1+eabi+linuxpthread)) ) #1 Fri May 29 14:47:10 CST 2015
+121.154.43.105,root/xc3511,Linux version 3.10.0 (leixinyuan@root) (gcc version 4.8.3 20131202 (prerelease) (Hisilicon_v300) ) #8 Mon Jan 18 16:34:34 CST 2016
+121.157.73.160,root/xc3511,Linux version 3.10.0 (leixinyuan@root) (gcc version 4.8.3 20131202 (prerelease) (Hisilicon_v300) ) #8 Mon Jan 18 16:34:34 CST 2016
+121.159.116.37,root/xc3511,Linux version 3.10.0 (leixinyuan@root) (gcc version 4.8.3 20131202 (prerelease) (Hisilicon_v300) ) #8 Mon Jan 18 16:34:34 CST 2016
+121.159.141.79,root/xc3511,Linux version 3.0.8 (leixinyuan@localhost.localdomain) (gcc version 4.4.1 (Hisilicon_v100(gcc4.4-290+uclibc_0.9.32.1+eabi+linuxpthread)) ) #5 Fri Apr 22 12:49:32 CST 2016
+121.159.208.191,root/xc3511,Linux version 3.4.35_hi3535 (leixinyuan@localhost) (gcc version 4.4.1 (Hisilicon_v100(gcc4.4-290+uclibc_0.9.32.1+eabi+linuxpthread)) ) #2 SMP Fri Jun 19 16:57:22 CST 2015
+121.163.242.119,root/xc3511,Linux version 3.0.8 (chenyun@localhost) (gcc version 4.4.1 (Hisilicon_v100(gcc4.4-290+uclibc_0.9.32.1+eabi+linuxpthread)) ) #1 Fri May 29 14:47:10 CST 2015
+121.170.245.148,root/xc3511,Linux version 3.10.0 (leixinyuan@root) (gcc version 4.8.3 20131202 (prerelease) (Hisilicon_v300) ) #8 Mon Jan 18 16:34:34 CST 2016
+121.170.94.33,root/xc3511,Linux version 3.0.8 (root@localhost.localdomain) (gcc version 4.4.1 (Hisilicon_v100(gcc4.4-290+uclibc_0.9.32.1+eabi+linuxpthread)) ) #1 SMP Wed Feb 17 13:38:07 CST 2016
+121.175.30.245,root/xc3511,Linux version 3.10.0 (leixinyuan@root) (gcc version 4.8.3 20131202 (prerelease) (Hisilicon_v300) ) #8 Mon Jan 18 16:34:34 CST 2016
+121.177.25.71,root/xc3511,Linux version 3.0.8 (zhangqing@localhost.localdomain) (gcc version 4.4.1 (Hisilicon_v100(gcc4.4-290+uclibc_0.9.32.1+eabi+linuxpthread)) ) #4 Sat May 28 09:02:08 CST 2016
+121.179.131.54,root/xc3511,Linux version 3.10.0 (leixinyuan@root) (gcc version 4.8.3 20131202 (prerelease) (Hisilicon_v300) ) #8 Mon Jan 18 16:34:34 CST 2016
+121.180.94.60,root/xc3511,Linux version 3.10.0 (leixinyuan@root) (gcc version 4.8.3 20131202 (prerelease) (Hisilicon_v300) ) #8 Mon Jan 18 16:34:34 CST 2016
+121.182.149.226,root/xc3511,Linux version 3.0.8 (leixinyuan@localhost.localdomain) (gcc version 4.4.1 (Hisilicon_v100(gcc4.4-290+uclibc_0.9.32.1+eabi+linuxpthread)) ) #5 Fri Apr 22 12:49:32 CST 2016
+121.182.67.107,root/xc3511,Linux version 3.0.8 (zhangqing@localhost.localdomain) (gcc version 4.4.1 (Hisilicon_v100(gcc4.4-290+uclibc_0.9.32.1+eabi+linuxpthread)) ) #4 Sat May 28 09:02:08 CST 2016
+121.182.73.210,root/xc3511,Linux version 3.0.8 (zhangqing@localhost.localdomain) (gcc version 4.4.1 (Hisilicon_v100(gcc4.4-290+uclibc_0.9.32.1+eabi+linuxpthread)) ) #4 Sat May 28 09:02:08 CST 2016
+121.184.26.114,root/xc3511,Linux version 3.10.0 (leixinyuan@root) (gcc version 4.8.3 20131202 (prerelease) (Hisilicon_v300) ) #8 Mon Jan 18 16:34:34 CST 2016
+121.188.182.227,root/xc3511,Linux version 3.10.0 (leixinyuan@localhost) (gcc version 4.8.3 20131202 (prerelease) (Hisilicon_v300) ) #44 Tue Nov 24 09:22:16 CST 2015
+121.254.105.48,root/xc3511,Linux version 3.0.8 (jinweiwei@localhost) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #42 Thu Jan 8 13:11:49 CST 2015
+122.100.125.12,root/xc3511,Linux version 3.0.8 (leixinyuan@localhost.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #6 SMP Fri Apr 22 16:05:34 CST 2016
+122.116.230.137,root/xc3511,Linux version 3.10.0 (jinweiwei@localhost) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #8 Fri Aug 7 16:36:29 CST 2015
+122.176.90.249,root/xc3511,Linux version 3.0.8 (jinweiwei@node02.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #11 Mon May 20 12:05:10 CST 2013
+123.0.229.51,root/xc3511,Linux version 3.10.0 (wutao@localhost.localdomain) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #3 Mon Dec 19 20:19:13 CST 2016
+123.195.70.206,root/xc3511,Linux version 3.0.8 (chenyun@localhost) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #1 Fri May 29 14:47:10 CST 2015
+124.180.87.232,root/xc3511,Linux version 3.0.8 (jinweiwei@node02.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #7 SMP Wed Oct 23 19:21:53 CST 2013
+125.130.223.23,root/xc3511,Linux version 3.0.8 (zhangqing@localhost.localdomain) (gcc version 4.4.1 (Hisilicon_v100(gcc4.4-290+uclibc_0.9.32.1+eabi+linuxpthread)) ) #4 Sat May 28 09:02:08 CST 2016
+125.138.36.181,root/xc3511,Linux version 3.10.0 (leixinyuan@root) (gcc version 4.8.3 20131202 (prerelease) (Hisilicon_v300) ) #8 Mon Jan 18 16:34:34 CST 2016
+125.139.248.231,root/xc3511,Linux version 3.10.0 (leixinyuan@root) (gcc version 4.8.3 20131202 (prerelease) (Hisilicon_v300) ) #8 Mon Jan 18 16:34:34 CST 2016
+125.140.155.81,root/xc3511,Linux version 3.0.8 (xiaochangzhen@localhost.localdomain) (gcc version 4.4.1 (Hisilicon_v100(gcc4.4-290+uclibc_0.9.32.1+eabi+linuxpthread)) ) #176 Mon Jan 18 14:29:26 CST 2016
+125.140.214.48,root/xc3511,Linux version 3.10.0 (chenwenrong@xm-5) (gcc version 4.8.3 20131202 (prerelease) (Hisilicon_v300) ) #15 Fri Feb 23 20:25:41 CST 2018
+125.208.192.112,root/xc3511,Linux version 3.0.8 (leixinyuan@localhost.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #5 Fri Apr 22 12:49:32 CST 2016
+128.0.161.250,root/xc3511,Linux version 3.0.8 (jinweiwei@node02.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #12 Fri Jun 7 09:50:51 CST 2013
+128.201.165.93,root/xc3511,Linux version 3.0.8 (chenyun@localhost) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #2 Wed Jul 29 11:25:28 CST 2015
+131.255.42.173,root/xc3511,Linux version 3.0.8 (zhaoqiting@node02.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #6 Wed Jul 17 11:02:35 CST 2013
+138.0.55.64,root/xc3511,Linux version 3.0.8 (leixinyuan@localhost.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #1 Tue Mar 1 15:44:56 CST 2016
+138.19.251.62,root/xc3511,Linux version 3.0.8 (wutao@localhost.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #5 Wed Nov 9 15:40:53 CST 2016
+138.94.148.4,root/xc3511,Linux version 3.10.0 (leixinyuan@root) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #8 Mon Jan 18 16:34:34 CST 2016
+14.162.53.10,root/xc3511,Linux version 3.0.8 (leixinyuan@localhost) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #30 SMP Mon Jan 4 20:17:13 CST 2016
+14.171.15.58,root/xc3511,Linux version 3.0.8 (wutao@localhost.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #5 Wed Nov 9 15:40:53 CST 2016
+14.172.228.66,root/xc3511,Linux version 3.0.8 (leixinyuan@localhost.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #1 Tue Mar 1 15:44:56 CST 2016
+14.240.125.146,root/xc3511,Linux version 3.0.8 (leixinyuan@localhost.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #1 Tue Mar 1 15:44:56 CST 2016
+14.242.211.51,root/xc3511,Linux version 3.0.8 (leixinyuan@localhost.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #52 Fri Apr 22 12:33:57 CST 2016
+14.249.142.152,root/xc3511,Linux version 3.10.0 (chenwenrong@localhost.localdomain) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #7 Thu Nov 10 18:20:25 CST 2016
+14.254.246.46,root/xc3511,Linux version 3.0.8 (leixinyuan@localhost.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #6 SMP Fri Apr 22 16:05:34 CST 2016
+143.255.33.84,root/xc3511,Linux version 3.10.0 (leixinyuan@root) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #8 Mon Jan 18 16:34:34 CST 2016
+14.33.202.49,root/xc3511,Linux version 3.10.0 (leixinyuan@root) (gcc version 4.8.3 20131202 (prerelease) (Hisilicon_v300) ) #8 Mon Jan 18 16:34:34 CST 2016
+14.33.86.169,root/xc3511,Linux version 3.0.8 (leixinyuan@localhost.localdomain) (gcc version 4.4.1 (Hisilicon_v100(gcc4.4-290+uclibc_0.9.32.1+eabi+linuxpthread)) ) #5 Fri Apr 22 12:49:32 CST 2016
+14.34.124.87,root/xc3511,Linux version 3.10.0 (leixinyuan@root) (gcc version 4.8.3 20131202 (prerelease) (Hisilicon_v300) ) #8 Mon Jan 18 16:34:34 CST 2016
+14.34.229.210,root/xc3511,Linux version 3.10.0 (leixinyuan@root) (gcc version 4.8.3 20131202 (prerelease) (Hisilicon_v300) ) #8 Mon Jan 18 16:34:34 CST 2016
+14.34.57.219,root/xc3511,Linux version 3.0.8 (zhangqing@localhost.localdomain) (gcc version 4.4.1 (Hisilicon_v100(gcc4.4-290+uclibc_0.9.32.1+eabi+linuxpthread)) ) #4 Sat May 28 09:02:08 CST 2016
+14.38.131.85,root/xc3511,Linux version 3.10.0 (leixinyuan@root) (gcc version 4.8.3 20131202 (prerelease) (Hisilicon_v300) ) #8 Mon Jan 18 16:34:34 CST 2016
+14.42.59.5,root/xc3511,Linux version 3.0.8 (chenyun@localhost) (gcc version 4.4.1 (Hisilicon_v100(gcc4.4-290+uclibc_0.9.32.1+eabi+linuxpthread)) ) #1 Fri May 29 14:47:10 CST 2015
+14.46.89.97,root/xc3511,Linux version 3.0.8 (leixinyuan@localhost.localdomain) (gcc version 4.4.1 (Hisilicon_v100(gcc4.4-290+uclibc_0.9.32.1+eabi+linuxpthread)) ) #1 Mon Feb 15 18:45:48 CST 2016
+14.48.100.187,root/xc3511,Linux version 3.10.0 (leixinyuan@root) (gcc version 4.8.3 20131202 (prerelease) (Hisilicon_v300) ) #8 Mon Jan 18 16:34:34 CST 2016
+14.49.208.122,root/xc3511,Linux version 3.10.0 (chenwenrong@xm-5) (gcc version 4.8.3 20131202 (prerelease) (Hisilicon_v300) ) #15 Fri Feb 23 20:25:41 CST 2018
+14.51.19.76,root/xc3511,Linux version 3.0.8 (leixinyuan@localhost.localdomain) (gcc version 4.4.1 (Hisilicon_v100(gcc4.4-290+uclibc_0.9.32.1+eabi+linuxpthread)) ) #5 Fri Apr 22 12:49:32 CST 2016
+14.52.121.230,root/xc3511,Linux version 3.0.8 (zhangqing@localhost.localdomain) (gcc version 4.4.1 (Hisilicon_v100(gcc4.4-290+uclibc_0.9.32.1+eabi+linuxpthread)) ) #4 Sat May 28 09:02:08 CST 2016
+14.54.92.146,root/xc3511,Linux version 3.10.0 (leixinyuan@root) (gcc version 4.8.3 20131202 (prerelease) (Hisilicon_v300) ) #8 Mon Jan 18 16:34:34 CST 2016
+14.56.34.42,root/xc3511,Linux version 3.10.0 (leixinyuan@root) (gcc version 4.8.3 20131202 (prerelease) (Hisilicon_v300) ) #8 Mon Jan 18 16:34:34 CST 2016
+151.27.64.121,root/xc3511,Linux version 3.0.8 (jinweiwei@node02.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #33 Thu Jan 16 14:08:53 CST 2014
+158.46.254.230,root/xc3511,Linux version 3.0.8 (leixinyuan@localhost.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #52 Fri Apr 22 12:33:57 CST 2016
+160.20.85.78,root/xc3511,Linux version 2.6.14 (zhaoqiting@node02.localdomain) (gcc version 3.4.4) #169 Wed May 23 18:31:55 CST 2012
+167.250.163.62,root/xc3511,Linux version 3.10.0 (leixinyuan@root) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #8 Mon Jan 18 16:34:34 CST 2016
+170.238.147.252,root/xc3511,Linux version 3.0.8 (wutao@localhost.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #5 Wed Nov 9 15:40:53 CST 2016
+171.225.234.106,root/xc3511,Linux version 3.0.8 (zhaoqiting@node02.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #6 Wed Jul 17 11:02:35 CST 2013
+171.227.205.46,root/xc3511,Linux version 3.0.8 (leixinyuan@localhost.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #6 SMP Fri Apr 22 16:05:34 CST 2016
+171.227.30.2,root/xc3511,Linux version 3.0.8 (chenyun@localhost) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #2 Wed Jul 29 11:25:28 CST 2015
+171.232.150.213,root/xc3511,Linux version 3.0.8 (zhaoqiting@node02.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #6 Wed Jul 17 11:02:35 CST 2013
+171.235.208.204,root/xc3511,Linux version 3.0.8 (leixinyuan@localhost.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #52 Fri Apr 22 12:33:57 CST 2016
+171.236.214.23,root/xc3511,Linux version 3.0.8 (zhaoqiting@node02.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #6 Wed Jul 17 11:02:35 CST 2013
+171.237.25.190,root/xc3511,Linux version 3.10.0 (leixinyuan@root) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #8 Mon Jan 18 16:34:34 CST 2016
+171.239.164.235,root/xc3511,Linux version 3.0.8 (zhaoqiting@node02.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #6 Wed Jul 17 11:02:35 CST 2013
+171.239.25.117,root/xc3511,Linux version 3.0.8 (chenyun@localhost) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #1 Fri May 29 14:47:10 CST 2015
+171.239.8.84,root/xc3511,Linux version 3.10.0 (chenwenrong@localhost.localdomain) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #7 Thu Nov 10 18:20:25 CST 2016
+171.247.62.54,root/xc3511,Linux version 3.0.8 (leixinyuan@localhost.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #52 Fri Apr 22 12:33:57 CST 2016
+171.248.101.215,root/xc3511,Linux version 3.10.0 (jinweiwei@localhost) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #8 Fri Aug 7 16:36:29 CST 2015
+171.249.96.157,root/xc3511,Linux version 3.10.0 (leixinyuan@root) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #8 Mon Jan 18 16:34:34 CST 2016
+173.188.74.196,root/xc3511,Linux version 3.0.8 (zhaoqiting@node02.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #6 Wed Jul 17 11:02:35 CST 2013
+175.100.177.94,root/xc3511,Linux version 3.10.0 (chenwenrong@localhost.localdomain) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #7 Thu Nov 10 18:20:25 CST 2016
+175.138.0.210,root/xc3511,Linux version 3.0.8 (chenyun@localhost) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #1 Fri May 29 14:47:10 CST 2015
+175.193.12.138,root/xc3511,Linux version 3.0.8 (leixinyuan@localhost.localdomain) (gcc version 4.4.1 (Hisilicon_v100(gcc4.4-290+uclibc_0.9.32.1+eabi+linuxpthread)) ) #5 Fri Apr 22 12:49:32 CST 2016
+175.200.124.145,root/xc3511,Linux version 3.0.8 (chenyun@localhost) (gcc version 4.4.1 (Hisilicon_v100(gcc4.4-290+uclibc_0.9.32.1+eabi+linuxpthread)) ) #1 Fri May 29 14:47:10 CST 2015
+175.200.251.81,root/xc3511,Linux version 3.0.8 (xiaochangzhen@localhost.localdomain) (gcc version 4.4.1 (Hisilicon_v100(gcc4.4-290+uclibc_0.9.32.1+eabi+linuxpthread)) ) #96 Sat May 17 13:27:56 CST 2014
+175.203.8.42,root/xc3511,Linux version 3.10.0 (leixinyuan@root) (gcc version 4.8.3 20131202 (prerelease) (Hisilicon_v300) ) #8 Mon Jan 18 16:34:34 CST 2016
+175.204.115.245,root/xc3511,Linux version 3.10.0 (chenwenrong@xm-5) (gcc version 4.8.3 20131202 (prerelease) (Hisilicon_v300) ) #15 Fri Feb 23 20:25:41 CST 2018
+175.205.113.123,root/xc3511,Linux version 3.0.8 (chenyun@localhost) (gcc version 4.4.1 (Hisilicon_v100(gcc4.4-290+uclibc_0.9.32.1+eabi+linuxpthread)) ) #1 Fri May 29 14:47:10 CST 2015
+175.205.38.46,root/xc3511,Linux version 3.0.8 (chenyun@localhost) (gcc version 4.4.1 (Hisilicon_v100(gcc4.4-290+uclibc_0.9.32.1+eabi+linuxpthread)) ) #1 Fri May 29 14:47:10 CST 2015
+175.207.215.56,root/xc3511,Linux version 3.0.8 (chenyun@localhost) (gcc version 4.4.1 (Hisilicon_v100(gcc4.4-290+uclibc_0.9.32.1+eabi+linuxpthread)) ) #2 Wed Jul 29 11:25:28 CST 2015
+175.208.203.123,root/xc3511,Linux version 3.10.0 (leixinyuan@root) (gcc version 4.8.3 20131202 (prerelease) (Hisilicon_v300) ) #8 Mon Jan 18 16:34:34 CST 2016
+175.212.18.137,root/xc3511,Linux version 3.0.8 (zhangqing@localhost.localdomain) (gcc version 4.4.1 (Hisilicon_v100(gcc4.4-290+uclibc_0.9.32.1+eabi+linuxpthread)) ) #4 Sat May 28 09:02:08 CST 2016
+175.213.103.1,root/xc3511,Linux version 3.0.8 (zhangqing@localhost.localdomain) (gcc version 4.4.1 (Hisilicon_v100(gcc4.4-290+uclibc_0.9.32.1+eabi+linuxpthread)) ) #4 Sat May 28 09:02:08 CST 2016
+176.159.9.233,root/xc3511,Linux version 3.0.8 (root@node02.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #22 Thu Nov 8 14:26:57 CST 2012
+176.237.187.74,root/xc3511,Linux version 3.10.0 (chenwenrong@localhost.localdomain) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #7 Thu Nov 10 18:20:25 CST 2016
+176.240.189.210,root/xc3511,Linux version 3.10.0 (jinweiwei@localhost) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #8 Fri Aug 7 16:36:29 CST 2015
+176.62.66.108,root/xc3511,Linux version 3.0.8 (zhaoqiting@node02.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #6 Wed Jul 17 11:02:35 CST 2013
+176.62.96.176,root/xc3511,Linux version 3.0.8 (leixinyuan@localhost.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #52 Fri Apr 22 12:33:57 CST 2016
+176.88.248.149,root/xc3511,Linux version 3.0.8 (jinweiwei@node02.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #7 SMP Wed Oct 23 19:21:53 CST 2013
+177.102.239.10,root/xc3511,Linux version 3.10.0 (leixinyuan@root) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #8 Mon Jan 18 16:34:34 CST 2016
+177.126.224.243,root/xc3511,Linux version 3.0.8 (jinweiwei@node02.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #12 Fri Jun 7 09:50:51 CST 2013
+177.132.173.213,root/xc3511,Linux version 3.10.0 (leixinyuan@localhost) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #41 Thu Nov 5 14:50:25 CST 2015
+177.134.103.236,root/xc3511,Linux version 3.0.8 (zhaoqiting@node02.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #6 Wed Jul 17 11:02:35 CST 2013
+177.134.126.112,root/xc3511,Linux version 3.0.8 (jinweiwei@node02.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #12 Fri Jun 7 09:50:51 CST 2013
+177.135.24.194,root/xc3511,Linux version 3.0.8 (chenyun@localhost) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #1 SMP Wed Jun 24 17:13:05 CST 2015
+177.157.15.67,root/xc3511,Linux version 3.0.8 (jinweiwei@node02.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #12 Fri Jun 7 09:50:51 CST 2013
+177.158.255.250,root/xc3511,Linux version 3.0.8 (leixinyuan@localhost) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #10 SMP Wed Dec 2 14:08:33 CST 2015
+177.16.166.123,root/xc3511,Linux version 3.0.8 (zoujiali@node02.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #28 Thu Mar 7 18:15:19 CST 2013
+177.185.172.241,root/xc3511,Linux version 3.0.8 (jinweiwei@node02.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #33 Thu Jan 16 14:08:53 CST 2014
+177.193.121.156,root/xc3511,Linux version 3.0.8 (chenyun@localhost) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #2 Wed Jul 29 11:25:28 CST 2015
+177.201.96.23,root/xc3511,Linux version 3.0.8 (zhaoqiting@node02.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #6 Wed Jul 17 11:02:35 CST 2013
+177.205.180.114,root/xc3511,Linux version 3.10.0 (leixinyuan@root) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #9 Thu Jan 21 10:40:56 CST 2016
+177.205.80.92,root/xc3511,Linux version 2.6.24-rt1-hi3520v100 (zhaoqiting@node02.localdomain) (gcc version 3.4.3 (release) (CodeSourcery ARM Q3cvs 2004)) #247 Mon May 28 08:47:42 CST 2012
+177.35.248.63,root/xc3511,Linux version 3.10.0 (leixinyuan@root) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #9 Thu Jan 21 10:40:56 CST 2016
+177.38.181.179,root/xc3511,Linux version 3.0.8 (zhaoqiting@node02.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #6 Wed Jul 17 11:02:35 CST 2013
+177.65.239.175,root/xc3511,Linux version 2.6.24-rt1-hi3515v100 (zhaoqiting@node02.localdomain) (gcc version 3.4.3 (release) (CodeSourcery ARM Q3cvs 2004)) #16 Thu Jun 14 11:01:14 CST 2012
+177.80.51.53,root/xc3511,Linux version 3.10.0 (leixinyuan@root) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #8 Mon Jan 18 16:34:34 CST 2016
+177.86.73.209,root/xc3511,Linux version 3.0.8 (zhaoqiting@node02.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #6 Wed Jul 17 11:02:35 CST 2013
+177.99.146.119,root/xc3511,Linux version 3.0.8 (zhaoqiting@node02.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #6 Wed Jul 17 11:02:35 CST 2013
+178.124.176.64,root/xc3511,Linux version 3.0.8 (jinweiwei@node02.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #12 Fri Jun 7 09:50:51 CST 2013
+178.160.250.224,root/xc3511,Linux version 3.0.8 (jinweiwei@localhost) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #42 Thu Jan 8 13:11:49 CST 2015
+178.169.234.40,root/xc3511,Linux version 2.6.24-rt1-hi3515v100 (zhaoqiting@node02.localdomain) (gcc version 3.4.3 (release) (CodeSourcery ARM Q3cvs 2004)) #50 Thu Oct 18 15:31:57 CST 2012
+178.243.161.203,root/xc3511,Linux version 3.10.0 (leixinyuan@root) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #8 Mon Jan 18 16:34:34 CST 2016
+179.162.124.176,root/xc3511,Linux version 3.0.8 (zhaoqiting@node02.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #6 Wed Jul 17 11:02:35 CST 2013
+179.162.180.59,root/xc3511,Linux version 3.0.8 (zhaoqiting@node02.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #6 Wed Jul 17 11:02:35 CST 2013
+179.177.249.50,root/xc3511,Linux version 3.0.8 (leixinyuan@localhost) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #10 SMP Wed Dec 2 14:08:33 CST 2015
+179.178.93.126,root/xc3511,Linux version 3.0.8 (zhaoqiting@node02.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #6 Wed Jul 17 11:02:35 CST 2013
+179.180.169.184,root/xc3511,Linux version 3.0.8 (zhaoqiting@node02.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #6 Wed Jul 17 11:02:35 CST 2013
+179.182.26.118,root/xc3511,Linux version 2.6.24-rt1-hi3515v100 (danson@DANSON-UBUNTU) (gcc version 3.4.3 (release) (CodeSourcery ARM Q3cvs 2004)) #6 Tue Aug 2 17:13:26 CST 2011
+179.183.117.236,root/xc3511,Linux version 3.0.8 (zhaoqiting@node02.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #6 Wed Jul 17 11:02:35 CST 2013
+179.216.61.202,root/xc3511,Linux version 3.10.0 (leixinyuan@localhost) (gcc version 4.4.0 20100318 (experimental) (Buildroot 2012.02) ) #7 Tue Jan 12 14:13:33 CST 2016
+179.25.20.247,root/xc3511,Linux version 3.0.8 (jinweiwei@node02.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #11 Mon May 20 12:05:10 CST 2013
+179.93.95.15,root/xc3511,Linux version 3.0.8 (zhaoqiting@node02.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #6 Wed Jul 17 11:02:35 CST 2013
+180.247.145.61,root/xc3511,Linux version 3.10.0 (leixinyuan@localhost.localdomain) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #1 SMP Wed Mar 23 16:01:18 CST 2016
+181.171.84.42,root/xc3511,Linux version 3.0.8 (zhaoqiting@node02.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #6 Wed Jul 17 11:02:35 CST 2013
+181.21.88.252,root/xc3511,Linux version 3.0.8 (wutao@localhost.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #5 Wed Nov 9 15:40:53 CST 2016
+181.220.216.73,root/xc3511,Linux version 3.10.0 (leixinyuan@root) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #9 Thu Jan 21 10:40:56 CST 2016
+181.29.31.246,root/xc3511,Linux version 3.0.8 (wutao@localhost.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #5 Wed Nov 9 15:40:53 CST 2016
+181.48.226.66,root/xc3511,Linux version 3.0.8 (zhaoqiting@node02.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #6 Wed Jul 17 11:02:35 CST 2013
+181.58.75.229,root/xc3511,Linux version 3.0.8 (leixinyuan@localhost) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #1 SMP Mon Nov 3 08:11:19 CST 2014
+182.176.117.249,root/xc3511,Linux version 3.0.8 (jinweiwei@node02.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #10 Wed Oct 30 16:43:57 CST 2013
+182.180.54.43,root/xc3511,Linux version 3.10.0 (leixinyuan@root) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #8 Mon Jan 18 16:34:34 CST 2016
+182.184.70.25,root/xc3511,Linux version 3.0.8 (chenyun@localhost) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #1 SMP Wed Jun 24 17:13:05 CST 2015
+182.31.164.44,root/xc3511,Linux version 3.10.0 (leixinyuan@root) (gcc version 4.8.3 20131202 (prerelease) (Hisilicon_v300) ) #8 Mon Jan 18 16:34:34 CST 2016
+182.58.183.187,root/xc3511,Linux version 3.0.8 (chenyun@localhost) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #1 Fri May 29 14:47:10 CST 2015
+183.103.169.161,root/xc3511,Linux version 3.10.0 (leixinyuan@root) (gcc version 4.8.3 20131202 (prerelease) (Hisilicon_v300) ) #8 Mon Jan 18 16:34:34 CST 2016
+183.105.186.187,root/xc3511,Linux version 3.0.8 (root@localhost.localdomain) (gcc version 4.4.1 (Hisilicon_v100(gcc4.4-290+uclibc_0.9.32.1+eabi+linuxpthread)) ) #1 SMP Wed Feb 17 13:38:07 CST 2016
+183.105.81.144,root/xc3511,Linux version 3.10.0 (leixinyuan@root) (gcc version 4.8.3 20131202 (prerelease) (Hisilicon_v300) ) #8 Mon Jan 18 16:34:34 CST 2016
+183.106.48.185,root/xc3511,Linux version 3.0.8 (leixinyuan@localhost.localdomain) (gcc version 4.4.1 (Hisilicon_v100(gcc4.4-290+uclibc_0.9.32.1+eabi+linuxpthread)) ) #5 Fri Apr 22 12:49:32 CST 2016
+183.106.88.87,root/xc3511,Linux version 3.0.8 (zhangqing@localhost.localdomain) (gcc version 4.4.1 (Hisilicon_v100(gcc4.4-290+uclibc_0.9.32.1+eabi+linuxpthread)) ) #4 Sat May 28 09:02:08 CST 2016
+183.80.246.180,root/xc3511,Linux version 3.0.8 (wutao@localhost.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #5 Wed Nov 9 15:40:53 CST 2016
+183.96.85.136,root/xc3511,Linux version 3.10.0 (leixinyuan@root) (gcc version 4.8.3 20131202 (prerelease) (Hisilicon_v300) ) #8 Mon Jan 18 16:34:34 CST 2016
+185.132.229.61,root/xc3511,Linux version 3.0.8 (leixinyuan@localhost) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #1 SMP Mon Nov 3 08:11:19 CST 2014
+185.148.102.174,root/xc3511,Linux version 3.0.8 (leixinyuan@localhost.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #1 Tue Mar 1 15:44:56 CST 2016
+185.167.56.176,root/xc3511,Linux version 3.10.0 (wutao@localhost.localdomain) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #3 Mon Dec 19 20:19:13 CST 2016
+185.18.245.207,root/xc3511,Linux version 3.0.8 (zoujiali@node02.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #1 Thu Apr 18 14:04:10 CST 2013
+185.207.57.190,root/xc3511,Linux version 3.10.0 (chenwenrong@localhost.localdomain) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #7 Thu Nov 10 18:20:25 CST 2016
+185.29.54.84,root/xc3511,Linux version 3.0.8 (chenyun@localhost) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #1 Fri May 29 14:47:10 CST 2015
+185.62.129.0,root/xc3511,Linux version 3.0.8 (zhaoqiting@node02.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #6 Wed Jul 17 11:02:35 CST 2013
+186.147.130.103,root/xc3511,Linux version 3.10.0 (wutao@localhost.localdomain) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #3 Mon Dec 19 20:19:13 CST 2016
+186.212.25.133,root/xc3511,Linux version 3.0.8 (chenyun@localhost) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #1 SMP Wed Jun 24 17:13:05 CST 2015
+186.4.246.166,root/xc3511,Linux version 3.0.8 (leixinyuan@localhost.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #1 Tue Mar 1 15:44:56 CST 2016
+186.90.10.137,root/xc3511,Linux version 3.10.0 (leixinyuan@root) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #8 Mon Jan 18 16:34:34 CST 2016
+187.136.119.26,root/xc3511,Linux version 3.0.8 (chenyun@localhost) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #1 Fri May 29 14:47:10 CST 2015
+187.58.173.174,root/xc3511,Linux version 3.0.8 (leixinyuan@localhost.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #52 Fri Apr 22 12:33:57 CST 2016
+187.75.228.43,root/xc3511,Linux version 3.10.0 (leixinyuan@root) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #8 Mon Jan 18 16:34:34 CST 2016
+188.113.188.151,root/xc3511,Linux version 3.0.8 (leixinyuan@localhost.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #52 Fri Apr 22 12:33:57 CST 2016
+188.17.156.230,root/xc3511,Linux version 3.0.8 (leixinyuan@localhost.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #52 Fri Apr 22 12:33:57 CST 2016
+188.240.68.38,root/xc3511,Linux version 3.0.8 (wutao@localhost.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #5 Wed Nov 9 15:40:53 CST 2016
+188.25.98.39,root/xc3511,Linux version 3.0.8 (zhaoqiting@node02.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #6 Wed Jul 17 11:02:35 CST 2013
+188.26.119.50,root/xc3511,Linux version 3.0.8 (wutao@localhost.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #7 Thu Nov 10 09:33:51 CST 2016
+188.26.98.87,root/xc3511,Linux version 3.0.8 (jinweiwei@node02.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #10 Wed Oct 30 16:43:57 CST 2013
+188.3.59.122,root/xc3511,Linux version 3.0.8 (leixinyuan@localhost.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #5 Fri Apr 22 12:49:32 CST 2016
+189.102.129.26,root/xc3511,Linux version 3.0.8 (zhaoqiting@node02.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #6 Wed Jul 17 11:02:35 CST 2013
+189.102.143.66,root/xc3511,Linux version 3.0.8 (jinweiwei@node02.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #10 Wed Oct 30 16:43:57 CST 2013
+189.108.252.179,root/xc3511,Linux version 3.0.8 (zhaoqiting@node02.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #6 Wed Jul 17 11:02:35 CST 2013
+189.140.106.187,root/xc3511,Linux version 3.0.8 (leixinyuan@localhost.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #1 Tue Mar 1 15:44:56 CST 2016
+189.172.168.155,root/xc3511,Linux version 3.10.0 (leixinyuan@root) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #8 Mon Jan 18 16:34:34 CST 2016
+189.35.39.100,root/xc3511,Linux version 3.0.8 (zhaoqiting@node02.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #6 Wed Jul 17 11:02:35 CST 2013
+189.41.8.36,root/xc3511,Linux version 3.0.8 (jinweiwei@node02.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #10 Wed Oct 30 16:43:57 CST 2013
+189.61.137.139,root/xc3511,Linux version 3.0.8 (jinweiwei@node02.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #12 Fri Jun 7 09:50:51 CST 2013
+190.103.58.84,root/xc3511,Linux version 3.0.8 (leixinyuan@localhost.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #5 Fri Apr 22 12:49:32 CST 2016
+190.123.91.164,root/xc3511,Linux version 3.10.0 (chenwenrong@localhost.localdomain) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #7 Thu Nov 10 18:20:25 CST 2016
+190.141.195.232,root/xc3511,Linux version 3.10.0 (chenwenrong@localhost.localdomain) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #7 Thu Nov 10 18:20:25 CST 2016
+190.146.202.40,root/xc3511,Linux version 3.0.8 (leixinyuan@localhost.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #1 Tue Mar 1 15:44:56 CST 2016
+190.157.148.159,root/xc3511,Linux version 3.0.8 (leixinyuan@localhost.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #1 Tue Mar 1 15:44:56 CST 2016
+190.158.142.223,root/xc3511,Linux version 3.0.8 (chenyun@localhost) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #2 Wed Jul 29 11:25:28 CST 2015
+190.225.64.156,root/xc3511,Linux version 3.0.8 (zoujiali@node02.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #28 Thu Mar 7 18:15:19 CST 2013
+190.247.248.185,root/xc3511,Linux version 3.0.8 (zhaoqiting@node02.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #6 Wed Jul 17 11:02:35 CST 2013
+190.75.111.193,root/xc3511,Linux version 3.0.8 (wutao@localhost.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #5 Wed Nov 9 15:40:53 CST 2016
+190.77.3.71,root/xc3511,Linux version 3.0.8 (zoujiali@node02.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #1 Thu Apr 18 14:04:10 CST 2013
+191.13.242.155,root/xc3511,Linux version 3.0.8 (leixinyuan@localhost.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #1 Mon Feb 15 19:21:39 CST 2016
+191.179.109.220,root/xc3511,Linux version 3.0.8 (jinweiwei@node02.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #10 Wed Oct 30 16:43:57 CST 2013
+191.180.105.39,root/xc3511,Linux version 3.10.0 (chenwenrong@localhost.localdomain) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #7 Thu Nov 10 18:20:25 CST 2016
+191.183.132.132,root/xc3511,Linux version 3.10.0 (leixinyuan@root) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #8 Mon Jan 18 16:34:34 CST 2016
+191.186.229.6,root/xc3511,Linux version 3.0.8 (jinweiwei@node02.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #33 Thu Jan 16 14:08:53 CST 2014
+191.30.41.5,root/xc3511,Linux version 3.0.8 (zhaoqiting@node02.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #6 Wed Jul 17 11:02:35 CST 2013
+191.35.52.19,root/xc3511,Linux version 3.0.8 (zhaoqiting@node02.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #6 Wed Jul 17 11:02:35 CST 2013
+191.84.220.125,root/xc3511,Linux version 3.10.0 (leixinyuan@root) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #8 Mon Jan 18 16:34:34 CST 2016
+191.99.130.242,root/xc3511,Linux version 3.0.8 (zhaoqiting@node02.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #6 Wed Jul 17 11:02:35 CST 2013
+192.166.144.50,root/xc3511,Linux version 3.0.8 (leixinyuan@localhost.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #52 Fri Apr 22 12:33:57 CST 2016
+193.201.98.226,root/xc3511,Linux version 3.0.8 (leixinyuan@localhost.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #52 Fri Apr 22 12:33:57 CST 2016
+194.176.244.180,root/xc3511,Linux version 3.0.8 (wutao@localhost.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #7 Thu Nov 10 09:33:51 CST 2016
+194.49.127.115,root/xc3511,Linux version 3.10.0 (leixinyuan@root) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #8 Mon Jan 18 16:34:34 CST 2016
+196.218.122.245,root/xc3511,Linux version 3.10.0 (jinweiwei@localhost) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #8 Fri Aug 7 16:36:29 CST 2015
+197.50.15.40,root/xc3511,Linux version 3.10.0 (leixinyuan@localhost) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #44 Tue Nov 24 09:22:16 CST 2015
+200.116.163.138,root/xc3511,Linux version 3.0.8 (jinweiwei@node02.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #10 Wed Oct 30 16:43:57 CST 2013
+200.233.231.232,root/xc3511,Linux version 3.0.8 (leixinyuan@localhost.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #1 Tue Mar 1 15:44:56 CST 2016
+200.73.252.216,root/xc3511,Linux version 3.10.0 (chenwenrong@localhost.localdomain) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #7 Thu Nov 10 18:20:25 CST 2016
+201.241.150.136,root/xc3511,Linux version 3.0.8 (zhaoqiting@node02.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #6 Wed Jul 17 11:02:35 CST 2013
+201.29.30.92,root/xc3511,Linux version 3.0.8 (chenyun@localhost) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #2 Wed Jul 29 11:25:28 CST 2015
+201.82.116.160,root/xc3511,Linux version 3.0.8 (jinweiwei@node02.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #12 Fri Jun 7 09:50:51 CST 2013
+201.86.164.21,root/xc3511,Linux version 3.0.8 (jinweiwei@node02.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #10 Wed Oct 30 16:43:57 CST 2013
+203.134.194.101,root/xc3511,Linux version 3.0.8 (zhaoqiting@node02.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #6 Wed Jul 17 11:02:35 CST 2013
+203.243.44.213,root/xc3511,Linux version 3.0.8 (leixinyuan@localhost.localdomain) (gcc version 4.4.1 (Hisilicon_v100(gcc4.4-290+uclibc_0.9.32.1+eabi+linuxpthread)) ) #5 Fri Apr 22 12:49:32 CST 2016
+210.100.234.251,root/xc3511,Linux version 3.0.8 (chenyun@localhost) (gcc version 4.4.1 (Hisilicon_v100(gcc4.4-290+uclibc_0.9.32.1+eabi+linuxpthread)) ) #1 Fri May 29 14:47:10 CST 2015
+210.113.95.228,root/xc3511,Linux version 3.0.8 (chenyun@localhost) (gcc version 4.4.1 (Hisilicon_v100(gcc4.4-290+uclibc_0.9.32.1+eabi+linuxpthread)) ) #1 Fri May 29 14:47:10 CST 2015
+210.126.16.30,root/xc3511,Linux version 3.0.8 (chenyun@localhost) (gcc version 4.4.1 (Hisilicon_v100(gcc4.4-290+uclibc_0.9.32.1+eabi+linuxpthread)) ) #1 Fri May 29 14:47:10 CST 2015
+210.222.70.81,root/xc3511,Linux version 3.0.8 (chenyun@localhost) (gcc version 4.4.1 (Hisilicon_v100(gcc4.4-290+uclibc_0.9.32.1+eabi+linuxpthread)) ) #1 Fri May 29 14:47:10 CST 2015
+210.223.172.125,root/xc3511,Linux version 3.0.8 (chenyun@localhost) (gcc version 4.4.1 (Hisilicon_v100(gcc4.4-290+uclibc_0.9.32.1+eabi+linuxpthread)) ) #1 Fri May 29 14:47:10 CST 2015
+211.104.174.214,root/xc3511,Linux version 3.0.8 (zhangqing@localhost.localdomain) (gcc version 4.4.1 (Hisilicon_v100(gcc4.4-290+uclibc_0.9.32.1+eabi+linuxpthread)) ) #4 Sat May 28 09:02:08 CST 2016
+211.192.121.74,root/xc3511,Linux version 3.0.8 (jinweiwei@node02.localdomain) (gcc version 4.4.1 (Hisilicon_v100(gcc4.4-290+uclibc_0.9.32.1+eabi+linuxpthread)) ) #10 Wed Oct 30 16:43:57 CST 2013
+211.196.88.27,root/xc3511,Linux version 3.0.8 (jinweiwei@node02.localdomain) (gcc version 4.4.1 (Hisilicon_v100(gcc4.4-290+uclibc_0.9.32.1+eabi+linuxpthread)) ) #33 Thu Jan 16 14:08:53 CST 2014
+211.198.241.208,root/xc3511,Linux version 3.10.0 (leixinyuan@root) (gcc version 4.8.3 20131202 (prerelease) (Hisilicon_v300) ) #8 Mon Jan 18 16:34:34 CST 2016
+211.227.130.76,root/xc3511,Linux version 3.10.0 (leixinyuan@root) (gcc version 4.8.3 20131202 (prerelease) (Hisilicon_v300) ) #8 Mon Jan 18 16:34:34 CST 2016
+211.230.109.58,root/xc3511,Linux version 3.10.0 (leixinyuan@root) (gcc version 4.8.3 20131202 (prerelease) (Hisilicon_v300) ) #8 Mon Jan 18 16:34:34 CST 2016
+212.252.162.143,root/xc3511,Linux version 3.0.8 (jinweiwei@node02.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #12 Fri Jun 7 09:50:51 CST 2013
+212.253.80.5,root/xc3511,Linux version 3.0.8 (leixinyuan@localhost) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #30 SMP Mon Jan 4 20:17:13 CST 2016
+212.253.85.43,root/xc3511,Linux version 3.10.0 (leixinyuan@root) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #8 Mon Jan 18 16:34:34 CST 2016
+213.163.114.133,root/xc3511,Linux version 3.10.0 (leixinyuan@localhost) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #44 Tue Nov 24 09:22:16 CST 2015
+213.181.87.37,root/xc3511,Linux version 3.0.8 (zhaoqiting@node02.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #6 Wed Jul 17 11:02:35 CST 2013
+213.227.32.191,root/xc3511,Linux version 3.10.0 (leixinyuan@root) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #8 Mon Jan 18 16:34:34 CST 2016
+213.254.153.9,root/xc3511,Linux version 3.0.8 (chenyun@localhost) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #1 Fri May 29 14:47:10 CST 2015
+2.155.136.237,root/xc3511,Linux version 3.0.8 (zhaoqiting@node02.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #6 Wed Jul 17 11:02:35 CST 2013
+218.144.132.198,root/xc3511,Linux version 3.0.8 (wutao@localhost.localdomain) (gcc version 4.4.1 (Hisilicon_v100(gcc4.4-290+uclibc_0.9.32.1+eabi+linuxpthread)) ) #5 Wed Nov 9 15:40:53 CST 2016
+218.150.145.76,root/xc3511,Linux version 3.0.8 (leixinyuan@localhost) (gcc version 4.4.1 (Hisilicon_v100(gcc4.4-290+uclibc_0.9.32.1+eabi+linuxpthread)) ) #30 SMP Mon Jan 4 20:17:13 CST 2016
+218.150.30.203,root/xc3511,Linux version 3.10.0 (leixinyuan@root) (gcc version 4.8.3 20131202 (prerelease) (Hisilicon_v300) ) #8 Mon Jan 18 16:34:34 CST 2016
+218.150.81.167,root/xc3511,Linux version 3.10.0 (leixinyuan@root) (gcc version 4.8.3 20131202 (prerelease) (Hisilicon_v300) ) #8 Mon Jan 18 16:34:34 CST 2016
+218.155.69.239,root/xc3511,Linux version 3.0.8 (zhangqing@localhost.localdomain) (gcc version 4.4.1 (Hisilicon_v100(gcc4.4-290+uclibc_0.9.32.1+eabi+linuxpthread)) ) #4 Sat May 28 09:02:08 CST 2016
+2.186.127.150,root/xc3511,Linux version 3.0.8 (zhangqing@localhost.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #4 Sat May 28 09:02:08 CST 2016
+219.68.2.202,root/xc3511,Linux version 3.10.0 (leixinyuan@root) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #8 Mon Jan 18 16:34:34 CST 2016
+219.91.63.165,root/xc3511,Linux version 3.10.0 (wutao@localhost.localdomain) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #3 Mon Dec 19 20:19:13 CST 2016
+220.122.43.86,root/xc3511,Linux version 3.0.8 (chenyun@localhost) (gcc version 4.4.1 (Hisilicon_v100(gcc4.4-290+uclibc_0.9.32.1+eabi+linuxpthread)) ) #1 SMP Wed Jun 24 17:13:05 CST 2015
+220.125.106.166,root/xc3511,Linux version 3.0.8 (zhangqing@localhost.localdomain) (gcc version 4.4.1 (Hisilicon_v100(gcc4.4-290+uclibc_0.9.32.1+eabi+linuxpthread)) ) #4 Sat May 28 09:02:08 CST 2016
+220.132.225.5,root/xc3511,Linux version 3.10.0 (leixinyuan@localhost) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #44 Tue Nov 24 09:22:16 CST 2015
+220.135.153.102,root/xc3511,Linux version 3.10.0 (wutao@localhost.localdomain) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #3 Mon Dec 19 20:19:13 CST 2016
+220.74.77.227,root/xc3511,Linux version 3.0.8 (wutao@localhost.localdomain) (gcc version 4.4.1 (Hisilicon_v100(gcc4.4-290+uclibc_0.9.32.1+eabi+linuxpthread)) ) #5 Wed Nov 9 15:40:53 CST 2016
+220.82.168.229,root/xc3511,Linux version 3.0.8 (leixinyuan@localhost.localdomain) (gcc version 4.4.1 (Hisilicon_v100(gcc4.4-290+uclibc_0.9.32.1+eabi+linuxpthread)) ) #1 Mon Feb 15 18:45:48 CST 2016
+220.87.211.145,root/xc3511,Linux version 3.10.0 (shaoweidong@xm-5) (gcc version 4.8.3 20131202 (prerelease) (Hisilicon_v300) ) #1 SMP Tue Mar 6 10:42:18 CST 2018
+220.88.162.203,root/xc3511,Linux version 3.0.8 (zhangqing@localhost.localdomain) (gcc version 4.4.1 (Hisilicon_v100(gcc4.4-290+uclibc_0.9.32.1+eabi+linuxpthread)) ) #4 Sat May 28 09:02:08 CST 2016
+220.93.203.111,root/xc3511,Linux version 3.0.8 (chenyun@localhost) (gcc version 4.4.1 (Hisilicon_v100(gcc4.4-290+uclibc_0.9.32.1+eabi+linuxpthread)) ) #1 Fri May 29 14:47:10 CST 2015
+220.94.112.23,root/xc3511,Linux version 3.10.0 (leixinyuan@root) (gcc version 4.8.3 20131202 (prerelease) (Hisilicon_v300) ) #8 Mon Jan 18 16:34:34 CST 2016
+221.155.92.88,root/xc3511,Linux version 3.10.0 (leixinyuan@root) (gcc version 4.8.3 20131202 (prerelease) (Hisilicon_v300) ) #8 Mon Jan 18 16:34:34 CST 2016
+221.157.63.226,root/xc3511,Linux version 3.0.8 (leixinyuan@localhost.localdomain) (gcc version 4.4.1 (Hisilicon_v100(gcc4.4-290+uclibc_0.9.32.1+eabi+linuxpthread)) ) #5 Fri Apr 22 12:49:32 CST 2016
+221.158.124.152,root/xc3511,Linux version 3.10.0 (leixinyuan@root) (gcc version 4.8.3 20131202 (prerelease) (Hisilicon_v300) ) #8 Mon Jan 18 16:34:34 CST 2016
+221.159.143.171,root/xc3511,Linux version 3.10.0 (chenwenrong@xm-5) (gcc version 4.8.3 20131202 (prerelease) (Hisilicon_v300) ) #15 Fri Feb 23 20:25:41 CST 2018
+221.161.108.211,root/xc3511,Linux version 3.10.0 (leixinyuan@root) (gcc version 4.8.3 20131202 (prerelease) (Hisilicon_v300) ) #8 Mon Jan 18 16:34:34 CST 2016
+221.163.38.74,root/xc3511,Linux version 3.0.8 (leixinyuan@localhost.localdomain) (gcc version 4.4.1 (Hisilicon_v100(gcc4.4-290+uclibc_0.9.32.1+eabi+linuxpthread)) ) #1 Mon Feb 15 18:45:48 CST 2016
+221.163.90.156,root/xc3511,Linux version 3.0.8 (jinweiwei@node02.localdomain) (gcc version 4.4.1 (Hisilicon_v100(gcc4.4-290+uclibc_0.9.32.1+eabi+linuxpthread)) ) #7 SMP Wed Oct 23 19:21:53 CST 2013
+221.167.105.56,root/xc3511,Linux version 3.0.8 (jinweiwei@node02.localdomain) (gcc version 4.4.1 (Hisilicon_v100(gcc4.4-290+uclibc_0.9.32.1+eabi+linuxpthread)) ) #22 Fri Feb 21 16:51:14 CST 2014
+221.167.222.180,root/xc3511,Linux version 3.10.0 (leixinyuan@localhost) (gcc version 4.8.3 20131202 (prerelease) (Hisilicon_v300) ) #44 Tue Nov 24 09:22:16 CST 2015
+222.110.158.233,root/xc3511,Linux version 3.10.0 (leixinyuan@localhost) (gcc version 4.8.3 20131202 (prerelease) (Hisilicon_v300) ) #44 Tue Nov 24 09:22:16 CST 2015
+222.110.59.38,root/xc3511,Linux version 3.10.0 (leixinyuan@root) (gcc version 4.8.3 20131202 (prerelease) (Hisilicon_v300) ) #8 Mon Jan 18 16:34:34 CST 2016
+222.113.145.233,root/xc3511,Linux version 3.10.0 (chenwenrong@xm-5) (gcc version 4.8.3 20131202 (prerelease) (Hisilicon_v300) ) #15 Fri Feb 23 20:25:41 CST 2018
+222.113.162.56,root/xc3511,Linux version 3.10.0 (chenwenrong@xm-5) (gcc version 4.8.3 20131202 (prerelease) (Hisilicon_v300) ) #15 Fri Feb 23 20:25:41 CST 2018
+222.113.33.92,root/xc3511,Linux version 3.10.0 (leixinyuan@root) (gcc version 4.8.3 20131202 (prerelease) (Hisilicon_v300) ) #8 Mon Jan 18 16:34:34 CST 2016
+222.114.197.7,root/xc3511,Linux version 3.10.0 (leixinyuan@root) (gcc version 4.8.3 20131202 (prerelease) (Hisilicon_v300) ) #8 Mon Jan 18 16:34:34 CST 2016
+222.118.222.230,root/xc3511,Linux version 3.10.0 (leixinyuan@root) (gcc version 4.8.3 20131202 (prerelease) (Hisilicon_v300) ) #8 Mon Jan 18 16:34:34 CST 2016
+222.120.246.123,root/xc3511,Linux version 3.0.8 (leixinyuan@localhost.localdomain) (gcc version 4.4.1 (Hisilicon_v100(gcc4.4-290+uclibc_0.9.32.1+eabi+linuxpthread)) ) #5 Fri Apr 22 12:49:32 CST 2016
+27.105.68.48,root/xc3511,Linux version 3.10.0 (wutao@localhost.localdomain) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #3 Mon Dec 19 20:19:13 CST 2016
+27.2.7.236,root/xc3511,Linux version 3.0.8 (zhangqing@localhost.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #4 Sat May 28 09:02:08 CST 2016
+27.4.229.110,root/xc3511,Linux version 3.10.0 (leixinyuan@root) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #8 Mon Jan 18 16:34:34 CST 2016
+27.68.61.15,root/xc3511,Linux version 3.0.8 (zhaoqiting@node02.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #6 Wed Jul 17 11:02:35 CST 2013
+27.69.201.1,root/xc3511,Linux version 3.0.8 (chenyun@localhost) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #1 Fri May 29 14:47:10 CST 2015
+27.69.4.197,root/xc3511,Linux version 3.10.0 (wutao@localhost.localdomain) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #3 Mon Dec 19 20:19:13 CST 2016
+27.73.103.84,root/xc3511,Linux version 3.0.8 (zhaoqiting@node02.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #6 Wed Jul 17 11:02:35 CST 2013
+27.74.171.207,root/xc3511,Linux version 3.10.0 (leixinyuan@root) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #8 Mon Jan 18 16:34:34 CST 2016
+27.74.65.187,root/xc3511,Linux version 3.0.8 (zhangqing@localhost.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #4 Sat May 28 09:02:08 CST 2016
+27.74.97.151,root/xc3511,Linux version 3.0.8 (zhaoqiting@node02.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #6 Wed Jul 17 11:02:35 CST 2013
+27.75.94.37,root/xc3511,Linux version 3.0.8 (jinweiwei@node02.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #33 Thu Jan 16 14:08:53 CST 2014
+31.135.242.43,root/xc3511,Linux version 3.0.8 (zoujiali@node02.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #1 SMP Thu Mar 7 10:50:20 CST 2013
+31.168.201.135,root/xc3511,Linux version 3.10.0 (wutao@localhost.localdomain) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #3 Mon Dec 19 20:19:13 CST 2016
+31.168.247.2,root/xc3511,Linux version 3.10.0 (chenwenrong@localhost.localdomain) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #7 Thu Nov 10 18:20:25 CST 2016
+31.192.129.44,root/xc3511,Linux version 3.0.8 (zhaoqiting@node02.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #6 Wed Jul 17 11:02:35 CST 2013
+31.207.208.172,root/xc3511,Linux version 3.0.8 (leixinyuan@localhost.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #52 Fri Apr 22 12:33:57 CST 2016
+36.227.20.220,root/xc3511,Linux version 3.0.8 (zoujiali@node02.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #28 Thu Mar 7 18:15:19 CST 2013
+36.235.192.184,root/xc3511,Linux version 3.0.8 (zhaojianghua@localhost.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #72 Wed Dec 21 16:31:26 CST 2016
+36.75.153.249,root/xc3511,Linux version 3.10.0 (leixinyuan@localhost) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #44 Tue Nov 24 09:22:16 CST 2015
+41.228.165.68,root/xc3511,Linux version 3.0.8 (zhaoqiting@node02.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #6 Wed Jul 17 11:02:35 CST 2013
+41.228.175.30,root/xc3511,Linux version 3.0.8 (jinweiwei@node02.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #12 Fri Jun 7 09:50:51 CST 2013
+41.38.145.84,root/xc3511,Linux version 3.0.8 (chenyun@localhost) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #1 SMP Wed Jun 24 17:13:05 CST 2015
+42.112.215.140,root/xc3511,Linux version 3.10.0 (leixinyuan@root) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #8 Mon Jan 18 16:34:34 CST 2016
+42.113.13.145,root/xc3511,Linux version 3.0.8 (jinweiwei@node02.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #33 Thu Jan 16 14:08:53 CST 2014
+42.115.129.233,root/xc3511,Linux version 3.10.0 (chenwenrong@localhost.localdomain) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #7 Thu Nov 10 18:20:25 CST 2016
+42.116.34.189,root/xc3511,Linux version 3.0.8 (chenyun@localhost) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #1 Fri May 29 14:47:10 CST 2015
+42.117.80.20,root/xc3511,Linux version 3.0.8 (chenyun@localhost) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #1 Fri May 29 14:47:10 CST 2015
+45.167.29.167,root/xc3511,Linux version 3.10.0 (leixinyuan@localhost) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #41 Thu Nov 5 14:50:25 CST 2015
+45.5.150.217,root/xc3511,Linux version 3.0.87 (leixinyuan@localhost.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #14 Thu Feb 25 18:40:09 CST 2016
+46.100.164.142,root/xc3511,Linux version 3.0.8 (zhaoqiting@node02.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #6 Wed Jul 17 11:02:35 CST 2013
+46.107.167.118,root/xc3511,Linux version 3.10.0 (leixinyuan@root) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #8 Mon Jan 18 16:34:34 CST 2016
+46.130.119.105,root/xc3511,Linux version 3.0.8 (zhaoqiting@node02.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #6 Wed Jul 17 11:02:35 CST 2013
+46.191.143.111,root/xc3511,Linux version 3.10.0 (leixinyuan@root) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #8 Mon Jan 18 16:34:34 CST 2016
+46.197.106.162,root/xc3511,Linux version 3.10.0 (wutao@localhost.localdomain) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #3 Mon Dec 19 20:19:13 CST 2016
+46.225.119.137,root/xc3511,Linux version 3.0.8 (wangchenggang@localhost) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #5 Tue Aug 14 10:35:34 CST 2012
+46.239.6.236,root/xc3511,Linux version 3.0.8 (jinweiwei@node02.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #33 Thu Jan 16 14:08:53 CST 2014
+46.239.7.247,root/xc3511,Linux version 3.0.8 (zhaoqiting@node02.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #6 Wed Jul 17 11:02:35 CST 2013
+46.32.114.30,root/xc3511,Linux version 3.10.0 (leixinyuan@localhost) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #44 Tue Nov 24 09:22:16 CST 2015
+46.43.73.243,root/xc3511,Linux version 3.10.0 (wutao@localhost.localdomain) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #3 Mon Dec 19 20:19:13 CST 2016
+46.97.232.64,root/xc3511,Linux version 3.10.0 (wutao@localhost.localdomain) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #3 Mon Dec 19 20:19:13 CST 2016
+5.13.118.130,root/xc3511,Linux version 3.10.0 (leixinyuan@root) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #8 Mon Jan 18 16:34:34 CST 2016
+5.133.24.8,root/xc3511,Linux version 3.10.0 (leixinyuan@localhost) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #44 Tue Nov 24 09:22:16 CST 2015
+5.133.27.156,root/xc3511,Linux version 3.10.0 (leixinyuan@localhost) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #44 Tue Nov 24 09:22:16 CST 2015
+5.133.27.162,root/xc3511,Linux version 3.10.0 (leixinyuan@localhost) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #44 Tue Nov 24 09:22:16 CST 2015
+5.198.242.43,root/xc3511,Linux version 3.10.0 (leixinyuan@root) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #8 Mon Jan 18 16:34:34 CST 2016
+5.232.179.231,root/xc3511,Linux version 3.10.0 (leixinyuan@root) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #8 Mon Jan 18 16:34:34 CST 2016
+5.235.164.247,root/xc3511,Linux version 3.10.0 (wutao@localhost.localdomain) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #3 Mon Dec 19 20:19:13 CST 2016
+5.253.5.224,root/xc3511,Linux version 3.0.8 (jinweiwei@node02.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #12 Fri Jun 7 09:50:51 CST 2013
+59.126.12.142,root/xc3511,Linux version 3.0.8 (leixinyuan@localhost.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #6 SMP Fri Apr 22 16:05:34 CST 2016
+59.126.61.59,root/xc3511,Linux version 3.0.8 (jinweiwei@node02.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #10 Wed Oct 30 16:43:57 CST 2013
+59.13.79.102,root/xc3511,Linux version 3.0.8 (chenyun@localhost) (gcc version 4.4.1 (Hisilicon_v100(gcc4.4-290+uclibc_0.9.32.1+eabi+linuxpthread)) ) #1 Fri May 29 14:47:10 CST 2015
+59.14.45.176,root/xc3511,Linux version 3.10.0 (leixinyuan@root) (gcc version 4.8.3 20131202 (prerelease) (Hisilicon_v300) ) #8 Mon Jan 18 16:34:34 CST 2016
+59.14.88.70,root/xc3511,Linux version 3.0.8 (jinweiwei@node02.localdomain) (gcc version 4.4.1 (Hisilicon_v100(gcc4.4-290+uclibc_0.9.32.1+eabi+linuxpthread)) ) #10 Wed Oct 30 16:43:57 CST 2013
+59.2.151.226,root/xc3511,Linux version 3.0.8 (zhaoqiting@node02.localdomain) (gcc version 4.4.1 (Hisilicon_v100(gcc4.4-290+uclibc_0.9.32.1+eabi+linuxpthread)) ) #6 Wed Jul 17 11:02:35 CST 2013
+59.2.166.122,root/xc3511,Linux version 3.10.0 (leixinyuan@root) (gcc version 4.8.3 20131202 (prerelease) (Hisilicon_v300) ) #8 Mon Jan 18 16:34:34 CST 2016
+59.23.237.226,root/xc3511,Linux version 3.0.8 (jinweiwei@node02.localdomain) (gcc version 4.4.1 (Hisilicon_v100(gcc4.4-290+uclibc_0.9.32.1+eabi+linuxpthread)) ) #7 SMP Wed Oct 23 19:21:53 CST 2013
+59.23.93.10,root/xc3511,Linux version 3.10.0 (leixinyuan@root) (gcc version 4.8.3 20131202 (prerelease) (Hisilicon_v300) ) #8 Mon Jan 18 16:34:34 CST 2016
+59.24.227.182,root/xc3511,Linux version 3.0.8 (zhangqing@localhost.localdomain) (gcc version 4.4.1 (Hisilicon_v100(gcc4.4-290+uclibc_0.9.32.1+eabi+linuxpthread)) ) #4 Sat May 28 09:02:08 CST 2016
+59.25.144.2,root/xc3511,Linux version 3.0.8 (jinweiwei@node02.localdomain) (gcc version 4.4.1 (Hisilicon_v100(gcc4.4-290+uclibc_0.9.32.1+eabi+linuxpthread)) ) #33 Thu Jan 16 14:08:53 CST 2014
+5.95.252.144,root/xc3511,Linux version 3.0.8 (jinweiwei@node02.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #12 Fri Jun 7 09:50:51 CST 2013
+59.6.8.127,root/xc3511,Linux version 3.0.8 (leixinyuan@localhost.localdomain) (gcc version 4.4.1 (Hisilicon_v100(gcc4.4-290+uclibc_0.9.32.1+eabi+linuxpthread)) ) #1 Mon Feb 15 18:45:48 CST 2016
+60.243.110.198,root/xc3511,Linux version 2.6.24-rt1-hi3515v100 (danson@DANSON-UBUNTU) (gcc version 3.4.3 (release) (CodeSourcery ARM Q3cvs 2004)) #6 Tue Aug 2 17:13:26 CST 2011
+61.221.222.160,root/xc3511,Linux version 3.0.8 (zhaojianghua@localhost.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #72 Wed Dec 21 16:31:26 CST 2016
+61.60.203.89,root/xc3511,Linux version 3.10.0 (wutao@localhost.localdomain) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #3 Mon Dec 19 20:19:13 CST 2016
+61.75.133.149,root/xc3511,Linux version 3.0.8 (root@localhost.localdomain) (gcc version 4.4.1 (Hisilicon_v100(gcc4.4-290+uclibc_0.9.32.1+eabi+linuxpthread)) ) #1 SMP Wed Feb 17 13:38:07 CST 2016
+61.77.170.8,root/xc3511,Linux version 3.10.0 (leixinyuan@root) (gcc version 4.8.3 20131202 (prerelease) (Hisilicon_v300) ) #8 Mon Jan 18 16:34:34 CST 2016
+61.80.101.187,root/xc3511,Linux version 3.0.8 (zhangqing@localhost.localdomain) (gcc version 4.4.1 (Hisilicon_v100(gcc4.4-290+uclibc_0.9.32.1+eabi+linuxpthread)) ) #4 Sat May 28 09:02:08 CST 2016
+61.81.15.57,root/xc3511,Linux version 3.10.0 (shaoweidong@xm-5) (gcc version 4.8.3 20131202 (prerelease) (Hisilicon_v300) ) #1 SMP Tue Mar 6 10:42:18 CST 2018
+61.85.49.126,root/xc3511,Linux version 3.0.8 (jinweiwei@node02.localdomain) (gcc version 4.4.1 (Hisilicon_v100(gcc4.4-290+uclibc_0.9.32.1+eabi+linuxpthread)) ) #33 Thu Jan 16 14:08:53 CST 2014
+61.90.59.235,root/xc3511,Linux version 2.6.24-rt1-hi3515v100 (luzs@localhost.localdomain) (gcc version 3.4.3 (release) (CodeSourcery ARM Q3cvs 2004)) #14 Sat Jul 3 14:29:54 CST 2010
+62.140.252.11,root/xc3511,Linux version 3.0.8 (chenyun@localhost) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #1 Fri May 29 14:47:10 CST 2015
+62.162.112.103,root/xc3511,Linux version 3.0.8 (zhaoqiting@node02.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #6 Wed Jul 17 11:02:35 CST 2013
+62.38.252.137,root/xc3511,Linux version 3.10.0 (leixinyuan@root) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #8 Mon Jan 18 16:34:34 CST 2016
+62.85.48.153,root/xc3511,Linux version 3.10.0 (leixinyuan@root) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #8 Mon Jan 18 16:34:34 CST 2016
+66.79.98.100,root/xc3511,Linux version 3.0.8 (wutao@localhost.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #5 Wed Nov 9 15:40:53 CST 2016
+69.92.46.223,root/xc3511,Linux version 3.10.0 (leixinyuan@localhost) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #44 Tue Nov 24 09:22:16 CST 2015
+77.162.190.190,root/xc3511,Linux version 3.10.0 (leixinyuan@root) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #8 Mon Jan 18 16:34:34 CST 2016
+77.170.149.3,root/xc3511,Linux version 3.0.8 (zhaoqiting@node02.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #6 Wed Jul 17 11:02:35 CST 2013
+77.228.72.62,root/xc3511,Linux version 3.0.8 (zhangqing@localhost.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #4 Sat May 28 09:02:08 CST 2016
+78.157.1.28,root/xc3511,Linux version 3.0.8 (zhaoqiting@node02.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #6 Wed Jul 17 11:02:35 CST 2013
+78.186.181.206,root/xc3511,Linux version 3.0.8 (leixinyuan@localhost) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #1 SMP Thu Jun 18 16:06:48 CST 2015
+78.186.249.192,root/xc3511,Linux version 3.10.0 (leixinyuan@localhost) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #44 Tue Nov 24 09:22:16 CST 2015
+78.187.220.108,root/xc3511,Linux version 3.4.35hi3535 (leixinyuan@localhost.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #1 SMP Fri Apr 22 13:26:59 CST 2016
+78.189.47.191,root/xc3511,Linux version 3.0.8 (zhaoqiting@node02.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #6 Wed Jul 17 11:02:35 CST 2013
+78.38.29.44,root/xc3511,Linux version 3.0.8 (chenwenrong@xm-5) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #4 Fri Aug 11 11:21:43 CST 2017
+78.38.89.8,root/xc3511,Linux version 3.10.0 (chenwenrong@localhost.localdomain) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #7 Thu Nov 10 18:20:25 CST 2016
+78.39.232.2,root/xc3511,Linux version 3.0.8 (zhangqing@localhost.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #4 Sat May 28 09:02:08 CST 2016
+78.39.233.115,root/xc3511,Linux version 3.0.8 (leixinyuan@localhost) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #1 SMP Mon Nov 3 08:11:19 CST 2014
+79.107.13.42,root/xc3511,Linux version 2.6.24-rt1-hi3515v100 (zhaoqiting@node02.localdomain) (gcc version 3.4.3 (release) (CodeSourcery ARM Q3cvs 2004)) #11 Wed Jun 6 11:16:13 CST 2012
+79.113.239.5,root/xc3511,Linux version 3.10.0 (wutao@localhost.localdomain) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #3 Mon Dec 19 20:19:13 CST 2016
+79.118.35.95,root/xc3511,Linux version 3.0.8 (leixinyuan@localhost.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #52 Fri Apr 22 12:33:57 CST 2016
+79.121.6.237,root/xc3511,Linux version 3.0.8 (wutao@localhost.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #7 Thu Nov 10 09:33:51 CST 2016
+79.129.244.195,root/xc3511,Linux version 3.10.0 (leixinyuan@root) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #8 Mon Jan 18 16:34:34 CST 2016
+79.16.225.38,root/xc3511,Linux version 3.10.0 (wutao@localhost.localdomain) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #3 Mon Dec 19 20:19:13 CST 2016
+80.14.134.157,root/xc3511,Linux version 3.10.0 (wutao@localhost.localdomain) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #3 Mon Dec 19 20:19:13 CST 2016
+80.47.203.66,root/xc3511,Linux version 3.10.0 (chenwenrong@localhost.localdomain) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #7 Thu Nov 10 18:20:25 CST 2016
+80.82.47.236,root/xc3511,Linux version 3.0.8 (jinweiwei@node02.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #12 Fri Jun 7 09:50:51 CST 2013
+81.16.122.228,root/xc3511,Linux version 3.0.8 (wangchenggang@localhost) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #5 Tue Aug 14 10:35:34 CST 2012
+82.14.148.66,root/xc3511,Linux version 3.0.8 (zhaoqiting@node02.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #6 Wed Jul 17 11:02:35 CST 2013
+82.210.140.91,root/xc3511,Linux version 3.0.8 (wutao@localhost.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #5 Wed Nov 9 15:40:53 CST 2016
+82.210.185.246,root/xc3511,Linux version 3.0.8 (zhaoqiting@node02.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #6 Wed Jul 17 11:02:35 CST 2013
+82.212.109.87,root/xc3511,Linux version 3.10.0 (leixinyuan@root) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #8 Mon Jan 18 16:34:34 CST 2016
+82.62.112.199,root/xc3511,Linux version 3.0.8 (zhaoqiting@node02.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #6 Wed Jul 17 11:02:35 CST 2013
+82.77.167.47,root/xc3511,Linux version 3.10.0 (leixinyuan@localhost) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #44 Tue Nov 24 09:22:16 CST 2015
+82.77.64.186,root/xc3511,Linux version 3.0.8 (wutao@localhost.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #21 Wed Nov 9 15:52:53 CST 2016
+82.99.220.66,root/xc3511,Linux version 3.0.8 (zhaoqiting@node02.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #6 Wed Jul 17 11:02:35 CST 2013
+83.228.103.43,root/xc3511,Linux version 3.10.0 (wutao@localhost.localdomain) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #3 Mon Dec 19 20:19:13 CST 2016
+84.117.82.130,root/xc3511,Linux version 2.6.24-rt1-hi3520v100 (danson@DANSON-UBUNTU) (gcc version 3.4.3 (release) (CodeSourcery ARM Q3cvs 2004)) #241 Mon Jul 25 14:54:12 CST 2011
+84.17.29.124,root/xc3511,Linux version 3.0.8 (leixinyuan@localhost) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #10 SMP Wed Dec 2 14:08:33 CST 2015
+84.174.133.28,root/xc3511,Linux version 3.0.8 (zhaoqiting@node02.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #6 Wed Jul 17 11:02:35 CST 2013
+84.252.35.17,root/xc3511,Linux version 3.10.0 (leixinyuan@root) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #8 Mon Jan 18 16:34:34 CST 2016
+84.47.129.242,root/xc3511,Linux version 3.0.8 (wutao@localhost.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #7 Thu Nov 10 09:33:51 CST 2016
+85.104.94.5,root/xc3511,Linux version 3.10.0 (leixinyuan@root) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #8 Mon Jan 18 16:34:34 CST 2016
+85.167.44.130,root/xc3511,Linux version 3.0.8 (jinweiwei@node02.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #10 Wed Oct 30 16:43:57 CST 2013
+85.192.4.102,root/xc3511,Linux version 3.0.8 (zhaoqiting@node02.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #6 Wed Jul 17 11:02:35 CST 2013
+85.204.130.104,root/xc3511,Linux version 3.0.8 (chenyun@localhost) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #2 Wed Jul 29 11:25:28 CST 2015
+85.66.75.190,root/xc3511,Linux version 3.0.8 (leixinyuan@localhost.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #52 Fri Apr 22 12:33:57 CST 2016
+85.97.195.118,root/xc3511,Linux version 3.10.0 (leixinyuan@localhost.localdomain) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #1 SMP Wed Mar 23 16:01:18 CST 2016
+86.106.204.220,root/xc3511,Linux version 3.0.8 (zhaoqiting@node02.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #6 Wed Jul 17 11:02:35 CST 2013
+86.124.74.104,root/xc3511,Linux version 2.6.24-rt1-hi3515v100 (zhaoqiting@node02.localdomain) (gcc version 3.4.3 (release) (CodeSourcery ARM Q3cvs 2004)) #50 Thu Oct 18 15:31:57 CST 2012
+86.178.242.102,root/xc3511,Linux version 3.10.0 (chenwenrong@localhost.localdomain) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #7 Thu Nov 10 18:20:25 CST 2016
+86.193.168.137,root/xc3511,Linux version 3.10.0 (chenwenrong@localhost.localdomain) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #7 Thu Nov 10 18:20:25 CST 2016
+86.210.34.95,root/xc3511,Linux version 3.10.0 (chenwenrong@localhost.localdomain) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #7 Thu Nov 10 18:20:25 CST 2016
+86.22.178.81,root/xc3511,Linux version 3.10.0 (chenwenrong@localhost.localdomain) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #7 Thu Nov 10 18:20:25 CST 2016
+86.98.113.236,root/xc3511,Linux version 3.10.0 (leixinyuan@root) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #8 Mon Jan 18 16:34:34 CST 2016
+87.144.249.217,root/xc3511,Linux version 3.10.0 (leixinyuan@root) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #8 Mon Jan 18 16:34:34 CST 2016
+87.225.111.16,root/xc3511,Linux version 3.0.8 (jinweiwei@node02.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #10 Wed Oct 30 16:43:57 CST 2013
+87.241.135.53,root/xc3511,Linux version 3.0.8 (zhaoqiting@node02.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #6 Wed Jul 17 11:02:35 CST 2013
+88.139.155.68,root/xc3511,Linux version 3.0.8 (jinweiwei@node02.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #30 Wed Oct 23 19:08:42 CST 2013
+88.23.223.239,root/xc3511,Linux version 3.0.8 (jinweiwei@node02.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #10 Wed Oct 30 16:43:57 CST 2013
+88.247.104.77,root/xc3511,Linux version 3.0.8 (leixinyuan@localhost.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #1 Tue Mar 1 15:44:56 CST 2016
+88.250.76.111,root/xc3511,Linux version 3.10.0 (leixinyuan@root) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #8 Mon Jan 18 16:34:34 CST 2016
+89.121.154.95,root/xc3511,Linux version 3.0.8 (wutao@localhost.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #5 Wed Nov 9 15:40:53 CST 2016
+89.122.93.76,root/xc3511,Linux version 3.0.8 (zhaoqiting@node02.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #6 Wed Jul 17 11:02:35 CST 2013
+89.214.121.142,root/xc3511,Linux version 3.0.8 (chenyun@localhost) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #1 SMP Wed Jun 24 17:13:05 CST 2015
+89.237.86.19,root/xc3511,Linux version 3.10.0 (leixinyuan@localhost) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #44 Tue Nov 24 09:22:16 CST 2015
+89.29.168.142,root/xc3511,Linux version 3.0.8 (zoujiali@node02.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #28 Thu Mar 7 18:15:19 CST 2013
+89.36.162.27,root/xc3511,Linux version 3.0.8 (leixinyuan@localhost) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #10 SMP Wed Dec 2 14:08:33 CST 2015
+90.23.50.201,root/xc3511,Linux version 3.10.0 (wutao@localhost.localdomain) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #3 Mon Dec 19 20:19:13 CST 2016
+90.23.65.136,root/xc3511,Linux version 3.10.0 (wutao@localhost.localdomain) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #3 Mon Dec 19 20:19:13 CST 2016
+90.70.128.184,root/xc3511,Linux version 3.10.0 (wutao@localhost.localdomain) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #3 Mon Dec 19 20:19:13 CST 2016
+91.146.184.246,root/xc3511,Linux version 3.0.8 (zhangqing@localhost.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #4 Sat May 28 09:02:08 CST 2016
+91.160.85.20,root/xc3511,Linux version 3.0.8 (leixinyuan@localhost) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #1 SMP Mon Nov 3 08:11:19 CST 2014
+91.215.59.236,root/xc3511,Linux version 3.0.8 (leixinyuan@localhost) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #87 SMP Wed Nov 18 14:34:32 CST 2015
+91.244.253.51,root/xc3511,Linux version 3.18.20 (shaoweidong@xm-5) (gcc version 4.9.4 20150629 (prerelease) (Hisiliconv50020170922) ) #1 SMP Sat Apr 28 14:53:27 CST 2018
+92.154.44.64,root/xc3511,Linux version 3.4.35hi3535 (leixinyuan@localhost.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #1 SMP Fri Apr 22 13:26:59 CST 2016
+92.169.246.223,root/xc3511,Linux version 3.0.8 (root@node02.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #29 Tue Nov 13 19:24:16 CST 2012
+92.21.30.66,root/xc3511,Linux version 3.10.0 (chenwenrong@localhost.localdomain) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #7 Thu Nov 10 18:20:25 CST 2016
+92.253.22.212,root/xc3511,Linux version 3.0.8 (zhaoqiting@node02.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #6 Wed Jul 17 11:02:35 CST 2013
+92.82.230.49,root/xc3511,Linux version 3.10.0 (wutao@localhost.localdomain) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #3 Mon Dec 19 20:19:13 CST 2016
+92.87.215.211,root/xc3511,Linux version 3.4.35hi3535 (wutao@localhost.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #2 SMP Wed Nov 9 15:58:37 CST 2016
+93.115.145.198,root/xc3511,Linux version 3.0.8 (jinweiwei@localhost) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #42 Thu Jan 8 13:11:49 CST 2015
+93.115.223.78,root/xc3511,Linux version 3.10.0 (leixinyuan@localhost) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #44 Tue Nov 24 09:22:16 CST 2015
+93.118.98.17,root/xc3511,Linux version 3.10.0 (leixinyuan@localhost) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #44 Tue Nov 24 09:22:16 CST 2015
+94.140.230.171,root/xc3511,Linux version 3.0.8 (jinweiwei@node02.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #12 Fri Jun 7 09:50:51 CST 2013
+94.176.153.9,root/xc3511,Linux version 3.0.8 (jinweiwei@localhost) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #42 Thu Jan 8 13:11:49 CST 2015
+94.231.1.48,root/xc3511,Linux version 3.0.8 (leixinyuan@localhost.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #1 Tue Mar 1 15:44:56 CST 2016
+94.234.164.193,root/xc3511,Linux version 3.10.0 (leixinyuan@root) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #8 Mon Jan 18 16:34:34 CST 2016
+94.41.96.186,root/xc3511,Linux version 3.0.8 (leixinyuan@localhost.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #1 Tue Mar 1 15:44:56 CST 2016
+94.53.71.142,root/xc3511,Linux version 3.0.8 (zhaoqiting@node02.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #6 Wed Jul 17 11:02:35 CST 2013
+95.38.19.183,root/xc3511,Linux version 3.10.0 (chenwenrong@localhost.localdomain) (gcc version 4.8.3 20131202 (prerelease) (Hisiliconv300) ) #7 Thu Nov 10 18:20:25 CST 2016
+95.47.122.63,root/xc3511,Linux version 3.0.8 (tongchao@node02.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #18 Mon Feb 10 16:42:44 CST 2014
+95.65.46.136,root/xc3511,Linux version 3.0.8 (leixinyuan@localhost.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #1 Tue Mar 1 15:44:56 CST 2016
+95.9.190.158,root/xc3511,Linux version 3.0.8 (jinweiwei@node02.localdomain) (gcc version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #10 Wed Oct 30 16:43:57 CST 2013
+96.45.11.197,root/xc3511,Linux version 3.0.8 (jinweiwei@node02.localdomain) (gcc
+version 4.4.1 (Hisiliconv100(gcc4.4-290+uclibc0.9.32.1+eabi+linuxpthread)) ) #33
+Thu Jan 16 14:08:53 CST 2014

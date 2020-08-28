@@ -1,0 +1,1185 @@
+4/21 2018
+
+
+   ___       _                       _   
+  |_ _|_ __ | |_ ___ _ __ _ __   ___| |_ 
+   | || '_ \| __/ _ \ '__| '_ \ / _ \ __|
+   | || | | | ||  __/ |  | | | |  __/ |_ 
+  |___|_| |_|\__\___|_|  |_| |_|\___|\__|
+                                        
+    ____ _                          _   _                                
+   / ___| |__   ___ _ __ ___   ___ | |_| |__   ___ _ __ __ _ _ __  _   _ 
+  | |   | '_ \ / _ \ '_ ` _ \ / _ \| __| '_ \ / _ \ '__/ _` | '_ \| | | |
+  | |___| | | |  __/ | | | | | (_) | |_| | | |  __/ | | (_| | |_) | |_| |
+   \____|_| |_|\___|_| |_| |_|\___/ \__|_| |_|\___|_|  \__,_| .__/ \__, |
+                                                            |_|    |___/ 
+
+                                                                   PART 6
+
+                                  The IoT Battlefield: Mitigation Methods
+
+ by Dr Cyborkian a.k.a. janit0r - conditioner of 'terminally ill' devices
+
+
+
+Previous parts can be found at least here:
+
+Original (Project Introduction): 
+https://0x00sec.org/t/internet-chemotherapy/4664
+
+Part 2 (ISPs: Lessons from the Rogers Hi-Speed Internet incident): 
+http://depastedihrn3jtw.onion.link/show.php?md5=ee7136ac48fa59fba803b9fbcbc6d7b9 (Clearnet)
+http://depastedihrn3jtw.onion/show.php?md5=ee7136ac48fa59fba803b9fbcbc6d7b9 (Tor)
+
+Part 3 (ISPs: The baffling case of Optify/Keycom's mismanagement):
+http://depastedihrn3jtw.onion.link/show.php?md5=7e7bfe406315f120d8ed325ffb87670b (Clearnet)
+http://depastedihrn3jtw.onion/show.php?md5=7e7bfe406315f120d8ed325ffb87670b (Tor)
+
+Part 4 (ISPs: The dirty case of Telkom South Africa)
+http://depastedihrn3jtw.onion.link/show.php?md5=11830bc79a079f5b7be33bcca84641f6 (Clearnet)
+http://depastedihrn3jtw.onion/show.php?md5=11830bc79a079f5b7be33bcca84641f6 (Tor)
+
+Part 5 (The IoT Battlefield: Device Stability)
+http://depastedihrn3jtw.onion.link/show.php?md5=8ca2bcadeb75137725557a24848d3c17 (Clearnet)
+http://depastedihrn3jtw.onion/show.php?md5=8ca2bcadeb75137725557a24848d3c17 (Tor)
+
+
+
+--[ 1 - Introduction
+
+Over the years many different mitigation methods have been developed
+for dealing with IoT botnets and related security problems. Most of 
+the conventional methods are simply iterations of older desktop/server 
+techniques and it has been assumed that what once made sense for 
+mitigating a few relatively stable and expensive pieces of hardware 
+would still make sense when dealing with an exponentially growing number
+of cheap and volatile devices. 
+
+In this part I'll discuss several of the mitigation approaches in more 
+detail and will offer some thoughts on their efficiency. It'll be more 
+text and data than before, but I promise that if you get through this 
+one there will be more fun ahead. In this part we're going to discuss 
+the following mitigation approaches:
+
+* Contacting device owners - simply trying to get vulnerable devices 
+  fixed by working together with the owner/ISP directly.
+  
+* Government intervention - regulative bodies stepping in to prevent
+  dangerous devices from being sold.
+  
+* Non-destructive disabling of devices - 'soft bricking' approaches where 
+  devices can be manually restored by the owner or a support technician.
+
+* Sinkholing C2s - applying a traditional mitigation method against 
+  volatile IoT botnets.
+
+* Destructive disabling of devices ('hard bricking') 
+
+* Shaming manufacturers / bad PR - using negative headlines for leverage.
+
+
+--[ 2 - Mitigation method: Contacting device owners
+
+A respectable traditional way of resolving security problems is to 
+simply try to warn system owners about a vulnerability directly. 
+This straightforward approach is also sometimes called 'responsible 
+disclosure.' This made perfect sense back in the day when there were
+only a small number of expensive systems around and it was simple to 
+determine who the owners were.
+
+It's easy to see the drawbacks of this method when it comes to IoT 
+devices - the overhead of figuring out who owns a particular vulnerable 
+device and then to try to contact a person (and in the worst case 
+remotely try to guide them how to upgrade their device's firmware) is a 
+time-consuming endeavor. No doubt the Internet charities which do this 
+as part of their mission have automated some of these aspects, but even 
+if you only assume 2 minutes of volunteer time per vulnerable device and 
+50,000 vulnerable devices you end up with over 1600 hour's worth of 
+manual labor. The method is probably most effective in situations where 
+a single person or entity controls a large number of vulnerable devices
+which can be mitigated through a small number of manual interactions.
+
+I don't have metrics about the efficiency of this approach in terms
+of IoT, but it should be noted that it did not seem effective at 
+mitigating the Mirai-based volumetric DDoS attacks of 2016. 
+
+The ethical ramifications of this approach aren't always clear-cut 
+either - if you responsibly report a vulnerability to a consumer ISP then 
+what about its affected customers? I've given you examples in my previous 
+articles of ISPs covering up security breaches, so in the worst case 
+you may simply be letting a mismanaged organization get away with its 
+negligence. As consumer ISPs are typically the primary IoT use case for 
+this method the dilemma cannot be discounted.
+
+My respect nonetheless goes out to those who persist with this approach. 
+It sometimes works and it's conceptually ideal for some circumstances. 
+The opportunity costs are probably also insignificant for an Internet 
+charity's less technical volunteers. For the charity itself the ability 
+to demonstrate that it has helped X people or organizations over Y years 
+will buy it some connections, credibility, and goodwill that can also be 
+spent on lobbying for critical long-term solutions (such as government 
+interventions in the IoT mess).
+
+
+--[ 3 - Mitigation method: Government Intervention
+
+Governments have a long history of regulating potentially dangerous 
+machines, devices and activities in circumstances where market forces by
+themselves are unable to mitigate risks. Regulatory standards for 
+electrical appliances are one good example. In order to be able to sell
+a device which is meant to be plugged into a regular power socket it  
+must meet certain minimum safety requirements. 
+
+Government interventions of this kind are not perfect, but it's hard to
+imagine anyone successfully arguing that we'd all be better off without 
+things like minimum safety requirements for cars or toasters. 
+
+I believe this is also the true long-term conventional solution to the 
+current IoT mess - devices which are meant to be connected to any kind
+of network should meet certain minimum cyber safety standards. Plenty of 
+smart individuals have already written eloquently on this topic so it's 
+not necessary for me to say much more. For a well-made argument, see 
+for example the following article by security expert Bruce Schneier:
+https://www.schneier.com/blog/archives/2017-02/security_and_th.html
+(Security and the Internet of Things).
+
+I will however repeat my stance of minimum safety standards being the 
+only realistic long-term solution to our current IoT mess. You only have 
+to take a look at the numbers of devices involved in my writeups to 
+understand that such quantities of unregulated and unsafe devices are 
+posing a serious threat to the Internet's survival. A sufficiently 
+skilled blackhat could've assembled enough firepower in 2017 to pose a 
+threat to some regional root DNS and IX setups. 
+
+The problem is also truly global in nature as even developing economies 
+are increasingly dependent on modern telecommunications. For example in 
+2017 a nation-wide Internet outage in Somalia (due to an undersea cable 
+cut) was estimated to have cost the country $10 million per day. If such 
+an outage had occured in any of the larger economies due to a persistent 
+attack on core Internet infrastructure the actual cost would be hard to 
+predict. How many days could a country like Estonia or the Netherlands 
+survive without a functioning Internet before basic functions of society
+would start breaking down? Governments must act now to regulate these 
+dangerous devices before it's too late.
+
+
+--[ 4 - Mitigation method: Disabling devices (non-destructively)
+
+Sometimes it's possible to disable dangerous third-party devices in 
+non-destructive ways. Obviously this approach isn't any more legal
+than bricking them, and the method usually involves resetting the 
+configuration so that the device loses its network access until it's 
+reconfigured by the owner or a service engineer (hopefully the latter 
+will be smart enough to upgrade vulnerable firmware etc before plugging 
+it back into the Internet!). This was one of the approaches I used 
+during the Internet Chemotherapy project, and I also experimented with 
+reconfiguring device displays to show visible warnings about the device's 
+vulnerable state (such as the text 'HACKED' on camera views etc). 
+
+Generally I've seen this non-destructive approach as preferable over 
+causing irreversible damage to a device. Sure, it's annoying for the 
+device owner to be forced to factory reset or reconfigure a device, but 
+the vulnerable device would've required maintenance anyway. Being forced
+to update a device is better than to lose it altogether.
+
+But how effective is the approach? Won't people just reconfigure 
+vulnerable devices without securing them and then plug them back into 
+the Internet as they were? In order to answer this question (and the 
+related question of what effect visible warnings have) I'll discuss my 
+largest experiment so far which started in September 2017. This was a 
+global campaign against vulnerable DVRs which I described in more 
+detail here at the time:
+http://depastedihrn3jtw.onion.link/show.php?md5=62d1d87f67a8bf485d43a05ec32b1e6f25
+
+For the purpose of measuring the impact of a non-destructive approach
+it may be useful for us to look at the two most prominent payloads of 
+the campaign. One was the Hikvision-targeting 'hikweb' http payload 
+which included a mix of brute forcing and CVE-2017-7921 (Montecrypto 
+authentication bypass) and the Dahua-specific 'dahua' http payload
+which targeted CVE-2017-7927. The payloads were designed to disconnect
+the devices from the net until they were properly secured by the owners. 
+Although the campaign also simultaneously attempted some destructive 
+telnet and management interface attacks these were numerically 
+insignificant relative to the http payload transactions. You can find 
+the 'dahua' and 'hikweb' payloads in my leaked source code (along with 
+most other payloads mentioned here).
+
+My botnet had been using iterations of the http-based 'dahua' payload 
+since 3/23 2017 and it was originally developed as a workaround against 
+Mirai-infected Dahua devices (where a bot had managed to disable the 
+telnetd post-infection). By the end of August the payload had been 
+applied against over 450000 unique IP:ports in transactions which had 
+ended in a device timeout. As such the old 'dahua' http payload was 
+not comparable with the brand new 'hikweb' http payload, but I had also 
+never carried out any large scale operations against ARIN or RIPE space 
+with it before so it was relatively underutilized against these regions.
+
+One important distinction between the two payloads is that the older and
+more evolved Dahua payload attempted to leave a message to the NVR 
+operator about the device having been disconnected by hacking. The 
+camera images would be dimmed by setting the brightness to 0, and the 
+word 'HACKED' would be displayed as a feed tag (later versions were 
+modified to change the tags to 'HACKED' 'UPDATE' and 'FIRMWARE' as a 
+more explicit clue). The purpose of this message was to encourage the
+owner to take steps to secure the vulnerable device.
+
+The quickly put together 'hikweb' payload lacked such finesse. It would
+simply try to disconnect the device through a few different methods and
+leave it to the device owner to figure out what had gone wrong. The fact
+that we have one payload which is 'expressive' and one which isn't gives 
+us an interesting point of comparison. Which one was more effective, and 
+by how much?
+
+
+--[ 4.1 - Dahua (noisy) vs Hikvision (quiet), global numbers
+
+First we'll look at the overall timeline of the campaign. The campaign 
+began roughly around mid-September and lasted until Dec 11. First we'll 
+look at the raw counts of of device transactions which resulted in a 
+timeout (i.e device stopped responding at a particular unique IP:port 
+before the end of the payload sequence) over an analysis window of 
+Sep 1 - Dec 13:
+
+ Date         Payload   Payload          Date         Payload   Payload
+               'dahua'  'hikweb'                       'dahua'  'hikweb'
+
+ 2017-09-01       309         0          2017-10-23      5755     18676
+ 2017-09-02       358         0          2017-10-24      5159     16824
+ 2017-09-03       448         0          2017-10-25      6360     20062
+ 2017-09-04       444         0          2017-10-26      6116     20948
+ 2017-09-05       298         0          2017-10-27      5722     20741
+ 2017-09-06       354         0          2017-10-28      5962     18624
+ 2017-09-07       456         0          2017-10-29      5032     21638
+ 2017-09-08       442         0          2017-10-30      5570     20311
+ 2017-09-09       340         0          2017-10-31      5718     21242
+ 2017-09-10      1535         0          2017-11-01      5185     19632
+ 2017-09-11      3402         0          2017-11-02      4138     14067
+ 2017-09-12      3079         0          2017-11-03      5034     20572
+ 2017-09-13      5062         0          2017-11-04      5035     21684
+ 2017-09-14      6683         0          2017-11-05      4530     21358
+ 2017-09-15      8706         0          2017-11-06      5036     26480
+ 2017-09-16      5071     28932          2017-11-07      5112     24939
+ 2017-09-17      5167     26323          2017-11-08      5696     28382
+ 2017-09-18     12381     38297          2017-11-09      5413     24524
+ 2017-09-19     53566     65822          2017-11-10      5558     26544
+ 2017-09-20     23091     72387          2017-11-11      5337     26387
+ 2017-09-21     26468     52632          2017-11-12      4656     24370
+ 2017-09-22     37378     48533          2017-11-13      5068     25393
+ 2017-09-23     29801     39745          2017-11-14      5746     27128
+ 2017-09-24      6435     24167          2017-11-15      5402     26050
+ 2017-09-25     14715     27268          2017-11-16      4941     23603
+ 2017-09-26     15764     31677          2017-11-17      5053     24551
+ 2017-09-27     18827     41935          2017-11-18      4838     24073
+ 2017-09-28     20477     43445          2017-11-19      4556     23734
+ 2017-09-29     20574     46972          2017-11-20      4940     23495
+ 2017-09-30      6984     20631          2017-11-21      4696     23645
+ 2017-10-01     25872     40183          2017-11-22      4732     23423
+ 2017-10-02     14736     38123          2017-11-23      4328     20097
+ 2017-10-03     11464     34353          2017-11-24      4107     20858
+ 2017-10-04     10370     31560          2017-11-25      3598     19616
+ 2017-10-05     10205     32811          2017-11-26      4356     21841
+ 2017-10-06      9766     31469          2017-11-27      4420     23092
+ 2017-10-07      8996     28319          2017-11-28      4345     21758
+ 2017-10-08      8095     27306          2017-11-29      4284     21933
+ 2017-10-09      8615     25076          2017-11-30      4147     20870
+ 2017-10-10      8915     26764          2017-12-01      4025     21110
+ 2017-10-11      9135     26368          2017-12-02      3751     18766
+ 2017-10-12      8322     26007          2017-12-03      3884     20613
+ 2017-10-13      8333     25913          2017-12-04      4389     19811
+ 2017-10-14      8143     24609          2017-12-05      4577     20496
+ 2017-10-15      7245     24390          2017-12-06      9683     14497
+ 2017-10-16      7112     21290          2017-12-07     14271     15553
+ 2017-10-17      7137     24234          2017-12-08     16522     17641
+ 2017-10-18      7457     22785          2017-12-09     13658     19301
+ 2017-10-19      6767     21786          2017-12-10     12425     17206
+ 2017-10-20      6833     21852          2017-12-11      9515      9619
+ 2017-10-21      6707     22744          2017-12-12      4758      2691
+ 2017-10-22      6092     20456          2017-12-13      5174      2362
+
+There's a slight increase in 'dahua' numbers already before the primary 
+campaign phase because I was preliminarily mapping out ASNs to filter out
+uninteresting networks, honeypots etc. dead zones before the primary
+scanning phase.
+
+One thing to keep in mind about DVR/NVR attacks is that often such 
+systems are installed on static IPs, and even if the device is behind a 
+dynamic router its IP shouldn't typically change (at least automatically) 
+if the DVR/NVR behind it reboots or fails. As such one may assume that
+the IP:port relationships of vulnerable DVR/NVR/cameras are slightly more 
+stable than those of vulnerable routers.
+
+Purely looking at the total numbers of transactions which ended in 
+devices becoming non-responsive the campaign seemed like a general
+success. The numbers never got close to zero, though, and the
+continued daily registrations (which were generally always on new 
+IP:ports) were probably a mix of:
+
+* New vulnerable devices plugged into the Internet for the first time
+* Old vulnerable devices suddenly exposed to the Internet via UPnP
+* IDS effects (transactions were timing out because of an intelligent
+  firewall stepping in) 
+* Old previously disabled (and still vulnerable) devices being plugged 
+  back into the Internet after being reset/reconfigured.
+
+It's also worth noting that the total Dahua numbers have a steeper 
+relative rate of decline over time than the Hikvision numbers. This may 
+suggest that the 'HACKED' message had some positive impact on the rates
+at which devices were patched/secured.
+
+
+--[ 4.2 - Dahua (noisy) vs Hikvision (quiet) reappearance rates.
+
+The raw total device counts don't necessarily give us the full story.
+In order to understand the payload impact better it may be useful for us 
+to look at transaction 'reapperance' distributions against specific 
+unique IP:ports, i.e after how many days a specific vulnerable IP:port is 
+seen again after a payload was successfully delivered.
+
+IP:port reappearance ratios for Dahua and Hikvision payloads (global):
+
+             Payload 'dahua' (http)           Payload 'hikweb' (http)
+
+Reapprnc.    Device   Sample    Freq.         Device   Sample    Freq.
+Age (days)    Count    Ratio    Ratio          Count    Ratio    Ratio
+
+Never        436189   81.91%                 1101097   81.83%
+  1           10451    1.96%   100.0%          47888    3.56%   100.0%
+  2            6347    1.19%    72.8%          19192    1.43%    75.8%
+  3            5000    0.94%    58.8%          12964    0.96%    63.1%
+  4            5749    1.08%    48.2%           9879    0.73%    52.7%
+  5            4833    0.91%    40.5%           7975    0.59%    45.9%
+  6            3525    0.66%    36.4%           6219    0.46%    41.6%
+  7            2729    0.51%    35.1%           5204    0.39%    37.7%
+  8            3360    0.63%    26.8%           4624    0.34%    27.7%
+  9            2618    0.49%    25.0%           3979    0.30%    25.0%
+ 10            2042    0.38%    24.7%           3422    0.25%    24.4%
+ 11            1822    0.34%    22.4%           3352    0.25%    22.4%
+ 12            2007    0.38%    21.7%           3399    0.25%    21.6%
+ 13            1718    0.32%    20.3%           2962    0.22%    20.6%
+ 14            1610    0.30%    19.9%           2802    0.21%    20.2%
+ 15            1595    0.30%    18.8%           2928    0.22%    18.2%
+ 16            1258    0.24%    17.6%           2568    0.19%    18.1%
+ 17            1290    0.24%    17.0%           2558    0.19%    17.5%
+ 18            1261    0.24%    16.7%           2457    0.18%    17.1%
+ 19            1171    0.22%    16.7%           2319    0.17%    16.7%
+ 20            1176    0.22%    15.7%           2286    0.17%    15.9%
+ 21+          31463    5.91%    11.5%          86299    6.41%    12.0%
+
+Ignored        3322    0.62%                    9200    0.68%
+Total        532536                          1345573
+
+
+Column and tag descriptions:
+
+* Reapprnc. Age (days): The total number of days a unique IP:port 
+  reappeared in subsequent daily scans. 'Never' designates units on
+  IP:ports which never hosted a vulnerable unit on them again after 
+  the initial transaction. 'Ignored' are IP:ports which had an over 
+  50% reappearance rate over a 7 day span (which I assumed could be 
+  a false positive due to a payload malfunction or IDS/intelligent 
+  firewall, but other explanations are also possible).
+  
+* Device Count: Number of unique IP:port payload transactions which 
+  resulted in a timeout. 
+
+* Sample Ratio: The % of above Device Count vs Total number of devices 
+  in dataset.
+  
+* Freq. Ratio: The ratio of the average number of repeat attempts for
+  devices in the dataset. Obviously for devices which reappeared on a
+  unique IP:port only once a single day later the ratio is always 100%.
+  For a device which was seen again once 4 days later the ratio would 
+  be 25% (1 reappearance/4 days = 25%).
+
+
+The global chart gives us an interesting comparison point between the
+two payloads. For starters, although there were 2.5 times more total 
+'hikweb' payload transactions which ended in a device timeout (1345573) 
+vs the total 'dahua' (532536) the reappearance ratios are roughly 
+similar. With the 'hikweb' payload a significant 1101097 (81.83%) of
+the devices only appeared a single time on a particular IP:port, and
+for the expressive 'dahua' payload it was 436189 (81.91%) which is 
+remarkably close in relative terms. The ratio distributions of IP:ports
+which reappeared over a long period of time (for 21 days or more) only
+shows a 0.5% effective difference (5.91% for the communicative 'dahua'
+payload and 6.41% for the crude 'hikweb' payload).
+
+Does that mean that for all effective purposes it makes no difference
+whether or not we try to warn the device owner as part of our 
+(non-destructive) device disabling payload? 
+
+If you said 'Yes' you didn't pay attention to Part 5 and I suggest you
+go and re-read that first before you continue! There are many potential
+problems with the quality and assumptions of our global dataset:
+
+* As we know from Part 5 much of the world's infrastructure is volatile 
+  and the routers that the majority of these cameras are sitting behind 
+  may be rebooting frequently. Over 460k of the 'hikweb' payload 
+  transactions occured with IPs registered to China and over 220k were 
+  from India. 60k of the 'dahua' IPs were in India and 55k were in 
+  Brazil. Any transaction samples from these regions of the world are 
+  probably affected by unrelated volatility effects.
+
+* We're also assuming that my attempts to warn 'dahua' owners with
+  English-language warnings such as 'HACKED' would be universally 
+  understood by people around the world. This word may not say anything
+  at all to a foreign operator, and for all we know 'HACKED' could be 
+  a popular German sausage brand. 
+
+* We're also seeing a steeper downward slope in the Dahua numbers over 
+  time than we can observe for Hikvision, so it's clear that our 
+  global reappearance rate table fails to explain what's going on.
+
+
+--[ 4.3 - Dahua (noisy) vs Hikvision (quiet) filtered by language regions
+
+In order to better answer the question of whether or not warnings can 
+have a beneficial effect we'll analyze the results of a smaller filtered 
+subset involving English-speaking countries which (based on our research 
+in Part 5) can also be assumed to feature devices hosted on more stable 
+IoT/ISP/power infrastructure. We'll review the stats for devices that 
+were geolocated to the US and the UK.
+
+
+IP:port reappearance ratios for Dahua and Hikvision payloads (US-only):
+
+             Payload 'dahua' (http)           Payload 'hikweb' (http)
+
+Reapprnc.    Device   Sample    Freq.         Device   Sample    Freq.
+Age (days)    Count    Ratio    Ratio          Count    Ratio    Ratio
+
+Never         47692   75.89%                   41947   67.74%
+  1             424    0.67%   100.0%            632    1.02%   100.0%
+  2             448    0.71%    72.6%            556    0.90%    71.4%
+  3             434    0.69%    57.0%            500    0.81%    58.1%
+  4             815    1.30%    45.6%            636    1.03%    46.7%
+  5            1411    2.25%    36.3%            914    1.48%    38.5%
+  6            1204    1.92%    32.7%            810    1.31%    34.8%
+  7             407    0.65%    34.8%            419    0.68%    35.7%
+  8             588    0.94%    27.6%            458    0.74%    27.8%
+  9             567    0.90%    25.3%            493    0.80%    25.2%
+ 10             469    0.75%    26.2%            394    0.64%    25.8%
+ 11             453    0.72%    23.3%            471    0.76%    23.0%
+ 12             428    0.68%    23.0%            455    0.73%    21.8%
+ 13             360    0.57%    21.8%            347    0.56%    21.6%
+ 14             221    0.35%    21.6%            268    0.43%    22.2%
+ 15             275    0.44%    20.3%            359    0.58%    18.5%
+ 16             201    0.32%    18.5%            297    0.48%    19.3%
+ 17             200    0.32%    18.0%            274    0.44%    19.5%
+ 18             176    0.28%    17.1%            264    0.43%    18.8%
+ 19             192    0.31%    16.2%            265    0.43%    17.7%
+ 20             186    0.30%    15.5%            262    0.42%    17.8%
+ 21+           4997    7.95%    12.8%          10227   16.52%    14.7%
+
+Ignored         692    1.10%                     672    1.09%
+Total         62840                            61920
+
+Looking at the US-specific dataset we see a clearer delineation of 
+payload effects. The most interesting number is the long-term (21+ day)
+device reappearance rate. For the owner-alerting 'dahua' payload the
+long-term reappearance rate is almost half of the quiet 'hikweb' payload!
+Although this study is obviously limited and skewed (the 'dahua' payload
+specifically targets NVRs whereas the 'hikweb' payload can also target
+individual cameras) it - along with the steeper global device decline for
+Dahua - nonetheless offers weak support for the idea that explicit 
+warnings can have a beneficial impact for encouraging device owners to 
+patch/secure their vulnerable devices. 
+
+Let's also look at our IoT uptime champion of Part 5, United Kingdom:
+
+IP:port reappearance ratios for Dahua and Hikvision payloads (UK-only):
+
+             Payload 'dahua' (http)           Payload 'hikweb' (http)
+
+Reapprnc.    Device   Sample    Freq.         Device   Sample    Freq.
+Age (days)    Count    Ratio    Ratio          Count    Ratio    Ratio
+
+Never          6871   79.28%                   13384   72.70%
+  1              94    1.08%   100.0%            537    2.92%   100.0%
+  2             100    1.15%    71.1%            309    1.68%    74.4%
+  3             123    1.42%    62.6%            278    1.51%    61.5%
+  4             186    2.15%    47.8%            288    1.56%    49.6%
+  5             116    1.34%    42.8%            198    1.08%    46.5%
+  6              65    0.75%    38.3%            142    0.77%    43.3%
+  7              53    0.61%    42.3%            131    0.71%    41.3%
+  8             100    1.15%    27.3%            163    0.89%    29.2%
+  9              62    0.72%    25.0%            108    0.59%    27.0%
+ 10              40    0.46%    26.1%            111    0.60%    25.5%
+ 11              29    0.33%    22.8%            107    0.58%    24.6%
+ 12              37    0.43%    21.3%             78    0.42%    24.2%
+ 13              29    0.33%    20.0%             65    0.35%    24.0%
+ 14              38    0.44%    21.8%             75    0.41%    23.8%
+ 15              27    0.31%    18.5%             62    0.34%    20.3%
+ 16              19    0.22%    16.4%             54    0.29%    21.9%
+ 17              14    0.16%    17.9%             58    0.32%    18.4%
+ 18              26    0.30%    20.9%             52    0.28%    22.3%
+ 19              19    0.22%    17.1%             55    0.30%    21.4%
+ 20              23    0.27%    15.3%             43    0.23%    16.6%
+ 21             514    5.93%    12.5%           1709    9.28%    16.6%
+
+Ignored          82    0.95%                     404    2.19%
+Total          8667                            18411
+
+The small UK-specific dataset generally supports our conclusions from the 
+US dataset and therefore doesn't warrant any further analysis.
+
+
+--[ 4.4 - Dahua vs Hikvision - The side-benefits of noisy payloads
+
+There's however another aspect in communicating a hack to a device 
+owner which is perhaps ultimately the most important one. When a hack
+is communicated explicitly it leaves no room for doubt about what has
+occured (at least in countries where the warning is understood). In
+the above case the Dahua warnings had the side-effect of getting 
+professional press attention which probably had as much positive impact 
+on vulnerable DVRs getting maintained than the hack itself. As such the 
+relatively small difference between the Dahua and Hikvision payload 
+reappearance rates may not tell the full story. The visibility of the 
+hacking campaign appears to have forced both Dahua and Hikvision to 
+issue bulletins to vendors and customers. Here are some sample headlines 
+from the campaign (and it's clear most of these were influenced by the 
+expressive Dahua payload rather than the quiet Hikvision one):
+
+Dahua Recorders Mass Hacked:
+https://ipvm.com/reports/hack-dahua-recorders
+
+ADT DVR Hacked - What To Do - IPVM:
+https://ipvm.com/forums/video-surveillance/topics/adt-dvr-hacked-what-to-do
+
+Dahua Europe BV - Notice about Cyber Security Incident:
+https://www.smartsd.com/technews/Notice about Cyber Security Incident.pdf
+
+Dahua USA Launches Latest Cybersecurity Initiatives:
+http://us.dahuasecurity.com/2017/10/05/dahua-usa-launches-latest-cybersecurity-initiatives/
+(Although generally claptrap, note the section about 'dimming cameras')
+
+Hikvision Europe Warns Of "A Wave of Cyberattacks":
+https://ipvm.com/reports/hik-wave-cyber
+(Note in particular section 'Dahua Mostly Hit')
+
+Dahua Trying, Struggling To Respond To Hacking Attacks:
+https://ipvm.com/reports/dahaua-response
+
+Hikvision USA Misleads Dealers On Backdoor:
+https://ipvm.com/reports/hik-dealers-back?page=2
+
+Hikvision Cameras Defaulting? [Upnp Facilitating Hacks]
+https://ipvm.com/forums/video-surveillance/topics/hikvision-cameras-defaulting
+
+Hacked Hikvision IP Camera Map USA And Europe:
+https://ipvm.com/reports/hik-hack-map
+(Refers to the 'HACKED' cameras)
+
+
+--[ 4.5 - Dahua vs Hikvision, summary
+
+In summary, I believe there's a credible case for arguing that 
+non-destructive device disabling can be a useful approach for reducing
+vulnerable device numbers, and there's also good evidence that any
+opportunities to warn the device owner about the hack will be worth
+the extra effort. 
+
+As a downside it's also clear that with these methods the devices are 
+slow to disappear completely (perhaps due to stubborn owners, slow 
+reactions, second hand market effects, etc) and the raw daily counts 
+of vulnerable Dahua and Hikvision devices suggest that at least 6-8 
+weeks of consistent pressure may be required for the numbers to 
+stabilize. 
+
+If you're like me you may now be confused over why people wouldn't 
+immediately secure their cameras when they become aware of them being 
+vulnerable to hacking. The reality is that not all users particularly 
+care. Read the following forum thread for enlightenment:
+
+https://ipcamtalk.com/threads/my-hikvision-cameras-are-hacked.22822/
+(stevie-bg: My Hikvision cameras are hAckEd ..)
+
+This is what we're up against.
+
+
+--[ 5 - Mitigation method: Sinkholing IoT botnet C2s
+
+The practice of sinkholing or otherwise dismantling the command and 
+control infrastructure used by botnets is not new, and has been used 
+with reasonable success against traditional (desktop or server-based)
+malware. This mitigation approach can be reasonably effective for 
+pacifying vulnerable systems with a low probability of rebooting. 
+
+The idea that this method could also be effective against typical IoT 
+botnets probably stems from ignorance of the significant uptime 
+volatility of such devices (see Part 5) especially outside the Western 
+world.
+
+To my knowledge the first instance of a 'Sinkholer of Things' claiming 
+the method had suddenly become effective against IoT botnets was Mr 
+Dale Drew's 23/3 2017 appearance on the CyberWire Daily Podcast. This 
+is still available for download at: 
+https://thecyberwire.com/podcasts/cw-podcasts-daily-2017-03-23.html
+
+In the podcast Drew is presented as an expert on the Mirai botnet, but
+then hilariously he doesn't even have a clue how to pronounce the name
+(listen to the podcast if you want a quick laugh, Drew appears around
+the 11:45 mark). Drew then goes on explaining that he has observed a 
+reduction in Mirai botnet sizes and expresses a belief that this was
+due to his C2 sinkholing efforts.
+
+Around this time another well-known security expert called MalwareTech
+offered a similar speculation about the overall decline (and a temporary
+spike) in Mirai numbers:
+
+'After a spike in activity following Popopret botnet takedown, Mirai
+ infections continue to declining due to aggressive sinkholing.'
+ https://pic.twitter.com/ZSlfoujoJK          @MalwareTechLab 27/3 2017
+
+The graph linked with the above Twitter posting shows a relatively linear 
+climb in Mirai numbers during most of February (with a few tracker drops), 
+and then a relatively rapid decline in early March.
+
+I believe that the main two reasons for the rise in numbers in February 
+was a mass exploitation of the Netis/Netcore UDP port 53413 backdoor 
+(somebody mass-executed telnetd /bin/sh on listening port TCP 5358
+globally and the root shell backdoor was then quickly picked up by other 
+bot herders), and a large-scale exploitation of Broadcom device CLIs 
+which started around 2/12 2017 with the pastebin publication of a simple 
+BCM CLI scanner at https://pastebin.com/0NvTk614 ('xDSL/Broadband (BCM/
+6511) Router Scanner' by LiGhT). The BCM CLIs with their numerous 
+security holes and default credentials would eventually become the most 
+significant IoT battlefield of 2017, and you can see the eventual extent 
+of the BCM CLI problem just by looking at the convoluted 'broadcom' 
+telnet payload in my leaked source. Both types of vulnerable devices 
+declined rapidly after I started adding mitigations for them around late 
+February/early March. 
+
+After March there generally were no new IoT C2 sinkholing claims until
+12/18 when the publication eWeek ran a story (again featuring security 
+researcher Dale Drew) about the Satori botnet:
+http://www.eweek.com/security/collaborative-takedown-kills-iot-worm-satori
+(Collaborative Takedown Kills IoT Worm 'Satori')
+
+In this article Drew is quoted as saying 'We were able to cooperate
+with the security research community very quickly, we got the command-
+and-control systems shut down very fast, and we pushed out notices to
+the two largest ISPs who have those modems' .. 'So the good news is -
+in very, very quick order - we were able to block scanning on our
+backbone.'
+
+To a layperson this might sound like a decisive 'Mission Accomplished'
+speech, but there are some significant problems with Drew's claims:
+
+* At least initially the Satori CVE-2014-8361 and CVE-2017-17215 attacker 
+  did not take any steps to prevent re-exploitation of the vulnerable 
+  devices, so it was trivial for any botnet operator to immediately 
+  rebuild a botnet under a new C2. It's unclear what effect sinkholing 
+  one or even ten C2s could've realistically had to mitigate the problem.
+  
+* Related to above: If Satori was supposedly shut down by Drew and 
+  friends by mid-December, why was it still active afterwards and 
+  evolving? 
+    
+* I have detailed logs of all inbound scan attempts against my own
+  botnet (i.e what IP attempted to connect to what port and when), all 
+  banner results from the triggered scan-back attempts (a 'mini-Shodan' 
+  of sorts), and of course the results of all hack-back attempts. Using 
+  this dataset I'm able to reconstruct Satori's evolution and changes to 
+  its device/IP makeup with reasonable precision. Nowhere in this dataset 
+  is there evidence of an ISP suddenly securing its network with an ACL 
+  or similar, so it's also unclear what effect Drew's notice to the two 
+  unnamed ISPs could've had on the end-result.
+  
+Sure, perhaps some notices were pushed out at some point, and perhaps 
+some C2s were sinkholed, and I'm sure Drew himself believes that all of
+these things made a difference. Yet where's the evidence of these things
+actually working? Given the nascency of InfoSec as a field (especially
+in relation to the rapidly evolving IoT scene) it has a weak body of
+evidence to draw from. Many claims by security researchers operating in 
+the field are simply variations of 'Because I told you so' with no 
+attempt to provide any real numbers or data as proof. Why does this 
+matter? It matters because the lack of a proper scientific process 
+allows superstitions to go unchallenged, and the peddling of snake 
+oil remedies as viable cures lulls people into a false sense of 
+security at a time when decisive action is needed.
+
+It also leads to hysterias such as the one which surrounded the 'IoT 
+Reaper' botnet where research outfits with little actual knowledge of
+what was happening on the Internet ended up amplifying eachother's 
+increasingly alarmist press releases. Before long this lugubrious and 
+data-deficient echo chamber predicted that IoT Reaper's size would reach 
+1 million, 2 million, 90 million and even 378 million (!) bots, all at a
+time when the actual number of bots was peaking around 23,000.
+
+Perhaps worst of all, without a proper data-driven process people end up 
+spending time and resources on mitigations which are unlikely to have 
+much effect in favor of solutions that do. Consider for example that Mr 
+Drew is employed by CenturyLink, and that over the past few months there 
+have been thousands of vulnerable (and exploited) devices on the ISP's 
+network with the default telnet logins 'admin/CenturyL1nk' and 
+'admin/QwestM0dem'. Would not Mr Drew's time have been better spent 
+securing his own network and customers instead of him dabbling in IoT 
+sinkholing alchemy? Could not a high-status researcher such as Drew have 
+made more of a difference by lobbying our government and the industry for 
+better IoT regulations and standards? Whatever his productive options 
+then may have been, when the next serious IoT threat emerges the 
+likelihood of it being fully resolved with sinkholing rituals will be 
+low at best. 
+
+Rant over. But what happened with Satori then? That brings us to the 
+next mitigation method:
+
+
+--[ 6 - Mitigation method: Destructive disabling of devices (bricking)
+
+Hard bricking is the most extreme option for dealing with dangerous/
+unfixable devices. If a device's flash partitions (containing things 
+like firmware, bootloaders, etc) are wiped it's generally impossible 
+to recover the device without specialist equipment and manufacturer-
+specific know-how. Given the cost and complexity of recovery relative 
+to the device's value hard bricking is typically a terminal action.
+
+Pros and cons:
+
+* Ethically the least attractive option, but sometimes you have to 
+  destroy even healthy trees and shrubs to contain a wildfire.
+  
+* Generally the most effective way to ensure that a vulnerable device
+  stays off the net. 
+  
+* Comes with a risk that the device will be replaced (under warranty or 
+  otherwise) with another dangerous unpatchable device, and without 
+  either the customer or the vendor understanding the cause for the 
+  hardware failures.
+
+
+--[ 6.1 - Bricking: The case of Satori
+
+The bulk of the device pool targeted by the botnet known as Satori 
+vanished within hours after I added bricking payloads exploiting both 
+CVE-2014-8361 and CVE-2017-17215. The Huawei devices vulnerable to
+CVE-2017-17215 were relatively homogenous so creating an effective 
+bricking payload for these was straightforward. The devices 
+vulnerable to CVE-2014-8361 had a much wider range of configurations 
+(the Realtek stack had been used by various vendors) so some payload 
+iteration was required even afterwards.
+
+Like many other people my attention was piqued when the Satori botnet 
+first emerged in late November 2017. I got lucky on 5/12 when the 
+botnet operator widened the scan window and started hitting my 
+honeypots, which in turn allowed me to quickly analyze the exploits and 
+produce the first countermeasure within an hour.
+
+Although there were many other things going on at the time I'll
+specifically focus at the Huawei 'ht069' (CVE-2017-17215) and the
+RealTek 'rt069' (CVE-2014-8361) SOAP payload performances over the 
+first 19 days of December:
+
+                     Payload        Payload
+ Date                 'hg069'        'rt069'
+   
+ 2017-12-01                0             0
+ 2017-12-02                0             0
+ 2017-12-03                0             0
+ 2017-12-04                0             0
+ 2017-12-05           175947          1716
+ 2017-12-06            15900         25426
+ 2017-12-07            13306         52190
+ 2017-12-08            11149         56736
+ 2017-12-09             9108         41657
+ 2017-12-10            10238         40922
+ 2017-12-11             4976         25066
+ 2017-12-12             4041         19260
+ 2017-12-13             3915         17805
+ 2017-12-14             3431         13733
+ 2017-12-15             2755         12585
+ 2017-12-16             2490         13123
+ 2017-12-17             3175         21494
+ 2017-12-18             3513         23362
+ 2017-12-19             4088         22970
+
+As always the above counts are numbers of unique IP:port transactions
+which resulted in the device timing out (i.e no longer responding). 
+The 'rt069' count increased around the 17th due to payload iterations. 
+
+As the Huawei devices had significant uptime volatilty (and the Satori
+attacker did in any case not take steps to defend them) the effect of the 
+'hg069' bricking payload was particularly immediate. Below is a table 
+showing the unique IP:port transaction counts for 'hg069' filtered 
+against the top 9 class B subnets:
+
+Date       181.128 181.139 197.0 197.2 197.1 41.23 197.3 41.226 181.138 
+      
+2017-12-05    6393    5956  5939  5794  5375  4701  3704   3211    3040 
+2017-12-06     123       0     0     0     0   105    19    158      45 
+2017-12-07       1       0     0     0     0     1     0      0       0 
+2017-12-08       3       0     0     0     0     2     0      0       0 
+2017-12-09       1       0     1     0     0     0     0      0       0 
+2017-12-10       1       0     0     0     0     1     0      0       0 
+2017-12-11       1       0     0     0     0     0     0      0       0 
+2017-12-12       0       0     0     0     0     0     0      0       0 
+2017-12-13       0       0     0     0     0     0     0      0       0 
+2017-12-14       0       0     0     0     0     0     0      0       0 
+2017-12-15       0       0     0     0     0     0     0      0       0 
+2017-12-16       0       0     0     0     0     0     0      0       0 
+2017-12-17       0       0     0     0     0     0     0      0       0 
+2017-12-18       0       0     0     0     0     1     0      0       0 
+2017-12-19       0       0     0     0     0     0     0      0       0 
+
+The effect of the 'hg069' bricking payload is clear in that entire /16s 
+were effectively cleaned in a scope of 24h, and numerically the rate of
+decline in the vulnerable device pool is completely different from that
+of the non-destructive payloads (such as the Dahua and Hikvision ones in
+section 4, or the Telkom South Africa modems discussed in Internet 
+Chemotherapy Part 4). Instead of weeks or months, decisive results were
+obtained in a matter of hours.
+
+
+--[ 6.2 - Bricking: Revisiting Dahua vs Hikvision
+
+For another comparison of non-destructive vs destructive device disabling
+payloads we'll look at Dahua and Hikvision. As you'll remember we looked
+at the impact of non-destructive payloads for these devices in section 4, 
+and now we'll examine the impact of the two related telnet payloads:
+
+* The payload 'dahuaold' is a relatively well-refined payload which aims 
+  to permanently brick a Dahua device via telnet. It's believed that 
+  this device-specific payload is generally effective.
+  
+* In contrast the telnet payload 'hikvision' isn't a particularly 
+  effective payload in itself, and although it's able to escalate 
+  privileges and damage some firmwares it's main purpose was that of an 
+  initial extraction stage for root user hashes which could then be 
+  cracked by other (now-defunct) parts of my botnet. Once hashes were
+  cracked the devices would then be dealt with in a separate stage which
+  is only indirectly accounted for in these statistics.
+  
+Let's reconstruct an IP:port reappearance ratio table for these two telnet
+payloads over the same analysis window of Sep 1 - Dec 13 that we used in
+section 4:
+
+            Payload 'dahuaold' (telnet)      Payload 'hikvision' (telnet)
+
+Reapprnc.      Device   Sample    Freq.         Device   Sample    Freq.
+Age (days)      Count    Ratio    Ratio          Count    Ratio    Ratio
+
+Never           17971   98.33%                   16320   69.64%
+  1                62    0.34%   100.0%           1830    7.81%   100.0%
+  2                23    0.13%    70.4%           1068    4.56%    81.5%
+  3                22    0.12%    55.7%            647    2.76%    69.7%
+  4                16    0.09%    41.2%            634    2.71%    57.3%
+  5                15    0.08%    36.3%            387    1.65%    51.4%
+  6                 6    0.03%    30.3%            231    0.99%    53.8%
+  7                19    0.10%    25.6%            275    1.17%    46.0%
+  8                 7    0.04%    25.1%            135    0.58%    33.9%
+  9                10    0.05%    21.0%            135    0.58%    29.6%
+ 10                11    0.06%    23.7%            114    0.49%    33.4%
+ 11                 5    0.03%    21.0%             89    0.38%    29.8%
+ 12                 5    0.03%    16.6%             79    0.34%    32.2%
+ 13                 6    0.03%    16.3%             73    0.31%    32.5%
+ 14                 3    0.02%    30.7%             63    0.27%    34.5%
+ 15                10    0.05%    13.2%             54    0.23%    30.9%
+ 16                 3    0.02%    11.0%             35    0.15%    28.8%
+ 17                 6    0.03%    11.0%             44    0.19%    25.9%
+ 18                 5    0.03%    10.0%             40    0.17%    32.8%
+ 19                 1    0.01%    10.0%             33    0.14%    27.3%
+ 20                 4    0.02%     9.0%             24    0.10%    24.8%
+ 21+               66    0.36%     6.8%            727    3.10%    22.2%
+
+Ignored             1    0.01%                     398    1.70%
+Total           18277                            23435
+
+In spite of us looking at a global dataset (with all the vagaries of 
+Third World power grids etc. biasing the sample) there's a dramatic 
+difference in the reappearance ratios. After the generally effective 
+bricking payload 'dahuaold' is executed against an IP:port the
+device rarely makes a reappearance, and the long tail counts could well 
+fall within quantities that could be expected from physical device 
+replacements (i.e a failed device is swapped out for another similar/
+identical vulnerable device). The generally ineffective (from an 
+immediate bricking perspective) 'hikvision' payload shows much weaker 
+ratios. 
+
+It's clear that a bricking payload such as 'dahuaold' is more effective 
+at removing a vulnerable device from the Internet than a non-destructive 
+payload such as the 'dahua' web payload. With regard to the Device Counts 
+for our timespan of Sep 1 - Dec 13 2017 it should also be noted that the 
+'dahuaold' payload had been in service already since November 2016 and 
+that the majority of telnet-exposed Dahuas were bricked around Dec 2016 - 
+Mar 2017 (which explains the relatively low number of hits by late 2017). 
+
+
+--[ 6.3 - Bricking: Comparison against other common payloads
+
+Just like with the Dahua-specific telnet payload, by Q4 2017 the bulk of
+the Broadcom CLI battle had already been fought. There's nonetheless been 
+a steady influx of new vulnerable devices and the transaction numbers for 
+the 'broadcom' telnet payload and the generic 'busybox' payload were 
+(scarily) still in excess of 500k for the comparison period of Sep 1 - 
+Dec 13 2017. 
+
+IP:port reappearance ratios for BCM CLI and generic Busybox payloads:
+
+            Payload 'broadcom' (telnet)       Payload 'busybox' (telnet)
+
+Reapprnc.      Device   Sample    Freq.         Device   Sample    Freq.
+Age (days)      Count    Ratio    Ratio          Count    Ratio    Ratio
+
+Never          213161   93.41%                  246782   88.43%
+  1              2290    1.00%   100.0%          11765    4.22%   100.0%
+  2              1006    0.44%    75.3%           4395    1.57%    87.0%
+  3               714    0.31%    60.8%           2307    0.83%    73.4%
+  4               560    0.25%    52.9%           1589    0.57%    66.9%
+  5               526    0.23%    43.2%           1042    0.37%    59.6%
+  6               378    0.17%    39.3%            835    0.30%    57.5%
+  7               381    0.17%    35.1%            624    0.22%    55.5%
+  8               287    0.13%    24.7%            368    0.13%    29.4%
+  9               281    0.12%    22.9%            305    0.11%    26.8%
+ 10               255    0.11%    22.9%            348    0.12%    30.2%
+ 11               287    0.13%    19.3%            309    0.11%    26.3%
+ 12               251    0.11%    18.0%            356    0.13%    29.2%
+ 13               245    0.11%    16.8%            366    0.13%    26.8%
+ 14               226    0.10%    16.5%            456    0.16%    30.0%
+ 15               210    0.09%    14.8%            297    0.11%    24.4%
+ 16               218    0.10%    14.2%            220    0.08%    22.6%
+ 17               199    0.09%    14.0%            231    0.08%    23.2%
+ 18               190    0.08%    12.7%            151    0.05%    16.9%
+ 19               182    0.08%    12.1%            148    0.05%    16.5%
+ 20               198    0.09%    12.1%            128    0.05%    14.9%
+ 21+             5669    2.48%     7.7%           4371    1.57%    13.3%
+
+Ignored           479    0.21%                    1672    0.60%
+Total          228193                           279065
+
+Both the BCM CLI 'broadcom' telnet payload and the generic catch-all 
+'busybox' payload are generally believed to be effective at bricking a 
+device (given sufficient access privileges), but our global numbers do 
+not achieve the same decisive ratios as the device-specific 'dahuaold' 
+Dahua telnet payload. Why might this be? One explanation is that for
+our 'dahuaold' payload we consistently obtain root-level access over the 
+device, whereas with other devices (esp. the generic 'busybox') this 
+might not be the case, and in worst case we may not even be able to 
+force a reboot through this unprivileged account. The Broadcom CLIs 
+are also quite buggy and it's certain that our sequence is ineffective 
+against a subset of them. 
+
+For reference, here's the above dataset (Sep 1 - Dec 13 2017) for the 
+generic Busybox payload with all but root logins filtered out:
+
+          Payload 'busybox' (root login only)
+
+Reapprnc.      Device   Sample    Freq.
+Age (days)      Count    Ratio    Ratio
+
+Never           85697   94.72%
+  1               672    0.74%   100.0%
+  2               447    0.49%    78.0%
+  3               351    0.39%    65.6%
+  4               218    0.24%    50.9%
+  5               140    0.15%    43.8%
+  6               149    0.16%    41.0%
+  7               110    0.12%    32.8%
+  8                98    0.11%    24.5%
+  9                73    0.08%    21.8%
+ 10                58    0.06%    22.5%
+ 11                68    0.08%    20.2%
+ 12                70    0.08%    18.5%
+ 13                60    0.07%    18.9%
+ 14                51    0.06%    15.9%
+ 15                63    0.07%    16.9%
+ 16                54    0.06%    15.8%
+ 17                47    0.05%    15.6%
+ 18                47    0.05%    14.3%
+ 19                50    0.06%    16.0%
+ 20                53    0.06%    15.4%
+ 21              1778    1.97%    11.7%
+
+Ignored           120    0.13%
+Total           90474
+
+When only root logins are included in the 'busybox' dataset the IP:port 
+reappearance ratio differences between the Broadcom CLI and generic 
+Busybox payloads become relatively similar even in the global context.
+
+
+--[ 6.4 - Bricking: The case of Alcatel-Nokia
+
+The company that was formely known as Alcatel-Lucent has been shipping 
+modems with a manufacturer default admin login/password of ONTUSER /
+SUGAR2A041. Now and then concentrations of such devices appear on ISP 
+networks, such as Wind/Infostrada Italy and Kazakh Telecom. Recently 
+there has been a small uptick of such devices in Mexico. 
+
+The initial large concentrations (around Oct 1 2017) fell under the
+generic 'linux' payload which effectively bricked these, but pretty
+soon I decided to create a device-specific payload for it and you can 
+find it under the name 'alcont' in my leaked source code. This telnet 
+payload optimizes the flash wiping sequence for the Alcatel device and 
+also clears the device-specific /dev/ubi flash partitions which store 
+the device config and logs.
+
+As an additional reference I'm including the reappearance table for this 
+(believed to be 100% effective) bricking payload for the time interval 
+of Oct 1 - Dec 13 2017:
+
+              Payload 'alcont' (telnet)
+
+Reapprnc.      Device   Sample    Freq.  
+Age (days)      Count    Ratio    Ratio  
+
+Never            9668   99.61%   
+  1                24    0.25%   100.0%
+  2                 5    0.05%    66.0%
+  3                 2    0.02%    75.0%
+  4                 2    0.02%    50.0%
+  5                 1    0.01%    33.0%
+  6                 0    0.00%     0.0%
+  7                 0    0.00%     0.0%
+  8                 0    0.00%     0.0%
+  9                 1    0.01%    20.0%
+ 10                 0    0.00%     0.0%
+ 11                 0    0.00%     0.0%
+ 12                 0    0.00%     0.0%
+ 13                 0    0.00%     0.0%
+ 14                 1    0.01%    13.0%
+ 15                 0    0.00%     0.0%
+ 16                 0    0.00%     0.0%
+ 17                 0    0.00%     0.0%
+ 18                 0    0.00%     0.0%
+ 19                 0    0.00%     0.0%
+ 20                 0    0.00%     0.0%
+ 21+                2    0.02%    10.5%
+
+Ignored             0    0.00%
+Total            9706
+
+Although the numbers for this payload aren't particularly high (due to
+them previously falling under the generic 'linux' payload category)
+this sample of 9700 devices is still significant enough to underline 
+the effectiveness of a textbook bricking payload - in all but a fraction 
+of cases (less than 0.4%) a device never reappeared on the same IP:port 
+again after the bricking payload transaction had been completed. The 
+miniscule long tail quantities can easily be accounted for through 
+warranty replacements and chance.
+
+
+--[ 6.5 - Bricking: In summary
+
+Overall statistics prove that bricking is by far the most effective way 
+of getting rid of dangerous devices. However, in view of the ethical and 
+legal concerns surrounding such unconventional methods we must 
+nonetheless tread with care. It goes without saying that tampering with 
+somebody else's hardware comes with its own set of risks, and depending 
+on what kind of infrastructure you end up destroying some nation states 
+may not even care whether or not a case against you can be fairly proven 
+in court. 'Ne puero gladium' applies.
+
+
+--[ 7 - Mitigation method: Shaming manufacturers / bad PR
+
+Traditionally the concept of shaming a manufacturer over a dangerous
+product may have worked. There's not a lot of evidence of this still
+being true for the IoT marketplace. Whitelabeling, the uniform crapness 
+of the bottom-end players and the technical ignorance and price 
+sensitivity of typical customers yield little leverage for shaming
+foreign IoT manufacturers over their negligence. Companies such as Dahua, 
+Hikvision and XiongMai have been outed by the IT press in the past, but 
+so far the negative reporting seems to have had a neglible effect on 
+sales. 
+
+As an example consider the manufacturer XiongMai who was blamed for some 
+of the Mirai DDoS damage in 2016. At the time the video surveillance 
+publication IPVM.com wrote about XiongMai and its associated 'product 
+recall' with its own predictions: 
+https://ipvm.com/reports/xiongmai-recall (The Xiongmai Botnet 'Recall' 
+Will Not Work)
+
+1.5 years later it's abundantly clear that IPVM nailed it - there's no 
+evidence that a single unit was ever fixed by the company, and there's 
+no indication that the scandal even had any effect on the company's 
+bottom line. 
+
+I'll leave it as an exercise to the reader to try think of a single case 
+where negative PR from a security-related shortcoming had any significant 
+long-term consequences for any IoT manufacturer. The only examples I can 
+personally think of were cases which resulted in a government ban/recall 
+(which leads me back to the point of section 3 regarding government 
+interventions being our only long-term hope).
+
+
+--[ 8 - Mitigation methods in summary
+
+In this part we looked at the following methods of dealing with IoT
+botnets and related security problems:
+
+* Contacting device owners - simply trying to get vulnerable devices 
+  fixed by working together with the owner/ISP directly.
+  
+* Government intervention - regulative bodies stepping in to prevent
+  dangerous devices from being sold.
+  
+* Non-destructive disabling of devices - 'soft bricking' approaches where 
+  devices can be manually restored by the owner or a support technician.
+
+* Sinkholing C2s - applying a traditional mitigation method against 
+  volatile IoT botnets.
+
+* Destructive disabling of devices ('hard bricking') 
+
+* Shaming manufacturers / bad PR - using negative headlines for leverage.
+
+You'll notice that I didn't discuss whitehat (?) efforts such as Hajime
+or Reincarna. Although I have genuine respect for people who engage in 
+such initiatives I don't see them doing much to actually decrease the 
+number of vulnerable devices on the Internet. At best they're temporary 
+placeholders for reducing the number of devices available to blackhats, 
+and it should be remembered that Hajime - just like the conventional 
+efforts - was unable to prevent the 2016 Dyn cyberattack from causing 
+significant damage. At the end of the day a botnet such as Hajime is one 
+buggy (device-crashing/rebooting) update away from handing over all of 
+its devices to the next Mirai. Perhaps the greatest benefit of Hajime 
+and Reincarna can be derived from their scanning frequently triggering 
+hack-back attempts from my botnet, and whether you view this sordid 
+relationship as symbiotic or parasitic is a matter of perspective.
+
+I also didn't bring up the idea of simply securing and locking down
+vulnerable devices, mainly because the number of remotely securable 
+devices has been insignificant (less than 5%) in the total vulnerable 
+device pool. Devices by manufacturers such as Ubiquiti, MikroTik, 
+Fortinet, Cisco and Sophos can generally be locked down even if their 
+firmwares are outdated. If/when I publish my SSH payloads you can
+confirm that my focus has been on securing (rather than disabling) 
+devices whenever possible.
+
+I understand that there will be as many opinions about the 'right' 
+solution to the IoT mess as there are readers, but my argument is that 
+the traditional mitigation methods cannot be effective at scale and as 
+the number of unsafe and cheap Internet-capable devices continue growing 
+exponentially there's realistically only going to be two options for 
+dealing with them:
+
+1. Government intervention - this is the only viable long-term solution
+   and regulative bodies should step in as soon as possible to protect
+   the Internet from these dangerous devices. You can make a difference 
+   by contacting your local representative through phone, e-mail, post or 
+   even social media and express your concerns over the government not 
+   doing enough to regulate the safety and security of IoT devices. Good 
+   security practices are well understood and can be applied to any cheap 
+   'smart' device at a reasonable cost to the manufacturer and the 
+   consumers.
+
+2. Disabling devices - whether a destructive or non-destructive method 
+   should be used is best determined on a case-by-case basis. In urgent
+   cases hard bricking can wipe out problematic device pools in a matter 
+   of hours. Even non-destructive disabling of devices can achieve 
+   similar goals, but in the worst case such processes can take several
+   months. This approach was the only practical method of getting rid of
+   millions of vulnerable devices before they could cause significant 
+   additional damage to the Internet in 2017, and it will probably be the 
+   only realistic choice we'll have for keeping the numbers of unsafe 
+   devices in check for some time to come. Cue the ethical and socio-
+   economic arguments for hunting quotas. Consider my project (for all 
+   its faults) as a rough proof of concept experiment in this domain.
+
+Note that these two options aren't necessarily mutually exclusive, and
+that even if/when new regulations take effect they will be unable to deal
+with the millions of existing substandard devices that are already out
+there. If anything, these two options are complementary.
+   
+That sums things up for now. Cya in the next part!

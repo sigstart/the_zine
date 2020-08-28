@@ -1,0 +1,649 @@
+
+2/2/18
+
+   ___       _                       _   
+  |_ _|_ __ | |_ ___ _ __ _ __   ___| |_ 
+   | || '_ \| __/ _ \ '__| '_ \ / _ \ __|
+   | || | | | ||  __/ |  | | | |  __/ |_ 
+  |___|_| |_|\__\___|_|  |_| |_|\___|\__|
+                                        
+    ____ _                          _   _                                
+   / ___| |__   ___ _ __ ___   ___ | |_| |__   ___ _ __ __ _ _ __  _   _ 
+  | |   | '_ \ / _ \ '_ ` _ \ / _ \| __| '_ \ / _ \ '__/ _` | '_ \| | | |
+  | |___| | | |  __/ | | | | | (_) | |_| | | |  __/ | | (_| | |_) | |_| |
+   \____|_| |_|\___|_| |_| |_|\___/ \__|_| |_|\___|_|  \__,_| .__/ \__, |
+                                                            |_|    |___/ 
+
+                                                                   PART 4
+
+                                    The dirty case of Telkom South Africa
+
+ by Dr Cyborkian a.k.a. janit0r - conditioner of 'terminally ill' devices
+
+
+
+Previous parts can be found at least here:
+
+Original (Project Introduction): 
+https://0x00sec.org/t/internet-chemotherapy/4664
+
+Part 2 (Lessons from the Rogers Hi-Speed Internet incident): 
+http://depastedihrn3jtw.onion.link/show.php?md5=ee7136ac48fa59fba803b9fbcbc6d7b9 (Clearnet)
+http://depastedihrn3jtw.onion/show.php?md5=ee7136ac48fa59fba803b9fbcbc6d7b9 (Tor)
+
+Part 3 (The baffling case of Optify/Keycom's mismanagement):
+http://depastedihrn3jtw.onion.link/show.php?md5=7e7bfe406315f120d8ed325ffb87670b (Clearnet)
+http://depastedihrn3jtw.onion/show.php?md5=7e7bfe406315f120d8ed325ffb87670b (Tor)
+
+Many thanks to those who've mirrored my past writings! As you've noticed
+there seems to be a concerted ongoing effort to cover up the evidence. 
+
+
+
+--[ 1 - Responses and comments to news
+
+Since Part 3 there has been some speculation about the true motives 
+behind my actions. I get it. People are understandably uncomfortable 
+when somebody suddenly shows up and claims to have feasted uninhibitedly 
+off a forbidden tree of knowledge from which other people can (legally) 
+only get the occasional scrap or whiff. However, I can't help but notice 
+that many of those who are trying to discredit me are also ones who got 
+burned by the IoT Reaper farce (you may recall how many experts warned 
+the public about the Reaper having grown to 1 million, 2 million and even 
+378 (!) million bots at a time when no hard facts could've supported 
+estimates larger than 23,000). Dismissing me isn't going to make the ugly 
+truth about expert ignorance and echo chamber reporting go away.
+
+Just to be clear though I don't consider myself as any kind of security 
+expert or even a hacker. 3 years ago I barely knew what BusyBox was. I'm 
+simply a persistent and rational problem solver. If you think that I've 
+bothered with all this just to elevate my own status as some mythical 
+hacker god you've not understood much of what I've said so far. If I had 
+to dumb down my message to non-technical people I'd say that any idiot 
+could've done what I've done and that is exactly what makes the current 
+situation facing the Internet so dangerous. There will be plenty of 
+idiots after me. 
+
+Why did I go on Hack Forums with the moniker 'janit0r' and brag about 
+bricking 200,000 devices back in January 2017, then, if I wasn't simply 
+trying to flex a savant-like hacking acumen to the world? This too was 
+an attempt to solve a problem. I knew then with reasonable certainty that 
+I had bricked over 200k telnet-accessible devices, but without knowing 
+the size of the vulnerable device pool the number could've simply been a 
+drop in the bucket that nobody had even noticed. At the time I started 
+thinking 'you know, it's too bad I couldn't just join Hack Forums and ask 
+the botnet operators if they've noticed 200k missing devices..' As stupid 
+as the idea sounded it gave me some informal data points which were in 
+line with my own multi-protocol mitigation estimates. I knew then with 
+reasonable certainty that the impact had been significant.
+
+If you're willing to accept the idea that a person could simply be an 
+altruistic problem solver then my actions should hopefully look rational
+and line up congruously with this hypothesis. I've maintained a low 
+profile for most of my career (if you can call it that) and only started 
+publishing information once I felt that it was required in order to 
+reverse the dangerous trend of people no longer taking the IoT risks 
+seriously enough. Make no mistake, the IoT problem is so huge that no 
+single person can ever solve it by themselves. It'll require government 
+interventions and significant changes to industry attitudes. After a 
+relatively quiet 2017 and the farcical 'cry wolf' hysteria over the IoT 
+Reaper botnet I sensed a shift in the zeitgeist. I felt the pre-2016 
+apathy returning. Security researchers hoarsely shouting about new IoT 
+threats from their restricted vantage points were saturating the public's 
+attention span with misinformation. Mirai had become yesterday's news. In 
+a sense I'm now trying to solve a problem of my own making, but it's a 
+better quality problem to tackle than the one where the likes of Dyn, 
+Akamai, and OVH kept withering under increasingly costly volumetric 
+attacks. This problem is also one that'll unsolve itself pretty quickly
+if people prefer to go back to the old days.
+
+In this article I'll discuss yet another ISP-specific case in another 
+English-speaking country, namely Telkom of South Africa. This case will
+give you another perspective on the massive ISP-related problems we're
+currently facing.
+
+
+--[ 2 - The Case of Telkom South Africa 
+
+  "The most secure computer in the world is one not connected to the 
+   Internet: that's why we recommend Telkom ADSL." 
+                                                        - @TelkomRSA
+
+Admittedly the case of Telkom of South Africa isn't that unique or even 
+interesting, but it's a story that has to be told in order to give you a 
+better perspective of the complexities involved in forcing negligent ISPs 
+to correct their security problems. The problems involving Telkom are 
+representative of the issues with many large ISPs outside US and RIPE 
+network space. Very similar stories could be (and perhaps will be) told 
+about ISPs such as BSNL, PLDT, PT Telkom (Indonesia), Maroc Telecom, Sri 
+Lanka Telecom, Movistar (in various LACNIC countries), Oi Brazil, 
+Fibertel Argentina, Wateen Pakistan, Digicel, C&W in LACNIC space, Yota 
+of Nicaragua, VNPT, Ogero Telecom, Telefonica in various LACNIC countries,
+and a bunch of ISPs in Iran, Russia and China that I'm not going to 
+pretend to understand the names or AS relationships of.
+
+In Internet Chemotherapy Part 2 I dicussed Rogers of Canada. In this case 
+bricking routers appeared to be highly effective solution for forcing the 
+ISP to secure its network following the extraordinary security blunder of 
+its supplier. In Part 3 I talked about the case of a PCCW subsidiary in 
+Britain against which I've unsuccessfully tried every remedy except for 
+bricking (I know I jokingly call bricking my 'Plan B' but in reality it's 
+often been a plan Z). If you thought that by leaking the wireless 
+credentials of the Media Force and KeySurf hotspots I'd be able to force 
+some kind of reaction from PCCW or Optify/Keycom you're sadly mistaken. 
+Four weeks later I'm still as much in control of their network as a year 
+ago. The ISP simply doesn't care. Perhaps somebody with a Twitter account 
+could ping CTO @boggits and find out why he is (or was) too busy to manage 
+his network or pay attention to all obvious warning signs of a compromise? 
+'Plan B' is coming.
+
+Neither Part 2 or 3 will give you a realistic picture of what's required
+to clean heavily soiled networks in most parts of the world, however. You 
+might think that bricking devices is the obvious panacea that'll quickly 
+fix all of the world's problems and perhaps even cure cancer but sadly 
+the picture isn't as clear as that and that's what Part 4 will be about.
+
+
+--[ 3 - Background information on Telkom ZA's security issues
+
+During 2017 I spent time examining the TR069/64 SOAP vulnerability 
+(CVE-2016-10372) and experimented with various payload tweaks to see what 
+worked and what didn't. As a reminder, this vulnerability basically 
+allowed you to connect to the modem's TR069 interface port (usually port 
+7547, but often enough also 5555 and even 80) and issue a SOAP request 
+like this:
+
+POST /UD/act?1 HTTP/1.1
+Host: 127.0.0.1:7547
+User-Agent: Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)
+SOAPAction: urn:dslforum-org:service:Time:1#SetNTPServers
+Content-Type: text/xml
+Content-Length: 502
+
+<?xml version="1.0"?><SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"><SOAP-ENV:Body><u:SetNTPServers xmlns:u="urn:dslforum-org:service:Time:1"><NewNTPServer1>`halt`</NewNTPServer1><NewNTPServer2>`route del default`</NewNTPServer2><NewNTPServer3>`iptables -A OUTPUT -j DROP`</NewNTPServer3><NewNTPServer4></NewNTPServer4><NewNTPServer5></NewNTPServer5></u:SetNTPServers></SOAP-ENV:Body></SOAP-ENV:Envelope>
+
+An interesting (and significant) edge case was a set of routers where the 
+exploit seemingly worked (in that the modem accepted the tainted string 
+injection) but the commands did not get executed at least immediately (if 
+ever) on the router. 
+
+One such edge case device was a modem created by Aztech which was widely 
+used by both Telkom ZA and an ISP from the Philippines called Globe 
+Telecom (formerly Bayan). The Aztech devices would happily accept the new 
+tainted NTP configurations but then nothing happened.
+
+On examining these devices a bit further it became apparent that the 
+exploit would overwrite the device's /etc/ntp.sh contents but it wasn't 
+clear how often this was executed (if at all). A typical /etc/ntp.sh 
+script on an attacked modem would end up looking like this post-injection:
+
+/userfs/bin/ntpclient -s -c 1 -l -h "`reboot` time.windows.com time-a.timefreq.bldrdoc.gov" &
+
+Realizing that there may be a periodic trigger which could easily be 
+overwritten by another botnet I evolved my TR069/064 payload set to 
+include commands designed to disable the vulnerable modems before they 
+could be commandeerer for malicious purposes in a periodic lottery. SOAP 
+requests such as LANEthernetInterfaceConfig:1#SetEnable, 
+WANEthernetInterfaceConfig:1#SetEnable, WANIPConnection:1#SetEnable and 
+WANPPPConnection:1#SetEnable seemed effective against a wide range of 
+semi-exploitable routers including the Aztech modems used by Telkom ZA.
+
+While assessing Telkom's device pool I also noticed they had a large 
+number of D-Link devices which were deployed with default passwords and 
+were reconfigurable over the WAN. If you look through my leaked http 
+payloads you can find one such Telkom-specific payload by searching for 
+the string 'telkomdlink'
+
+Around the beginning of fall I had also discovered some (apparently) 
+0-day RCEs in 4G routers using the MediaTek chipset. You can see my 
+mitigations for these by searching for the string 'mediatek' in the 
+leaked http payloads. At least some of the Huawei LTE modems sold by 
+Telkom appeared to be vulnerable to the 'mediatekrpc' payload. It should 
+be noted that the 'mtguest' telnet payloads are also related to these 
+MediaTek http payloads, often these default login telnet accounts are 
+also present on vulnerable 4G routers. 
+
+There were also many other vulnerable device types on the Telkom network
+but as these probably weren't supplied by Telkom I'm not accounting for
+these separately.
+
+It should also be noted that none of the above issues would've mattered 
+much had the ISP deployed their gear with a modicum of competency. Had 
+control ports been filtered from WAN access there would have been no 
+feasible way for me (or blackhats for that matter) to interact with any
+of the devices en masse. 
+
+
+--[ 4 - Timelines and Metrics
+
+By late July I felt like I had conducted enough research to engage in 
+what I jokingly called my 'TR069 World Tour' (since the project taught 
+me a lot about different ISPs and markets outside the US). 
+
+On August 2nd-4th my 'IoS Roomba' did its initial pass over Telkom South 
+Africa's heavily soiled network. After this initial broadside I gave it a 
+two-week breather in order to give the ISP time to fix its issues, after 
+which my botnet returned on August 19th for a permanent spot-clean. A 
+monthly timeline of my botnet's activity vs the Telkom ZA network is 
+shown below:
+
+                        Telkom   MediaTek
+ Month         TR069    D-Link        RPC      Other
+
+ Jul 2017        246         0          0        783
+ Aug 2017     159411      1771          0      31519
+ Sep 2017      11203      4249       3180      20394
+ Oct 2017       8196      2145       2577      14997
+ Nov 2017       9225      2303       2077      15492
+ Dec 2017       4278       765        604       8925
+ Jan 2018       3716       670        268       7245
+
+The above counts are monthly numbers of unique-IP device interactions 
+which resulted in a device timeout (i.e. device stopped responding). The 
+impact of the new TR069 payloads and the spot-cleaning is very apparent 
+in August 2017, but it's disappointing to note the slow rate of reduction 
+since then. When reviewing Telkom customer statements in social media it 
+appears that many vulnerable Aztech devices were simply reset (as 
+directed by the ISP) and plugged back in with vulnerable configurations. 
+Although you might call the 94% reduction in vulnerable devices between 
+August and January a big improvement it should be noted that it took 6 
+months to realize this result. Compare this with the 48 hour response 
+time of Rogers Canada or even the 5-day turnaround by Infostrada Italy.
+
+There's ample evidence to suggest that Telkom became aware of the 
+different vulnerabilities (perhaps with the exception of the MediaTek 
+RCE issue as it was and maybe still is a 0-day) pretty quickly, and that 
+makes the lackluster response to the event even more disappointing. Based 
+on the social media record Telkom simply took a 'not our problem, buy a 
+new modem' approach to any Telkom-supplied device that was out of 
+warranty, and the mitigations were left to the user community to figure 
+out on their own. Surely there should've been someone around at Telkom 
+who would've figured out that the problem could be quickly contained with 
+a few edge router ACLs?
+
+It may be interesting to look at the effects of the initial pass, 
+'breather' and 'spot-clean' in a bit more detail. Here is a timeline with 
+daily granularity:
+
+                       Telkom  MediaTek
+Day           TR069    D-Link       RPC      Other
+
+2017-08-01      284         0         0         74
+2017-08-02    56318         0         0        738
+2017-08-03    31791         0         0       1241
+2017-08-04     3712         0         0       1731
+2017-08-05        7         0         0        518
+2017-08-06        9         0         0        381
+2017-08-07       26         0         0        241
+2017-08-08      340         0         0        456
+2017-08-09        5         0         0        330
+2017-08-10        1         0         0        375
+2017-08-11        5         0         0        215
+2017-08-12        4         0         0        438
+2017-08-13        3         0         0        381
+2017-08-14        2         0         0        522
+2017-08-15        8         0         0        462
+2017-08-16        6         0         0        411
+2017-08-17        5         0         0        477
+2017-08-18        4         0         0        369
+2017-08-19    23137         0         0       2454
+2017-08-20    18830         0         0       2673
+2017-08-21    18693         0         0       2337
+2017-08-22     8379         0         0       1644
+2017-08-23      341         0         0       1410
+2017-08-24      219         0         0       1335
+2017-08-25      286         5         0       1614
+2017-08-26      372       339         0       1956
+2017-08-27      259       158         0       1341
+2017-08-28      438       334         0       1347
+2017-08-29      480       259         0       1605
+2017-08-30      308       142         0       1527
+2017-08-31      680       536         0       2046
+2017-09-01      733       396         0       1491
+2017-09-02      642       269         0       1299
+2017-09-03      506       135         0        729
+2017-09-04      247        86         0        753
+2017-09-05      217       252        61        873
+2017-09-06      378       178        97        630
+2017-09-07      390       154       167        771
+2017-09-08      527       254        96        579
+2017-09-09      539       303        69        336
+2017-09-10      403        85       158        318
+2017-09-11      322        69       227        447
+2017-09-12      460       241       226        504
+2017-09-13      442       159       189        426
+2017-09-14      398       173       195        432
+2017-09-15      372       224       168        510
+
+As before these numbers represent unique IP device interactions of 
+specific types which ended in a device timeout (i.e device interactions 
+where the port was still responsive after the payload sequence was 
+completed are NOT counted). In the above timeline the unique IP filter 
+is applied per day. Note that there probably is a very large number of 
+dupes in the TR069 dataset due to users performing repeated factory 
+resets on them (as directed by the ISP).
+
+One interesting detail in the above table is that the number of 'Other' 
+types of vulnerable devices (this includes everything else that my 
+botnet was able to mitigate) does not decline nearly as rapidly as 
+the TR069 pool. I believe this effect is partly due to Aztech users 
+switching to alternative routers and devices when the primary ISP devices 
+failed or appeared unstable. This effect should not be underestimated by 
+anyone attempting to mitigate vulnerable ISP device pools: removing one 
+set of vulnerable routing devices from circulation will almost certainly 
+introduce new potentially vulnerable substitutes. Thus a broad range of 
+mitigations and a long-term approach are important. Expect to keep 
+scrubbing for at least 6 months when dealing with ISPs outside the US and 
+Europe. There are no quick fixes in this realm. 
+
+You might wonder what the small numbers during the two week 'breather' 
+are. These are simply devices that ended up getting caught organically 
+through automatic countermeasures (not part of any dedicated AS-specific 
+cleanup sweep). 
+
+
+--[ 5 - The Social Media Record
+
+The above timeline numbers will make better sense when cross-correlated 
+against the social media record of the cleanup event. I've done my best 
+to extract meaningful signals out of the white noise in such data. I'm
+also focusing mainly on the period from August 19th onward as the ISP
+was well aware of the Aztech issues by then and had a fix.
+
+
+8/2 2017:
+
+* downdetector.co.za user PJ Gibbons says: 'Confirmed with telkom. 
+  National outage. Working on problem. No eta.'
+
+* downdetector.co.za user Ian jiawain says: 'Just got off the phone after 
+  an hour of waiting and they state that there is an outage in the whole 
+  country, they are unsure of the origin of the outage or what may have 
+  caused this but apparently their engineers are currently working on it 
+  and it should be up later tonight or tomorrow...'
+
+
+8/4 2017:
+
+* downdetector.co.za user Mari writes: 'managed to get through to Telkom 
+  now. Apparently the fault is not with Telkom's lines, but with Aztech's 
+  routers, but our Aztech router came from Telkom and has their name on 
+  it. Not resolved telephonically, they had to log a fault, but cannot 
+  give an indication of when it might be resolved.'
+
+o Twitter user @Kishen1389 says: '@TelkomZA My internet hasn't been 
+  working since Wednesday. I have an Aztech modem. Call Centre says that 
+  Telkom has an issue with it!'
+
+
+8/5 2017:
+
+* downdetector.co.za user John Wood writes: 'It seems that the Telkom 
+  internet issue is actually not a line fault but rather a modem or 
+  router issue. I have had no internet for three days. I eventually got 
+  hold of 10210 and asked them to check the line. Line tested ok so i 
+  took the Aztech router to telkom and asked them to replace it. I did 
+  land up paying for a new router but brought it home, plugged it all in 
+  and everything is back up and working the way that it is supposed to 
+  be.'
+
+* Twitter user @Aslam_Levy writes: 'Finally got through to #Telkom. I had 
+  to visit a store. Everyone who got their Aztech routers are affected. 
+  Manufacturer update by Monday'
+
+
+8/20/2017: 
+
+* Twitter user @iMeang says: 'Telkom had a national fault with the aztec 
+  modems today... at 1 am internet crashed'
+
+* downdetector.co.za user Paul Tarwireyi says: 'Telkom Internet was down 
+  since this morning. Apparently, this problem is affecting all Aztech 
+  routers. I have changed to my old D-link and I am back online.'
+
+* downdetector.co.za user Lourens Liebenberg says: 'Also woke up to no 
+  internet, have an Aztech router. Tried several resets on my router the 
+  it works for 5 minutes and just goes down again. Earlier this month was 
+  down for 14 days.'
+
+* downdetector.co.za user Moureen Durandt says: 'Am gatvol of Telkom 
+  internet issues. Aztech router Re -set last week by Telkom. Would not 
+  give me a new one. Down again'
+
+* downdetector.co.za user Abdul says: 'This is the second time this month 
+  that this Aztec modem is a problem. Why? We damn purchased this modem 
+  from Telkom! Telkom should then recall all their modems and replace 
+  their customers with ones that actually work. I am fed up with Telkom! 
+  They do not even answer thier faults reporting line.'
+
+* downdetector.co.za user VG says: 'Am worried. Have the same problem 
+  with my aztec router today. Looks like its an ongoing issue from dates 
+  on the comments below yet when i called telkom today they simply said 
+  its an unknown problem that occurre today and they are working on it! 
+  That was after half a dozen tries to get through, dropped calls with 
+  agents, different stories at each agent, etc.'
+
+
+8/21 2017: 
+
+* Twitter user @ceciledorfling says: 'Telkom allows "guests" to hack into 
+  Aztech routers! How could "guests" be allowed to tap into Aztech 
+  routers? Please resolve this matter asap.' 
+  
+* downdetector.co.za user SandyG says: 'Just called Telkom Store at 
+  Bayside Center Table View. They say Telkom stores are NOT swapping out 
+  the problem Aztec routers. They will be emailing instructions on how to 
+  reconfigure the router. If this is the same as simply resetting the 
+  user password then what a waste of time!!!! Tried that yesterday and 
+  it worked for about 5 minutes. Haven't had access to the internet 
+  since!!!'
+  
+* downdetector.co.za user Warren Grobler says: 'Just come back from a 
+  Telkom shop in Canal Walk. They are swopping out Aztech Routers,they 
+  say this is an issue that's going to be ongoing.Take your old router
+  with if you go to a shop.'
+  
+* downdetector.co.za user Abdyl: 'Reset my Telkom Aztec router, worked ...
+  For a while .... This morning, not working again! Durban, Overport 
+  area.'
+
+* Twitter user @Adam_Adammr writes: 'Resetting Aztech modem doesn't work. 
+  And if it does, it does not last. Why is Telkom selling these Aztech 
+  modems if they are so problematic.'
+  
+* Official Twitter account of @TelkomZA says: 'We're aware of connection 
+  issues with Aztech routers & are awaiting feedback from the vendor. 
+  Instructions to reset: [Aztech Router - How to Reset]' 
+  
+* Twitter user @Jeffrey_K_za says: 'The AZTech issue is with NTP server 
+  setting, which keep resetting. Set induina.saix.net and it works! 
+  Update firmware.'
+  
+* Twitter user @Shovaan1408 says: 'I found a solution, log into your 
+  router. Go into advance mode under internet change the status to 
+  activated worked for me now'
+  
+* community.telkom.co.za postings about TR069 issue. Customers are 
+  suspecting some kind of ISP screwup.
+  
+
+8/22 2017:
+
+* community.telkom.co.za user ruchel says: 'I'm experiencing the same 
+  problems with my Aztech router since the beginning of August - Telkom 
+  Agent just advised I do a firmware update'  
+  
+* community.telkom.co.za user Manfred says: 'I spoke to a very intelligent 
+  lady at the Telkom HelpLine yesterday. She told me that my router can 
+  be replaced as I am still under the 2 year contract I signed. HOWEVER, 
+  when I took the router to the Telkom Store in Centurion Mall a very 
+  unhlpefull and agitated manager told me that there is only a one year 
+  guarantee on these routers. I left after an argument. Telkom will do 
+  nothing to help. This is very frustrating, and I will now go and buy a 
+  new router. Any ideas on the best model to get?'
+  
+* community.telkom.co.za user Vernita says: 'This weekend every day I had 
+  to reset back to factory settings and the internet lasts for an hour or 
+  so. I have reset router since saturday, probably 20 times! Not a line 
+  problem. Ive googled all the time and Telkom does not even issue 
+  statements in this regard.'
+  
+* Official Twitter account @TelkomZA says: 'Hi, we are busy with the 
+  solution of the AZTECH router and as soon as we have it, we will 
+  advice. ^MB'
+  
+* downdetector.co.za user richard182 says: 'In Durbanville, still have 
+  the old Netgear router and getting nothing at all. So Telkom can stop 
+  blaming Aztec and take some of the blame on their own shoulders.'
+  
+* downdetector.co.za user Noah Kwini says: 'Got cut off whilst I'm busy 
+  with techinical assistance. They don't call back. I had to phone again , 
+  hold for for another +/- 40 minutes. They claim it's a Aztec router 
+  problems. Reset and get going for 6 minutes bombed out again. Travelled 
+  to Telkom for configuration again. It bombed again in less than hour. 
+  Went back again this morning. Cannot be fixed. Renew the contract to 
+  get a different router'
+  
+* downdetector.co.za user Abdul says: 'Been to Telkom Musgrave Durban, 
+  they keep pinning it on warranty. It does not have anything to do with 
+  a warranty. It's their problem. They cannot make it ours. Telkom 
+  manager agreed to loan us a 3g dongel up until issue gets resolved. 
+  Will keep you posted. They say they are waiting for head office to give 
+  them the go ahead to swop out units for other modems. Everyone, please 
+  go in and kick up a fuss. Don't accept any reason for not replacing 
+  this faulty service. Let's unite and make a difference for all Aztec 
+  Telkom users. They must resolve this!'
+  
+
+8/23 2017:
+
+* downdetector.co.za user Nobody Important Abdul writes: 'I think it is 
+  the router, Telkom have done something + the router is the issue. I 
+  have had to factory reset mine like 10 times already. Also happens to 
+  be 14 months since I got it, and the warranty is only 12... great!'
+
+
+8/24 2017:
+
+* An anonymous downdetector.co.za user says: 'Just so that you people are 
+  aware, there is a new vulnerability discovered on routers, hackers have 
+  figured out how to DDoS routers through TR-069 NTP. It's happening 
+  Globally, not just localized, over 40 million devices are affected by 
+  this.' 
+  (Note that the 40 million global figure is way obsolete by this point)
+
+
+8/28 2017:
+
+* Increasing amounts of Telkom ZA data customers on cellular and other 
+  connections are complaining about poor bandwidth. This is a somewhat 
+  common side-effect of an ISP's DSL or cable device pool getting 
+  disabled. It's conceivable that at least a portion of Telkom's DSL 
+  users switched to alternative connections (such as mobile data) and 
+  that this saturated what may have been an already congested network. 
+
+* downdetector.co.za user Lol wrote: 'My Telkom business line has been 
+  down since 20 August. After 5 calls to Telkom and spending hours on my 
+  landline and carrying out the usual: "Straighten out the gem clip, 
+  insert it in the back of the modem etc....." This does not work! I 
+  received a CRK to say the problem has been resolved. The problem has 
+  NOT being resolved. Today 28 August Telkom has failed to restore the 
+  internet on my Telkom Business account.'
+
+
+8/29 2017: 
+
+* mybroadband.co.za user bees wrote (about the new D-Link payload): 
+  'Client complained about no internet. Went to side to find SSID changed 
+  to TELKOMHACKED, password still the same, and the Internet Connection 
+  (pppoe under WAN connection) completely gone. Router's admin password 
+  wasn't on default. Support user's password however was still on 
+  TelkomDlink12345. Support that's how they got in. Telkom as ISP. Just 
+  FYI to change support password as well when configuring these modems.'
+  
+
+September 2017:
+
+* Twitter user @Ozayr8 wrote: 'Hey @TelkomZa its been more than three 
+  weeks and still no internet and no technician has come to see what the 
+  problem is.'
+
+* community.telkom.co.za gets a new forum posting titled: 'This is a 
+  guide for everyone getting TELKOMHACKED on their router SSID'
+
+* downdetector.co.za user Lol writes: 'Telkom down since 20 August 2017. 
+  On 31 August a Telkom technician came to the premises and could not 
+  identify the problem i.e.cannot connect to the Internet. I was then 
+  told to take the Aztec router to a Telkom Shop and get a new router?'
+  
+* Building on the congestion observations Twitter user @kapilijaggeth 
+  says: '@TelkomZa your Wi-Fi went from the best to worst in the country 
+  in a space of one month. Your service is pathetic!'
+  
+* downdetector user Pete says: 'OK me again. Telkom visited my house 
+  again. The service personnel "convinced" me that the Aztech 700WR 
+  WiFi router is on the blink (literally and configuratively they say). 
+  I should now rather buy their "new" D-Link N300 router at R799.00 
+  (sigh)'
+
+* Social media also sees a number of complaints about LTE problems when 
+  the MediaTek RPC payload goes active. 
+  
+
+--[ 6 - Further Analysis 
+
+You should understand that Telkom ZA is far more representative of a 
+typical cleanup case than the likes of Infostrada or Sierra Tel. Typical 
+ISP cleanup cases are 80/20 problems - you can mitigate a majority of the 
+vulnerable device pool in a short amount of time, but getting rid of the 
+remaining problem devices is usually a lengthy effort. In many cases it's 
+unlikely that the ISP will have competent technical staff to effectively 
+resolve the situation (if it did it wouldn't have had the problem to 
+begin with). In this case profiteering seems to have been a motive for 
+the slow ISP response.
+
+Some of my primary observations in the Telkom ZA case are:
+
+* There didn't seem to be any Internet-visible effort from Telkom ZA to 
+  get users to apply necessary security fixes to the modems, nor has the 
+  ISP filtered port 7547 on its own network. The ISP's 'Aztech Router - 
+  How to Reset' support article STILL does not say anything about 
+  upgrading firmware or anything about disabling TR069 after the reset. 
+  As a result many customers will simply keep resetting their vulnerable 
+  routers ad nauseam without the core problem getting fixed.
+
+* Instead the ISP appears to have seen its router configuration problem 
+  as an opportunity to sell new routers to its customers. This is 
+  ethically very dubious since the old routers were clearly fixable and
+  the ISP knew it. 
+
+* The WAN vulnerability could've also been fixed with a network-wide ACL 
+  but again the ISP has neglected to do so at any point during the past 6 
+  months. 
+
+Telkom basically sold dangerously configured routers to its customers and 
+then forced them to buy replacements instead of helping customers to fix 
+them. From what I can tell it looks like the ISP got away with it.
+
+Key lessons:
+
+* ISP cleanups outside US and Europe will probably take months. Doing a 
+  half-assed job may make the situation even worse.
+
+* Expect corruption/profiteering/mismanagement/incompetency/etc. 
+
+* Expect insecure substitute devices to appear on a vulnerable network
+  soon after one set of insecure devices is removed.
+
+So, what's next? After the ISP-specific case examples of Part 2, 3 and 4 
+you'll hopefully have a more balanced view of the different types of ISP 
+problems and the difficulties involved in achieving lasting results. If 
+I'm able to continue writing I will discuss general mitigation strategies 
+and techniques next, and from there head into more technical device-
+specific territory. I may bring up some other ISP-specific cases if I
+think there's general interest. 
+
+
+'There are only two ways of telling the complete truth - anonymously and
+ posthumously.'                                     
+                                                         - Thomas Sowell

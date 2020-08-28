@@ -1,0 +1,7 @@
+j here. A quick note to say that I'm still around and in good health. Yes, Pt 9 of my writeup (available at http://depastedihrn3jtw.onion/show.php?md5=bfe590279a2a77e0a3438b596653ab85) is as far as I got to for now. The response I got to Pt 9 gave me some pause at the time, and soon after I got distracted by another unrelated project. It has been pretty quiet on the IoT front until recently anyway..
+
+If you've read Parts 2-9 (you can find the links in above comment) you should have a good amount of knowledge of the state of IoT in 2016-2018. Perhaps enough has been said. Then again, perhaps it would still be worth for me to complete the writeup? 
+
+Perhaps even do a little more..?
+
+janit0r

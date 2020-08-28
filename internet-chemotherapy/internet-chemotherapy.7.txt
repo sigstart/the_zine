@@ -1,0 +1,1411 @@
+5/5 2018
+
+
+   ___       _                       _   
+  |_ _|_ __ | |_ ___ _ __ _ __   ___| |_ 
+   | || '_ \| __/ _ \ '__| '_ \ / _ \ __|
+   | || | | | ||  __/ |  | | | |  __/ |_ 
+  |___|_| |_|\__\___|_|  |_| |_|\___|\__|
+                                        
+    ____ _                          _   _                                
+   / ___| |__   ___ _ __ ___   ___ | |_| |__   ___ _ __ __ _ _ __  _   _ 
+  | |   | '_ \ / _ \ '_ ` _ \ / _ \| __| '_ \ / _ \ '__/ _` | '_ \| | | |
+  | |___| | | |  __/ | | | | | (_) | |_| | | |  __/ | | (_| | |_) | |_| |
+   \____|_| |_|\___|_| |_| |_|\___/ \__|_| |_|\___|_|  \__,_| .__/ \__, |
+                                                            |_|    |___/ 
+
+                                                                   PART 7
+
+                                   The IoT Battlefield: Default Passwords
+
+ by Dr Cyborkian a.k.a. janit0r - conditioner of 'terminally ill' devices
+
+
+
+Previous parts can be found at least here:
+
+Original (Project Introduction): 
+https://0x00sec.org/t/internet-chemotherapy/4664
+
+Part 2 (ISPs: Lessons from the Rogers Hi-Speed Internet incident): 
+http://depastedihrn3jtw.onion.to/show.php?md5=ee7136ac48fa59fba803b9fbcbc6d7b9 (Clearnet)
+http://depastedihrn3jtw.onion/show.php?md5=ee7136ac48fa59fba803b9fbcbc6d7b9 (Tor)
+
+Part 3 (ISPs: The baffling case of Optify/Keycom's mismanagement):
+http://depastedihrn3jtw.onion.to/show.php?md5=7e7bfe406315f120d8ed325ffb87670b (Clearnet)
+http://depastedihrn3jtw.onion/show.php?md5=7e7bfe406315f120d8ed325ffb87670b (Tor)
+
+Part 4 (ISPs: The dirty case of Telkom South Africa)
+http://depastedihrn3jtw.onion.to/show.php?md5=11830bc79a079f5b7be33bcca84641f6 (Clearnet)
+http://depastedihrn3jtw.onion/show.php?md5=11830bc79a079f5b7be33bcca84641f6 (Tor)
+
+Part 5 (The IoT Battlefield: Device Stability)
+http://depastedihrn3jtw.onion.to/show.php?md5=8ca2bcadeb75137725557a24848d3c17 (Clearnet)
+http://depastedihrn3jtw.onion/show.php?md5=8ca2bcadeb75137725557a24848d3c17 (Tor)
+
+Part 6 (The IOT Battlefield: Mitigation Methods)
+http://depastedihrn3jtw.onion.to/show.php?md5=2c822a990ff22d56f3b9eb89ed722c3f (Clearnet)
+http://depastedihrn3jtw.onion/show.php?md5=2c822a990ff22d56f3b9eb89ed722c3f (Tor)
+
+
+
+
+--[ 1 - Introduction
+
+I promised you we'd get on to something more fun after last part's 
+stultifying tedium. We'll now review password statistics of devices 
+that I've managed to exfiltrate user databases from through various 
+vulnerabilities. 
+
+This isn't all about fun and games, either. I'm hoping that the 
+information can be beneficial to anyone who's designing UX for future 
+IoT devices. It'll serve as a reminder of the dangers of predictable 
+default passwords as well (more often than not the end-user will never
+change them). 
+
+We'll also review regional differences by comparing geolocated subsets. 
+In part 6 of Internet Chemotherapy I argued for government 
+interventions being the only realistic long-term solution to the IoT 
+safety woes, but in this part we'll get an initial feeling for where 
+such regulatory interventions may become most effective. 
+
+
+--[ 2 - Device Passwords: AVTECH IP Camera/NVR/DVR Devices
+
+Back in March 2017 I created a http payload exploiting the wide range of 
+vulnerabilities listed in EDB-40500. It's in my leaked payload module 
+under the name 'avtech'. One of the more significant vulnerabilities in
+the Avtech API was the ability for a remote unauthenticated user to 
+retrieve the userlist of any NVR/DVR device in plaintext and the payload 
+makes use of this weakness to escalate privileges. As a by-product I've 
+also collected a reasonable database of logins used on Avtech units for 
+over the past year.
+
+First, just to get a general feel for the life cycle of the payload, 
+let's look at the monthly vulnerable unit counts for unique IP:ports:
+
+ Month      Count    Top 3 Country Codes           Top Ports
+
+ 2017-03   113723    MX (14%) VN (14%) LK (14%)    80 (50%) 81 (15%)
+ 2017-04    93277    LK (36%) ID (12%) VN  (9%)    80 (46%) 8080 (12%)
+ 2017-05    82632    LK (39%) ID (13%) TH (10%)    80 (33%) 88 (15%)
+ 2017-06    22000    LK (21%) MX (14%) TH (12%)    80 (30%) 81 (18%)
+ 2017-07    30483    LK (18%) TH (17%) MX (12%)    80 (23%) 81 (19%)
+ 2017-08    23183    MX (21%) ID (18%) TH (15%)    80 (26%) 81 (20%)
+ 2017-09    34264    MX (19%) ID (13%) TH (13%)    80 (23%) 81 (21%)
+ 2017-10    51921    MX (15%) ID (15%) TH (14%)    80 (20%) 81 (18%)
+ 2017-11    32956    TH (18%) ID (18%) MX (13%)    80 (21%) 81 (19%)
+ 2017-12    14516    ID (20%) TH (18%) MX (10%)    80 (24%) 81 (18%)
+ 2018-01     5933    TH (21%) ID (15%) VN (12%)    80 (34%) 81 (20%)
+ 2018-02    11579    TH (21%) MX (13%) ID (10%)    80 (29%) 81 (18%)
+ 2018-03    12546    TH (19%) MX (16%) ID (12%)    80 (27%) 81 (18%)
+ 2018-04    10865    TH (20%) ID (15%) VN (11%)    80 (27%) 81 (18%)
+ 
+For the Top Country Codes and Top Ports columns the associated percentage 
+is the ratio of the monthly dataset which matched the specified country 
+or port. The total number of unique IP:port:login triplets seen over the 
+period (in exploitable transactions) was 457,338.
+
+As can be seen the payload had its most significant impact immediately
+after the payload went live around 16/3. I believe this initial activity
+was mainly related to an IoT botnet known as Imeij, and it took three
+months for the overall vulnerable device numbers to settle. After Imeij
+had 'checked out' the numbers saw a slight resurgence in the fall of 2017 
+when the large scale cleanup campaigns were carried out against different 
+regions. It's sobering to realize that there are STILL new vulnerable 
+units coming online over 1.5 years after the vulnerabilities were made 
+public.
+
+Ports 80 and 81 seem to be the most popular ones for the Avtech units,
+with 8080 an overall third. Interestingly even port 88 had some initial
+weight in the device pool as can be seen in the Top Ports column.
+
+Looking at the Top 3 Country Codes column you may notice country codes 
+such as MX (Mexico), VN (Vietnam), LK (Sri Lanka), ID (Indonesia) and 
+TH (Thailand) featuring heavily throughout the period. Based on the
+vulnerability data Avtech's primary markets were only in six countries.
+Below is a table of the Top 50 countries (counting unique IP:port:login 
+triplets):
+
+   #  Country                  Count  Ratio    Most Common Login
+
+   1  Sri Lanka                72278 (15.8%)   admin/admin (99%)
+   2  Mexico                   61490 (13.4%)   admin/admin (57%)
+   3  Indonesia                60452 (13.2%)   admin/admin (71%)
+   4  Thailand                 56034 (12.3%)   admin/admin (61%)
+   5  Vietnam                  43855  (9.6%)   admin/admin (71%)
+   6  Malaysia                 32996  (7.2%)   admin/admin (70%)
+   7  Italy                     7846  (1.7%)   admin/admin (50%)
+   8  Germany                   7560  (1.7%)   admin/admin (39%)
+   9  Argentina                 6987  (1.5%)   admin/admin (46%)
+  10  Singapore                 6696  (1.5%)   admin/admin (74%)
+  11  United States             6000  (1.3%)   admin/admin (60%)
+  12  Hong Kong                 5804  (1.3%)   admin/admin (63%)
+  13  The Philippines           5346  (1.2%)   admin/admin (67%)
+  14  Great Britain             5330  (1.2%)   admin/admin (56%)
+  15  Taiwan                    4947  (1.1%)   admin/admin (66%)
+  16  Greece                    4941  (1.1%)   admin/admin (37%)
+  17  Turkey                    4907  (1.1%)   admin/admin (70%)
+  18  Brazil                    4447  (1.0%)   admin/admin (50%)
+  19  Australia                 3119  (0.7%)   admin/admin (61%)
+  20  Israel                    2959  (0.6%)   admin/admin (63%)
+  21  Czech Republic            2946  (0.6%)   admin/admin (50%)
+  22  Russia                    2393  (0.5%)   admin/admin (51%)
+  23  Morocco                   2077  (0.5%)   admin/admin (68%)
+  24  Romania                   2077  (0.5%)   admin/admin (52%)
+  25  Portugal                  2040  (0.4%)   admin/admin (50%)
+  26  France                    1891  (0.4%)   admin/admin (59%)
+  27  Panama                    1704  (0.4%)   admin/admin (72%)
+  28  Algeria                   1682  (0.4%)   admin/admin (92%)
+  29  The Netherlands           1635  (0.4%)   admin/admin (41%)
+  30  Venezuela                 1590  (0.3%)   admin/admin (52%)
+  31  Cambodia                  1476  (0.3%)   admin/admin (69%)
+  32  Canada                    1426  (0.3%)   admin/admin (45%)
+  33  South Africa              1414  (0.3%)   admin/admin (53%)
+  34  Sweden                    1389  (0.3%)   admin/admin (75%)
+  35  Hungary                   1366  (0.3%)   admin/admin (28%)
+  36  Colombia                  1358  (0.3%)   admin/admin (50%)
+  37  Peru                      1356  (0.3%)   admin/admin (57%)
+  38  India                     1333  (0.3%)   admin/admin (38%)
+  39  Egypt                     1300  (0.3%)   admin/admin (72%)
+  40  Bangladesh                1267  (0.3%)   admin/admin (76%)
+  41  Dominican Republic        1136  (0.2%)   admin/admin (74%)
+  42  Spain                     1086  (0.2%)   admin/admin (41%)
+  43  Japan                     1078  (0.2%)   admin/admin (76%)
+  44  Poland                    1072  (0.2%)   admin/admin (34%)
+  45  Saudi Arabia              1031  (0.2%)   admin/admin (74%)
+  46  Iran                       841  (0.2%)   admin/admin (71%)
+  47  Tunisia                    781  (0.2%)   admin/admin (61%)
+  48  Pakistan                   736  (0.2%)   admin/admin (63%)
+  49  Austria                    695  (0.2%)   admin/admin (43%)
+  50  Macedonia                  657  (0.1%)   admin/admin (51%)
+
+As you can see over 70% of the vulnerable Avtech device pool was 
+concentrated in just six countries, Sri Lanka, Mexico, Indonesia, 
+Thailand, Vietnam and Malaysia. When looking at the country-specific 
+stats perhaps the most interesting piece of information is in the 'Most 
+Common Login' column. As expected the most common login used was 
+admin/admin for every single country (this is the default password that 
+the device ships with) but curiously the ratio of default password use 
+varies significantly from one country to another.
+
+In order to compare the difference more effectively let's reorder the
+list by the ratio of default password use (only including countries with
+more than 1000 samples, with a smaller % being better): 
+
+   #  Country                  Count  Ratio    Most Common Login
+
+   1  Hungary                   1366  (0.3%)   admin/admin (28%)
+   2  Poland                    1072  (0.2%)   admin/admin (34%)
+   3  Greece                    4941  (1.1%)   admin/admin (37%)
+   4  India                     1333  (0.3%)   admin/admin (38%)
+   5  Germany                   7560  (1.7%)   admin/admin (39%)
+   6  Spain                     1086  (0.2%)   admin/admin (41%)
+   7  The Netherlands           1635  (0.4%)   admin/admin (41%)
+   8  Canada                    1426  (0.3%)   admin/admin (45%)
+   9  Argentina                 6987  (1.5%)   admin/admin (46%)
+  10  Portugal                  2040  (0.4%)   admin/admin (50%)
+  11  Czech Republic            2946  (0.6%)   admin/admin (50%)
+  12  Italy                     7846  (1.7%)   admin/admin (50%)
+  13  Colombia                  1358  (0.3%)   admin/admin (50%)
+  14  Brazil                    4447  (1.0%)   admin/admin (50%)
+  15  Russia                    2393  (0.5%)   admin/admin (51%)
+  16  Venezuela                 1590  (0.3%)   admin/admin (52%)
+  17  Romania                   2077  (0.5%)   admin/admin (52%)
+  18  South Africa              1414  (0.3%)   admin/admin (53%)
+  19  Great Britain             5330  (1.2%)   admin/admin (56%)
+  20  Mexico                   61490 (13.4%)   admin/admin (57%)
+  21  Peru                      1356  (0.3%)   admin/admin (57%)
+  22  France                    1891  (0.4%)   admin/admin (59%)
+  23  United States             6000  (1.3%)   admin/admin (60%)
+  24  Australia                 3119  (0.7%)   admin/admin (61%)
+  25  Thailand                 56034 (12.3%)   admin/admin (61%)
+  26  Israel                    2959  (0.6%)   admin/admin (63%)
+  27  Hong Kong                 5804  (1.3%)   admin/admin (63%)
+  28  Taiwan                    4947  (1.1%)   admin/admin (66%)
+  29  The Philippines           5346  (1.2%)   admin/admin (67%)
+  30  Morocco                   2077  (0.5%)   admin/admin (68%)
+  31  Cambodia                  1476  (0.3%)   admin/admin (69%)
+  32  Turkey                    4907  (1.1%)   admin/admin (70%)
+  33  Malaysia                 32996  (7.2%)   admin/admin (70%)
+  34  Vietnam                  43855  (9.6%)   admin/admin (71%)
+  35  Indonesia                60452 (13.2%)   admin/admin (71%)
+  36  Panama                    1704  (0.4%)   admin/admin (72%)
+  37  Egypt                     1300  (0.3%)   admin/admin (72%)
+  38  Dominican Republic        1136  (0.2%)   admin/admin (74%)
+  39  Saudi Arabia              1031  (0.2%)   admin/admin (74%)
+  40  Singapore                 6696  (1.5%)   admin/admin (74%)
+  41  Sweden                    1389  (0.3%)   admin/admin (75%)
+  42  Japan                     1078  (0.2%)   admin/admin (76%)
+  43  Bangladesh                1267  (0.3%)   admin/admin (76%)
+  44  Algeria                   1682  (0.4%)   admin/admin (92%)
+  45  Sri Lanka                72278 (15.8%)   admin/admin (99%)
+
+Interestingly the Avtech devices in Sri Lanka rarely if ever had their 
+factory defaults modified, and an astonishing 99% of the vulnerable 
+device pool was left with the default login admin/admin. Algeria is a 
+close second with an equally scary 92% default password deployment
+ratio. This systemic failure by device owners to secure their devices
+in these two countries may perhaps be explained by factors like language 
+barriers (poor localization) or even broken UI skinning by some local 
+vendor, but I don't have enough information to speculate about the 
+shortcoming yet.
+
+It's equally interesting to note that countries like Hungary (28%),
+Poland (34%), Greece (37%), India (38%) and Germany (39%) seem to be 
+doing much better than the average country in terms of securing their 
+factory default logins. Given the small numbers of devices in these 
+countries, perhaps the Avtech gear is more of a semi-professional niche 
+product in these regions? 
+
+Finally, let's move on to the top 100 overall common logins for the 
+vulnerable Avtech units (counting unique IP:port:login triplets):
+
+   #  Login                      Count  Ratio    Top Country for Login
+   
+   1  admin/admin               311756 (68.2%)   Sri Lanka (23%)
+   2  admin/0000                  3438  (0.8%)   Mexico (16%)
+   3  admin/1234                  1491  (0.3%)   Thailand (25%)
+   4  admin/123456                1199  (0.3%)   Vietnam (25%)
+   5  admin/12345                 1031  (0.2%)   Thailand (22%)
+   6  admin/mona9n                1004  (0.2%)   Thailand (100%)
+   7  admin/admin1                 863  (0.2%)   Thailand (27%)
+   8  admin/admin123               707  (0.2%)   Indonesia (37%)
+   9  admin/system1*               577  (0.1%)   Mexico (100%)
+  10  admin/1111                   522  (0.1%)   Thailand (36%)
+  11  admin/adminxo                496  (0.1%)   Malaysia (99%)
+  12  tumcctv/tumcctv              494  (0.1%)   Thailand (99%)
+  13  admin/26102911#Eglo          462  (0.1%)   Mexico (100%)
+  14  admin/nimda                  364  (0.1%)   Thailand (32%)
+  15  admin/adminxo123             362  (0.1%)   Malaysia (100%)
+  16  admin/55113                  359  (0.1%)   Thailand (100%)
+  17  admin/110901                 338  (0.1%)   Indonesia (100%)
+  18  admin/password               327  (0.1%)   Thailand (71%)
+  19  admin/admin1234              322  (0.1%)   Indonesia (30%)
+  20  admin/admin12345             288  (0.1%)   Thailand (64%)
+  21  admin/1688                   279  (0.1%)   Indonesia (97%)
+  22  admin/qwerty                 271  (0.1%)   Indonesia (28%)
+  23  admin/9999                   266  (0.1%)   Vietnam (45%)
+  24  admin/ADMIN                  249  (0.1%)   Mexico (74%)
+  25  admin/CCO1113                241  (0.1%)   Argentina (100%)
+  26  admin/8888                   231  (0.1%)   Indonesia (28%)
+  27  admin/jenny                  222  (0.0%)   Malaysia (81%)
+  28  hitech/12345                 214  (0.0%)   Thailand (100%)
+  29  admin/0251                   211  (0.0%)   Indonesia (99%)
+  30  LBC/D4m6R0n9                 208  (0.0%)   Indonesia (100%)
+  31  admin/GPOl3m                 199  (0.0%)   Mexico (100%)
+  32  admin/2468                   198  (0.0%)   Mexico (94%)
+  33  admin/sl7663                 194  (0.0%)   Malaysia (96%)
+  34  admin/inf_153624             185  (0.0%)   Brazil (100%)
+  35  sistemas/4b494b45            181  (0.0%)   Mexico (100%)
+  36  art/2399                     174  (0.0%)   Thailand (100%)
+  37  admin/4321                   169  (0.0%)   Malaysia (33%)
+  38  azul/gpovizion               168  (0.0%)   Mexico (100%)
+  39  javier/TricoDON              165  (0.0%)   Mexico (100%)
+  40  admin/2209                   163  (0.0%)   Thailand (92%)
+  41  admin/gabriele               161  (0.0%)   Germany (100%)
+  42  admin/funcity-2000           155  (0.0%)   Indonesia (100%)
+  43  admin/11111                  153  (0.0%)   Thailand (48%)
+  44  admin/Admin                  152  (0.0%)   Malaysia (26%)
+  45  admin/admin88                148  (0.0%)   Indonesia (90%)
+  46  admin/1973                   147  (0.0%)   Vietnam (81%)
+  47  admin/1105                   146  (0.0%)   Thailand (88%)
+  48  admin/abcd1234               144  (0.0%)   Vietnam (51%)
+  49  admin/tnetakshar             136  (0.0%)   India (100%)
+  50  admin/admininno              133  (0.0%)   Thailand (100%)
+  51  admin/adminsilva             132  (0.0%)   Mexico (100%)
+  52  admin/861203499              130  (0.0%)   Mexico (100%)
+  53  admin/35711389               129  (0.0%)   Thailand (100%)
+  54  admin/1212                   125  (0.0%)   Indonesia (39%)
+  55  jasa/jasasacv                125  (0.0%)   Mexico (100%)
+  56  admin/ch!nd@m0               124  (0.0%)   Thailand (100%)
+  57  admin/111111                 123  (0.0%)   Mexico (38%)
+  58  admin/00000                  122  (0.0%)   Indonesia (23%)
+  59  admin/M@nager99              122  (0.0%)   Thailand (100%)
+  60  admin/000000                 122  (0.0%)   Indonesia (20%)
+  61  admin/1122                   119  (0.0%)   Thailand (71%)
+  62  admin/st3805                 118  (0.0%)   Mexico (100%)
+  63  surasak/0816422099           118  (0.0%)   Thailand (100%)
+  64  anan/1185                    116  (0.0%)   Thailand (100%)
+  65  admin/ctc123                 115  (0.0%)   Thailand (100%)
+  66  admin/242528                 113  (0.0%)   Vietnam (100%)
+  67  admin/12345678               113  (0.0%)   Indonesia (32%)
+  68  admin/610707                 111  (0.0%)   Taiwan (100%)
+  69  admin/admin9                 110  (0.0%)   Vietnam (56%)
+  70  admin/DVRCAMARASEGURIDAD2017 110  (0.0%)   Mexico (100%)
+  71  admin/kameres333221          109  (0.0%)   Greece (100%)
+  72  admin/jad123                 109  (0.0%)   Morocco (86%)
+  73  admin/balu1302               109  (0.0%)   Hungary (100%)
+  74  administrador/gmalo          109  (0.0%)   Mexico (100%)
+  75  admin/pantanin               109  (0.0%)   Thailand (100%)
+  76  admin/kd28011962             108  (0.0%)   Germany (100%)
+  77  net./admin                   107  (0.0%)   Thailand (100%)
+  78  admin/GODSAVEPSA             106  (0.0%)   Thailand (100%)
+  79  admin/pcj                    106  (0.0%)   Thailand (100%)
+  80  admin/654321                 105  (0.0%)   Canada (30%)
+  81  admin/cctv01                 104  (0.0%)   Thailand (100%)
+  82  admin/camel                  102  (0.0%)   Mexico (100%)
+  83  admin/manager                101  (0.0%)   Thailand (100%)
+  84  admin/6683                   100  (0.0%)   Malaysia (86%)
+  85  admin/8161                    98  (0.0%)   Germany (100%)
+  86  admin/fatyma                  98  (0.0%)   Mexico (100%)
+  87  admin/gasper                  97  (0.0%)   Mexico (100%)
+  88  admin/adminadmin              97  (0.0%)   Indonesia (28%)
+  89  admin/201349                  97  (0.0%)   Morocco (77%)
+  90  admin/1982                    94  (0.0%)   South Africa (60%)
+  91  admin/010393                  93  (0.0%)   Vietnam (100%)
+  92  admin/Nord55Sicur55           93  (0.0%)   Italy (100%)
+  93  admin/rasa74                  93  (0.0%)   Mexico (100%)
+  94  admin/tonnumresort            92  (0.0%)   Thailand (100%)
+  95  admin/wizardauto3             92  (0.0%)   Thailand (99%)
+  96  admin/11223344!               91  (0.0%)   Greece (100%)
+  97  admin/mor016                  90  (0.0%)   Mexico (100%)
+  98  admin/ingenieroenrique        89  (0.0%)   Mexico (100%)
+  99  admin/123                     89  (0.0%)   Indonesia (46%)
+ 100  admin/tien88                  88  (0.0%)   Vietnam (100%)
+
+The overall global likelihood of an Avtech device being deployed on the 
+open Internet with the default factory login admin/admin appears to be a 
+depressing 68.2%. More than 2/3 of the device owners managed to get 
+their camera on the Internet without taking this most basic of protective 
+measures.
+
+It's also curious to note a regional preference for some common 
+passwords. For example, of all the devices with the login admin/1111 a 
+notable 36% of them were in Thailand, and the equally simplistic login 
+admin/admin123 was particularly common in Indonesia (37%). Many of the 
+common popular logins seem to be duplicates specific to individual 
+security vendors. For example, units with the login 'admin/26102911#Eglo' 
+are hosted on both ports 80 and 88 and on IPs which geolocate all over 
+Mexico. 
+
+One thing to keep in mind with the Avtech device pool is that depending 
+on the device and firmware the device may only be vulnerable to a few (or
+none) of the RCEs, which is why alternative bricking approaches are 
+attempted by the 'avtech' payload. In case the RCEs fail the payload will 
+try to modify the IP configuration to force the device offline until it's 
+reconfigured by the owner. If even that measure fails then the payload 
+tries to execute an old DoS exploit from 2013 against the device. I 
+believe the vast majority of the devices that were vulnerable to the hard 
+bricking RCEs vanished in the first few weeks due to the interactions 
+with the Imeij botnet. Due to the varying outcomes of the payload the 
+total numbers quoted in the statistics should be taken with a grain of 
+salt as there are almost certainly many old vulnerable devices 
+reappearing on new IPs.
+
+
+--[ 3 - Device Passwords: Wificam
+
+The payload for the whitelabeled Wificam (CVE-2017-8225) units is
+another payload which ends up attempting many different things against 
+vulnerable devices due to the huge range of vendors and firmware 
+variations. You can find the payload under the name 'wificam' in my
+leaked module source. First it tries to extract the device credentials
+using two different methods, and if either one is successful different 
+RCEs will be tried, and different commands (which have been observed to 
+be effective against specific firmwares) are executed. Against ca 15% 
+of the exposed device pool none of the above will work, and for these 
+units the best we can do is just to force the camera to endlessly 
+patrol up and down and to tamper with some of its display settings. 
+
+An interesting aspect of the Wificam payload's life cycle is that
+although it was created in 16/3 2017 it wasn't very active at first. 
+Due to the passive sensor nature of my botnet only a handful of units 
+(which happened to exist in subnets with other vulnerable devices) were 
+bricked, and it wasn't until May 2017 and the advent of the Persirai 
+botnet that payload device counts started increasing. Let's look at the 
+monthly counts of unique IP:port transactions with vulnerable devices:
+
+ Month      Count    Top 3 Country Codes           Top Ports
+
+ 2017-03     6327    VN (73%) TH  (8%) MY  (7%)    80 (69%) 81 (30%)
+ 2017-04     7640    VN (38%) CN (13%) TH  (9%)    81 (61%) 80 (37%)
+ 2017-05    40030    CN (28%) US (13%) VN (12%)    81 (85%) 80 (14%)
+ 2017-06    29466    CN (24%) VN (17%) US (12%)    81 (79%) 80 (21%)
+ 2017-07    21997    VN (25%) CN (17%) US (10%)    81 (70%) 80 (29%)
+ 2017-08     5387    VN (26%) TH (18%) MX (11%)    81 (67%) 80 (28%)
+ 2017-09    36783    CN (21%) VN (20%) US (10%)    81 (76%) 80 (21%)
+ 2017-10    49383    CN (30%) VN (14%) US  (7%)    81 (83%) 80 (14%)
+ 2017-11    38414    CN (27%) VN (16%) US  (7%)    81 (82%) 80 (14%)
+ 2017-12    15763    VN (20%) CN (20%) US  (8%)    81 (78%) 80 (15%)
+ 2018-01     4589    VN (39%) TH (14%) UY (13%)    81 (63%) 80 (33%)
+ 2018-02    12265    VN (22%) CN (12%) US (11%)    81 (76%) 80 (17%)
+ 2018-03    10952    VN (26%) CN (12%) US  (9%)    81 (72%) 80 (20%)
+ 2018-04    10770    VN (24%) CN (11%) US (10%)    81 (73%) 80 (18%)
+
+For Wificam devices port 81 seems to have been the most common one by
+far, with port 80 being an second alternative and ports 82 and 8888 
+sharing a third place. The period between 16/3 2017 and 4/30 2018 
+registered a total of 278,578 unique IP:port:login triplets.
+
+Can we learn anything interesting about the Wificam vendors and password
+practices, then? Let's start by looking at the country-specific stats and
+the most common logins:
+
+   #  Country                  Count  Ratio    Most Common Login
+
+   1  China                    63702 (22.9%)   admin/ (61%)
+   2  Vietnam                  60020 (21.5%)   admin/admin (53%)
+   3  United States            20657  (7.4%)   admin/ (34%)
+   4  Thailand                 16064  (5.8%)   admin/ (58%)
+   5  Mexico                   11832  (4.2%)   admin/ (73%)
+   6  Italy                    10492  (3.8%)   admin/888888 (36%)
+   7  Great Britain             9912  (3.6%)   admin/ (38%)
+   8  Malaysia                  8738  (3.1%)   admin/ (53%)
+   9  Turkey                    5797  (2.1%)   admin/admin (50%)
+  10  Russia                    4988  (1.8%)   admin/ (40%)
+  11  France                    4728  (1.7%)   admin/ (37%)
+  12  India                     3704  (1.3%)   admin/ (45%)
+  13  Poland                    3571  (1.3%)   admin/ (43%)
+  14  Uruguay                   3472  (1.2%)   admin/ (60%)
+  15  Chile                     3161  (1.1%)   admin/ (50%)
+  16  Brazil                    2928  (1.1%)   admin/ (40%)
+  17  Israel                    2648  (1.0%)   admin/ (38%)
+  18  Hong Kong                 2592  (0.9%)   admin/ (31%)
+  19  Argentina                 2342  (0.8%)   admin/ (39%)
+  20  Spain                     2325  (0.8%)   admin/ (34%)
+  21  Greece                    2187  (0.8%)   admin/admin (36%)
+  22  Australia                 2145  (0.8%)   admin/ (37%)
+  23  Taiwan                    1789  (0.6%)   admin/ (33%)
+  24  Iran                      1713  (0.6%)   admin/ (50%)
+  25  Germany                   1517  (0.5%)   admin/ (27%)
+  26  Portugal                  1428  (0.5%)   admin/ (34%)
+  27  Ukraine                   1356  (0.5%)   admin/ (37%)
+  28  South Korea               1298  (0.5%)   admin/ (37%)
+  29  The Netherlands           1209  (0.4%)   admin/ (31%)
+  30  Romania                   1103  (0.4%)   admin/admin (25%)
+  31  Colombia                  1021  (0.4%)   admin/ (44%)
+  32  Canada                     986  (0.4%)   admin/ (31%)
+  33  Hungary                    929  (0.3%)   admin/ (40%)
+  34  Pakistan                   821  (0.3%)   admin/ (70%)
+  35  Morocco                    808  (0.3%)   admin/ (50%)
+  36  Singapore                  748  (0.3%)   admin/ (37%)
+  37  Sweden                     738  (0.3%)   admin/ (26%)
+  38  Ireland                    733  (0.3%)   admin/ (41%)
+  39  Belgium                    719  (0.3%)   admin/ (39%)
+  40  Bulgaria                   655  (0.2%)   admin/ (30%)
+
+Just as with the Avtech device pool the vulnerable Wificam devices were 
+heavily concentrated in just a few countries, with China and Vietnam
+being clear leaders and the US, Thailand, Mexico and Italy being the 
+only other countries with device numbers in the 5 digits.
+
+Note the interesting country differences in the Most Common Login column. 
+Although the username of admin with a blank password seems to be the
+typical default password this is clearly not the case for all vendors. 
+In Vietnam the most common password is admin/admin (53% of the
+Vietnamese device pool), and in Italy 36% of the device pool carries
+the common login admin/888888. 
+
+Let's look at the top 25 passwords in the entire dataset to get a 
+better idea of what's going on:
+
+   #  Login                     Count  Ratio    Top Country for Login
+
+   1  admin/                   112221 (40.3%)   China (35%)
+   2  admin/admin               62515 (22.4%)   Vietnam (51%)
+   3  admin/888888               4605  (1.7%)   Italy (83%)
+   4  admin/123456               2431  (0.9%)   China (49%)
+   5  admin/none                 1729  (0.6%)   Thailand (18%)
+   6  admin/admin99              1369  (0.5%)   Italy (33%)
+   7  admin/1234                  846  (0.3%)   Thailand (27%)
+   8  admin/admin123              696  (0.2%)   Vietnam (76%)
+   9  admin/12345                 641  (0.2%)   Vietnam (46%)
+  10  admin/12345678              605  (0.2%)   Vietnam (41%)
+  11  admin/555777                540  (0.2%)   Italy (98%)
+  12  admin/123                   528  (0.2%)   China (46%)
+  13  admin/123456789             463  (0.2%)   Vietnam (47%)
+  14  admin/admin1                419  (0.2%)   Vietnam (71%)
+  15  g47bYzLz8oXq/               275  (0.1%)   China (35%)
+  16  guest/aa123456              262  (0.1%)   China (99%)
+  17  user/w147258                237  (0.1%)   China (95%)
+  18  admin/abcd1234              216  (0.1%)   Vietnam (87%)
+  19  admin/nano2456              214  (0.1%)   Uruguay (100%)
+  20  hassan/67443                210  (0.1%)   China (42%)
+  21  admin/88888888              207  (0.1%)   China (49%)
+  22  admin/00000000              203  (0.1%)   Thailand (85%)
+  23  chicote/1310                189  (0.1%)   Uruguay (100%)
+  24  admin/adminrober            187  (0.1%)   Uruguay (100%)
+  25  admin/1234567890            184  (0.1%)   Vietnam (40%)
+  26  admin/Apichildomino.43      182  (0.1%)   Uruguay (100%)
+  27  Admin/frank                 179  (0.1%)   United States (50%)
+  28  admin/0000                  174  (0.1%)   China (20%)
+  29  admin/everton               163  (0.1%)   Uruguay (86%)
+  30  admin/p2468                 161  (0.1%)   Iran (99%)
+  31  admin/br1980br1980          158  (0.1%)   Morocco (100%)
+  32  user/user                   152  (0.1%)   Thailand (30%)
+  33  admin/0123456789            139  (0.0%)   China (20%)
+  34  admin/10112013              133  (0.0%)   Uruguay (100%)
+  35  admin/p                     125  (0.0%)   China (62%)
+  36  xanax/                      122  (0.0%)   Thailand (75%)
+  37  admin/000000                118  (0.0%)   China (71%)
+  38  admin/a123456               117  (0.0%)   Vietnam (65%)
+  39  admin/admin1234             110  (0.0%)   Vietnam (71%)
+  40  harwinder/Singhharwinder    107  (0.0%)   India (100%)
+  41  admin/password              107  (0.0%)   United States (45%)
+  42  admin/111111                105  (0.0%)   China (57%)
+  43  admin/abc123                104  (0.0%)   Vietnam (87%)
+  44  admin/1234abcd              103  (0.0%)   Thailand (85%)
+  45  admin/2580                  100  (0.0%)   China (99%)
+  46  admin/1                      98  (0.0%)   China (39%)
+  47  admin/9999                   95  (0.0%)   Thailand (57%)
+  48  admin/admin0005              95  (0.0%)   India (100%)
+  49  admin/admin2                 95  (0.0%)   Vietnam (56%)
+  50  admin/666666                 91  (0.0%)   Vietnam (70%)
+
+Looking at the chart it's clear that although admin/admin and 
+admin/888888 are used as defaults by a few vendors these seem to be 
+limited only to a few countries. Of the admin/admin devices 51% of 
+them were Vietnam, and of the small admin/888888 device pool 83% of 
+them were found in Italy.
+
+Just like with Avtech the numbers should be assumed to be inflated due 
+to the varying effects of the payload. Only a portion of the device pool 
+was hard-brickable. As an estimated 15% of the devices could not be 
+disconnected at all (only the screen and control settings could be 
+tampered with) some rare logins on dynamic IPs are guaranteed to be 
+inflated in the Wificam stats.
+
+
+--[ 4 - Device Passwords: Dahua
+
+I discussed the 'dahua' web payload in the previous part so I won't spend
+much time on describing its background here. One of the by-products of
+the Dahua web payload is a collection of password hashes from devices
+vulnerable to CVE-2017-7927. Since the exploit only requires one hash
+for the authentication bypass this database is by no means complete,
+and only the first administrative account (typically 888888) has been
+extracted. Dahua devices normally have more than user account (even
+the factory default database contains 5 default users) so it's important
+to consider this limitation in the dataset.
+
+Also, another shortcoming with this dataset is that I've actually never 
+tried to crack the actual hashes (because there's no need to in order to
+exploit CVE-2017-7927). Therefore I'm only offering statistics for the
+Generation 2 passwords which account for ca 1/2 of the overall Dahua
+dataset (the Generation 2 hashes share the same 48 bit MD5 format as 
+XiongMai's units, so by coincidence I have tables for reversing many of
+these). 
+
+With these caveats and clarifications out of the way, let's look at the 
+overall payload life cycle (including both Generation 2 and 3 units):
+
+ Month      Count    Top 3 Country Codes           Top Ports
+
+ 2017-03   116107    IN (38%) VN (17%) TR  (7%)    80 (80%) 81 (12%) 
+ 2017-04   106161    IN (37%) VN (12%) TR  (5%)    80 (82%) 81  (9%)
+ 2017-05    51227    IN (25%) LK (10%) TR  (8%)    80 (68%) 81 (18%)
+ 2017-06    58729    IN (59%) LK  (8%) TR  (5%)    80 (78%) 81 (14%)
+ 2017-07   114957    IN (44%) VN  (9%) BR  (7%)    80 (75%) 81 (12%)
+ 2017-08   177565    IN (31%) BR (23%) MX (10%)    80 (79%) 8080 (8%)
+ 2017-09   482913    IN (23%) US (12%) BR  (7%)    80 (75%) 81 (10%)
+ 2017-10   328691    IN (27%) VN (11%) BR  (6%)    80 (71%) 81 (10%)
+ 2017-11   198325    IN (31%) VN (16%) BR  (6%)    80 (74%) 81 (12%)
+ 2017-12    99267    IN (37%) VN (13%) BR  (4%)    80 (77%) 81 (12%)
+ 2018-01    67665    IN (62%) VN (10%) LK  (6%)    80 (83%) 81 (13%)
+ 2018-02    79838    IN (46%) VN (14%) LK  (5%)    80 (78%) 81 (13%)
+ 2018-03    88486    IN (43%) VN (17%) LK  (4%)    80 (76%) 81 (14%)
+ 2018-04    82080    IN (42%) VN (18%) LK  (4%)    80 (77%) 81 (14%)
+
+Port 80 has overwhelmingly been the top port of choice for the Dahua 
+web interface, with port 81 a comfortable second and port 8080 a 
+distant third. A total of 1,884,511 unique IP:port transactions which 
+ended in a password extraction have been processed during the overall 
+life cycle of the payload. 
+
+Some of you will no doubt tally up the numbers for September-December
+that I provided for the Dahua web exploit in the last part and notice
+that the numbers don't quite add up. This is because in the previous
+part I was specifically counting transactions which ended in a timeout
+(a reasonable minimum requirement for assuming a bricking payload 
+actually worked), whereas here I'm just counting unique IP:port 
+transactions which yielded a hash via CVE-2017-7927. The Dahua payload
+required some tweaking to achieve optimal performance and it only 
+achieved reasonable compatibility with all firmwares late in the year.
+For example, I used to carry out an RPC call for configuring the 
+VideoWaterMark table which actually temporarily crashed some units, 
+rendering the rest of the payload sequence ineffective.
+
+Just as with the previous payloads the devices were concentrated heavily
+in a few countries only, but Dahua clearly has a broader global footprint
+than Avtech and Wificam. Below are the combined Generation 2 and 3 
+device counts for unique IP:ports (with Most Common Login ratios being 
+offered for Generation 2 hashes only):
+
+   #  Country                  Count  Ratio    Most Common Login
+
+   1  India                   664183 (35.2%)   888888/888888 (51%)
+   2  Vietnam                 197736 (10.5%)   888888/888888 (61%)
+   3  Brazil                  129303  (6.9%)   888888/888888 (39%)
+   4  United States            82868  (4.4%)   888888/888888 (30%)
+   5  Mexico                   52407  (2.8%)   888888/888888 (69%)
+   6  Sri Lanka                46742  (2.5%)   888888/ntc260 (38%)
+   7  Thailand                 42884  (2.3%)   888888/888888 (74%)
+   8  Chile                    33402  (1.8%)   888888/888888 (68%)
+   9  Poland                   32926  (1.7%)   888888/888888 (51%)
+  10  Spain                    31513  (1.7%)   888888/888888 (55%)
+  11  China                    31505  (1.7%)   888888/888888 (79%)
+  12  Turkey                   30490  (1.6%)   888888/888888 (59%)
+  13  Argentina                30022  (1.6%)   888888/888888 (58%)
+  14  France                   29421  (1.6%)   888888/888888 (55%)
+  15  Malaysia                 28733  (1.5%)   888888/888888 (65%)
+  16  Italy                    26260  (1.4%)   888888/888888 (64%)
+  17  Uruguay                  24510  (1.3%)   888888/888888 (59%)
+  18  South Korea              23242  (1.2%)   888888/888888 (72%)
+  19  Morocco                  22300  (1.2%)   888888/888888 (65%)
+  20  Russia                   21993  (1.2%)   888888/888888 (57%)
+  21  Iran                     19882  (1.1%)   888888/888888 (47%)
+  22  Taiwan                   19506  (1.0%)   888888/888888 (62%)
+  23  Romania                  18562  (1.0%)   888888/888888 (57%)
+  24  Australia                17463  (0.9%)   888888/888888 (49%)
+  25  Colombia                 16219  (0.9%)   888888/888888 (56%)
+  26  Ukraine                  15337  (0.8%)   888888/888888 (55%)
+  27  Great Britain            14832  (0.8%)   888888/888888 (59%)
+  28  Portugal                 11165  (0.6%)   888888/888888 (58%)
+  29  Canada                   10399  (0.6%)   888888/888888 (22%)
+  30  Indonesia                 8781  (0.5%)   888888/888888 (59%)
+  31  Germany                   8205  (0.4%)   888888/888888 (57%)
+  32  Egypt                     7975  (0.4%)   888888/888888 (47%)
+  33  Algeria                   6882  (0.4%)   888888/888888 (68%)
+  34  Bulgaria                  6589  (0.3%)   888888/888888 (61%)
+  35  Pakistan                  6414  (0.3%)   888888/888888 (66%)
+  36  South Africa              5418  (0.3%)   888888/888888 (63%)
+  37  Hong Kong                 5332  (0.3%)   888888/888888 (68%)
+  38  Israel                    5309  (0.3%)   888888/888888 (66%)
+  39  Greece                    5075  (0.3%)   888888/888888 (55%)
+  40  Tunisia                   4645  (0.2%)   888888/888888 (65%)
+  41  Serbia                    4057  (0.2%)   888888/888888 (63%)
+  42  Peru                      3648  (0.2%)   888888/888888 (65%)
+  43  The Netherlands           3527  (0.2%)   888888/888888 (55%)
+  44  Macedonia                 3287  (0.2%)   888888/888888 (66%)
+  45  Cambodia                  3219  (0.2%)   888888/888888 (68%)
+  46  Bolivia                   3033  (0.2%)   888888/888888 (62%)
+  47  Mauritius                 2887  (0.2%)   888888/888888 (70%)
+  48  The Philippines           2872  (0.2%)   888888/888888 (61%)
+  49  Hungary                   2867  (0.2%)   888888/888888 (58%)
+  50  Costa Rica                2857  (0.2%)   888888/888888 (57%)
+
+As expected the factory default 888888/888888 is generally most common
+with the exception of Sri Lanka, where the password 'ntc260' dominates.
+A quick search for "ntc" in Sri Lanka shows there's at least a National
+Transport Commission (ntc.gov.lk) which may or may not be connected with 
+these devices (if they are, I hope they don't reuse this login anywhere 
+else ;). Oddly also admin/vista1 is a very popular alternative login
+for Dahua units in Sri Lanka. 
+
+One comical sidenote about the 888888/888888 account is that it was
+intended as a local-only login account for the Dahua devices, but the
+clueless company then attempted to restrict its remote use through a 
+browser-side Javascript check only. Thus anyone who implemented their 
+API could trivially bypass the login restriction.
+
+Here are the top Dahua Generation 2 hashes (which cover approx 46% of the 
+total hash dataset):
+
+   #  Login                     Count  Ratio    Top Country for Login
+
+   1  888888/888888            451240 (51.9%)   India (23%)
+   2  888888/                   55805  (6.4%)   India (71%)
+   3  admin/admin               33290  (3.8%)   Brazil (42%)
+   4  888888/ntc260             11789  (1.4%)   Sri Lanka (100%)
+   5  admin/vista1               7906  (0.9%)   Sri Lanka (100%)
+   6  888888/123456              6751  (0.8%)   India (62%)
+   7  admin/1234                 5615  (0.6%)   Canada (31%)
+   8  admin/123456               5543  (0.6%)   United States (36%)
+   9  default/tluafed            5179  (0.6%)   India (31%)
+  10  888888/admin               2552  (0.3%)   India (69%)
+  11  888888/999999              2205  (0.3%)   India (45%)
+  12  888888/666666              2041  (0.2%)   India (55%)
+  13  888888/12345               2035  (0.2%)   India (83%)
+  14  admin/                     1899  (0.2%)   India (25%)
+  15  888888/111111              1863  (0.2%)   India (50%)
+  16  admin/000000               1785  (0.2%)   United States (54%)
+  17  ADMIN/12345                1710  (0.2%)   India (37%)
+  18  admin/1111                 1704  (0.2%)   South Korea (77%)
+  19  admin/admin1               1539  (0.2%)   Brazil (23%)
+  20  admin/HASH:(qtizYaQF)      1421  (0.2%)   United States (90%)
+  21  admin/888888               1395  (0.2%)   Brazil (39%)
+  22  888888/777777              1389  (0.2%)   India (35%)
+  23  888888/000000              1354  (0.2%)   India (51%)
+  24  admin/111111               1238  (0.1%)   United States (51%)
+  25  admin/HASH:(diWmrOxt)      1170  (0.1%)   United States (100%)
+  26  admin/12345                 980  (0.1%)   India (22%)
+  27  666666/666666               880  (0.1%)   India (25%)
+  28  888888/654321               828  (0.1%)   India (35%)
+  29  888888/admin123             757  (0.1%)   India (87%)
+  30  888888/admin1               692  (0.1%)   India (48%)
+  31  888888/555555               638  (0.1%)   India (38%)
+  32  admin/654321                628  (0.1%)   United States (34%)
+  33  ADMINISTRATOR/000000        621  (0.1%)   France (19%)
+  34  ADMIN/123456                618  (0.1%)   India (88%)
+  35  888888/1234                 595  (0.1%)   India (53%)
+  36  888888/HASH:(6k2LLttO)      580  (0.1%)   India (100%)
+  37  admin/HASH:(Oxa6hwtd)       573  (0.1%)   United States (99%)
+  38  admin/4321                  562  (0.1%)   India (64%)
+  39  administrator/000000        560  (0.1%)   United States (27%)
+  40  888888/112233               554  (0.1%)   India (27%)
+  41  888888/123123               544  (0.1%)   India (63%)
+  42  admin/HASH:(0qwjfIqQ)       491  (0.1%)   India (85%)
+  43  admin/HASH:(Fo1XvXEF)       485  (0.1%)   Sri Lanka (99%)
+  44  888888/nl8888               483  (0.1%)   Brazil (100%)
+  45  admin/HASH:(2R3wpPc9)       474  (0.1%)   France (100%)
+  46  admin/HASH:(08E6hZyh)       452  (0.1%)   United States (100%)
+  47  admin/HASH:(ijmiluye)       424  (0.0%)   India (100%)
+  48  888888/admin@123            404  (0.0%)   India (96%)
+  49  ADMIN/admin123              400  (0.0%)   India (87%)
+  50  admin/HASH:(HNP6gDwM)       380  (0.0%)   United States (100%)
+  51  admin/HASH:(XBjy0b2r)       352  (0.0%)   France (86%)
+  52  888888/8888888              350  (0.0%)   India (92%)
+  53  admin/112233                342  (0.0%)   Morocco (22%)
+  54  888888/vista1               340  (0.0%)   Sri Lanka (100%)
+  55  ADMIN/                      329  (0.0%)   India (95%)
+  56  admin/1                     324  (0.0%)   Brazil (73%)
+  57  admin/12348                 322  (0.0%)   India (53%)
+  58  admin/HASH:(1HdJbE0C)       310  (0.0%)   United States (100%)
+  59  admin/HASH:(3isStmDO)       307  (0.0%)   India (99%)
+  60  888888/222222               299  (0.0%)   India (47%)
+  61  user/user                   295  (0.0%)   India (41%)
+  62  advanced/000000             291  (0.0%)   United States (22%)
+  63  admin/nimda                 291  (0.0%)   Brazil (26%)
+  64  admin/HASH:(uhYPpNlU)       290  (0.0%)   United States (92%)
+  65  admin/HASH:(8bcYxhC1)       290  (0.0%)   France (100%)
+  66  888888/HASH:(oKtmrlCn)      289  (0.0%)   India (99%)
+  67  888888/123                  277  (0.0%)   India (72%)
+  68  888888/HASH:(sOGBBcHm)      272  (0.0%)   India (100%)
+  69  888888/88888888             266  (0.0%)   India (73%)
+  70  admin/102030                262  (0.0%)   Brazil (87%)
+  71  admin/admin123              255  (0.0%)   India (59%)
+  72  888888/102030               253  (0.0%)   Brazil (80%)
+  73  888888/HASH:(VuAmoWeE)      249  (0.0%)   India (96%)
+  74  888888/HASH:(ZhGb2Wn1)      246  (0.0%)   Sri Lanka (77%)
+  75  admin/alacs                 243  (0.0%)   Brazil (100%)
+  76  admin/9013                  241  (0.0%)   France (61%)
+  77  888888/HASH:(RatH9A9k)      235  (0.0%)   Poland (100%)
+  78  888888/HASH:(y09qA21q)      233  (0.0%)   Argentina (100%)
+  79  admin/999999                225  (0.0%)   United States (29%)
+  80  admin/HASH:(hokhyRii)       221  (0.0%)   United States (66%)
+  81  admin/HASH:(UIorCsCb)       217  (0.0%)   India (99%)
+  82  888888/88888                216  (0.0%)   India (73%)
+  83  888888/987654               216  (0.0%)   India (34%)
+  84  888888/444444               211  (0.0%)   India (23%)
+  85  admin/HASH:(ArftvTFN)       205  (0.0%)   United States (94%)
+  86  admin/7764                  203  (0.0%)   Italy (62%)
+  87  admin/HASH:(ZxDV0LzB)       200  (0.0%)   United States (100%)
+  88  888888/admin@               195  (0.0%)   India (94%)
+  89  888888/8                    194  (0.0%)   India (58%)
+  90  888888/abc123               194  (0.0%)   Vietnam (27%)
+  91  admin/666666                192  (0.0%)   United States (18%)
+  92  888888/8888                 192  (0.0%)   India (29%)
+  93  admin/HASH:(3MneLvxL)       190  (0.0%)   United States (100%)
+  94  888888/1                    190  (0.0%)   India (26%)
+  95  888888/HASH:(xxOPgQdN)      189  (0.0%)   India (100%)
+  96  Guest/666666                186  (0.0%)   India (96%)
+  97  888888/qwerty               185  (0.0%)   India (30%)
+  98  888888/121212               183  (0.0%)   India (33%)
+  99  888888/2580                 181  (0.0%)   India (41%)
+ 100  admin/HASH:(6xyH1qWc)       178  (0.0%)   India (93%)
+
+As you can see there are many uncracked hashes in the Top 100. This is
+not necessarily because they're hard to crack (and you can certainly try
+cracking them yourself with JTR), it's simply because I've never had a
+need to crack them. Of course, just like you I'm a little curious about
+these hashes that only seem to be used in the US so perhaps I'll load
+these up in JTR some evening!
+
+Adding together the ratios of the top default logins we get a combined
+default login probability of 62.7% (51.9 + 6.4 + 3.8 + also 0.6 for 
+default/tluafed). This is slightly better than the devices by other
+manufacturers that we've looked at so far.
+
+Lastly, let's quickly compare how these CVE-2017-7927 Generation 2 and 
+Generation 3 transactions relate (in raw numerical terms) with other 
+Dahua-specific payloads:
+
+ Payload                                     Unique exploited IP:ports
+
+ 'dahua' web payload (soft bricking)         1,884,511 (since 3/23 2017)
+ 'dahuaold' telnet payload (hard bricking)     155,706 (since 11/21 2016)
+ Port 6789 and 19058 mgmt (hard bricking)       53,179 (since 1/5 2017)
+ Port 37777 CVE-2013-6117 (user disclosure)     29,992 (since 1/12 2017)
+ 
+All things being relative it's scary to note that Mirai was exploiting 
+the telnet and management interface vectors, and that their combined 
+count in the wild since 11/21 2016 was 'only' a little over 200,000. As 
+it was (and still is) possible to enable telnet through many of the 
+vulnerable Dahua web interfaces the damage from Mirai or related IoT 
+botnets could've become tenfold in 2017 just due to the severity of 
+CVE-2017-7927. 
+
+It is realizations such as these which fuel my alarmist-sounding rants, 
+and it's also of significant concern that there are still 80,000 new 
+Dahua units vulnerable to CVE-2017-7927 coming online every month. This 
+is one of the reasons why I've not been able to bring myself to switch 
+off my botnet completely yet although it's incredibly dangerous from an 
+OpSec perspective for me to keep running a C2 while I'm writing 
+publically about it. The information I've given out so far will give 
+adversaries a reasonable idea about its likely data transfer rates, etc. 
+so now it's just a matter of time. Perhaps there will soon be enough
+new vulnerabilities for the old ones to no longer matter, and then 
+it'll be easier to pull the plug for good.
+ 
+
+--[ 5 - Device Passwords: XiongMai
+
+The payload 'xionghash' is not really a bricking payload at all, it's
+simply a first stage CVE-2017-7577 password extractor. The primary 
+purpose of the hash extraction was to gain credentials for attacking 
+the control port 9527 through which both hard bricking and soft bricking 
+attacks can reliably be executed. The 'xionghash' payload also carries an 
+additional mitigation measure with it - if the device is still online 
+1.5 hours after the hash is extracted my botnet will carry out a simple 
+DoS attack against the web interface over the next few hours (the purpose 
+of this is to try to annoy the owner to secure the device). The fact that
+this DoS is a crash resulting from a buffer overflow could mean that 
+there's a potentially exploitable vulnerability in these units. Thus the 
+remaining XiongMai device pool should be considered a significant risk to
+the Internet due the large quantities involved. Let's look at the monthly 
+totals:
+
+ Month      Count    Top 3 Country Codes           Top Ports
+
+ 2017-04   144121    TW (22%) TR (20%) LK (15%)    80 (91%) 8080 (6%)
+ 2017-05   164078    TR (23%) LK (18%) TW (14%)    80 (89%) 8080 (7%)
+ 2017-06   139630    TR (25%) IN (16%) LK (16%)    80 (90%) 8080 (7%)
+ 2017-07   223443    TR (17%) VN (17%) IN (14%)    80 (88%) 8080 (7%)
+ 2017-08   231705    IN (17%) BR (15%) TR (12%)    80 (84%) 8080 (13%)
+ 2017-09   743635    VN (22%) BR (12%) IN (10%)    80 (82%) 8080 (15%)
+ 2017-10   976230    VN (21%) BR (15%) UY  (8%)    80 (74%) 8080 (17%)
+ 2017-11  1263839    VN (25%) BR (11%) TH  (7%)    80 (48%) 81 (36%)
+ 2017-12   668758    VN (20%) UY (14%) BR  (8%)    80 (51%) 81 (34%)
+ 2018-01   387644    UY (25%) VN (21%) IN (15%)    80 (55%) 81 (34%)
+ 2018-02   458809    VN (26%) UY (14%) IN (11%)    80 (53%) 81 (34%)
+ 2018-03   518740    VN (30%) UY (11%) IN (10%)    80 (52%) 81 (35%)
+ 2018-04   485279    VN (29%) UY (11%) IN (10%)    80 (52%) 81 (35%)
+
+Only 200,824 successful control port attacks have been carried out 
+since Apr 18 2017 which means that there are still a large number of 
+vulnerable devices out there. For the hash extraction vulnerability and 
+the buffer overflow DoS I've seen 5,183,427 unique web IP:ports since I 
+started to track this dangerous device pool in April 2017 (no doubt
+a significant portion are dynamic IP duplicates). 
+
+For comparison, the telnet payload for XiongMai (which was another prime 
+target for Mirai) has been executed against 232,504 unique IP:ports since 
+11/21 2016. You can find this telnet payload under the name 'xiongmai'
+in my leaked module source along with the DoS condition for the XiongMai
+web interface. If anyone manages to escalate the web interface's buffer 
+overflow into a working exploit there's probably still at least 200,000 
+devices available for botting. 
+
+Here's the country-specific Top 50 for vulnerable XiongMai units:
+
+   #  Country                  Count  Ratio    Most Common Login
+
+   1  Vietnam                1272423 (24.5%)   admin/ (55%)
+   2  Uruguay                 576040 (11.1%)   admin/ (29%)
+   3  India                   539351 (10.4%)   admin/ (61%)
+   4  Brazil                  508820  (9.8%)   admin/ (50%)
+   5  Thailand                265904  (5.1%)   admin/ (70%)
+   6  Turkey                  222044  (4.3%)   admin/ (52%)
+   7  Sri Lanka               194218  (3.7%)   admin/ (33%)
+   8  Morocco                 144932  (2.8%)   admin/ (60%)
+   9  Malaysia                123773  (2.4%)   admin/ (60%)
+  10  China                   120292  (2.3%)   admin/ (85%)
+  11  Argentina               108093  (2.1%)   admin/ (48%)
+  12  Taiwan                  105662  (2.0%)   admin/ (45%)
+  13  Russia                   99929  (1.9%)   admin/ (47%)
+  14  Iran                     99871  (1.9%)   admin/ (41%)
+  15  Indonesia                91498  (1.8%)   admin/ (63%)
+  16  Italy                    90965  (1.8%)   admin/ (53%)
+  17  Great Britain            49190  (0.9%)   admin/ (50%)
+  18  Romania                  39683  (0.8%)   admin/ (47%)
+  19  South Africa             27907  (0.5%)   admin/ (65%)
+  20  Hungary                  27689  (0.5%)   admin/ (43%)
+  21  Greece                   26102  (0.5%)   admin/ (53%)
+  22  Mexico                   25976  (0.5%)   admin/ (55%)
+  23  Colombia                 23213  (0.4%)   admin/ (48%)
+  24  Venezuela                22222  (0.4%)   admin/ (51%)
+  25  United States            21698  (0.4%)   admin/ (53%)
+  26  Mauritius                19588  (0.4%)   admin/ (58%)
+  27  Poland                   18933  (0.4%)   admin/ (31%)
+  28  Pakistan                 18845  (0.4%)   admin/ (70%)
+  29  Australia                18680  (0.4%)   admin/ (54%)
+  30  Chile                    18188  (0.4%)   admin/ (53%)
+  31  Ukraine                  15943  (0.3%)   admin/ (35%)
+  32  Germany                  15673  (0.3%)   admin/ (36%)
+  33  Kazakhstan               14587  (0.3%)   admin/ (53%)
+  34  France                   13378  (0.3%)   admin/ (54%)
+  35  Egypt                    12426  (0.2%)   admin/ (47%)
+  36  Spain                    11088  (0.2%)   admin/ (41%)
+  37  The Philippines           7802  (0.2%)   admin/ (60%)
+  38  Bulgaria                  7520  (0.1%)   admin/ (40%)
+  39  Algeria                   7431  (0.1%)   admin/ (40%)
+  40  South Korea               7347  (0.1%)   admin/ (69%)
+  41  Dominican Republic        6045  (0.1%)   admin/ (66%)
+  42  Israel                    5519  (0.1%)   admin/ (50%)
+  43  Senegal                   5369  (0.1%)   admin/ (76%)
+  44  Macedonia                 5325  (0.1%)   admin/ (63%)
+  45  Peru                      5325  (0.1%)   admin/ (54%)
+  46  Jamaica                   4898  (0.1%)   admin/ (64%)
+  47  Hong Kong                 4643  (0.1%)   admin/ (37%)
+  48  Jordan                    4371  (0.1%)   admin/ (50%)
+  49  Lebanon                   4300  (0.1%)   admin/ (56%)
+  50  Portugal                  4007  (0.1%)   admin/ (40%)
+
+The default login of admin without a password dominates the device pool
+in all countries, yet interestingly the range of the country-specific 
+ratio is as diverse as it has been with the other devices we've reviewed 
+so far. Although it may appear that Uruguay is doing particularly well 
+on the default password front (29%) I believe that a significant number 
+of the Urugay devices have a second common default password as you can
+see from the next chart.
+
+The Top 100 common XiongMai passwords found on vulnerable units:
+
+   #  Login                     Count  Ratio    Top Country for Login
+
+   1  admin/                  2678930 (51.7%)   Vietnam (26%)
+   2  admin/123456             202777  (3.9%)   Vietnam (28%)
+   3  admin/admin              150098  (2.9%)   India (51%)
+   4  admin/siera              124910  (2.4%)   Uruguay (97%)
+   5  admin/123abc456           38534  (0.7%)   Vietnam (99%)
+   6  admin/1234                38258  (0.7%)   Uruguay (15%)
+   7  admin/12345               34013  (0.7%)   India (16%)
+   8  admin/888888              25261  (0.5%)   Vietnam (33%)
+   9  admin/686868              14812  (0.3%)   Vietnam (99%)
+  10  admin/1                   12074  (0.2%)   Brazil (57%)
+  11  admin/654321              11899  (0.2%)   Vietnam (25%)
+  12  admin/111111              10488  (0.2%)   Vietnam (32%)
+  13  admin/admin123            10396  (0.2%)   Vietnam (38%)
+  14  admin/123                  9999  (0.2%)   Sri Lanka (26%)
+  15  admin/112233               8786  (0.2%)   Vietnam (47%)
+  16  admin/666666               8003  (0.2%)   Vietnam (33%)
+  17  admin/1111                 7733  (0.1%)   Vietnam (20%)
+  18  admin/900009               7513  (0.1%)   India (99%)
+  19  admin/4321                 6997  (0.1%)   Uruguay (57%)
+  20  admin/0000                 6895  (0.1%)   Sri Lanka (18%)
+  21  admin/999999               6307  (0.1%)   Vietnam (56%)
+  22  admin/789789               6257  (0.1%)   Vietnam (98%)
+  23  admin/121234               5669  (0.1%)   Sri Lanka (100%)
+  24  admin/123321               5468  (0.1%)   Uruguay (43%)
+  25  admin/666                  5338  (0.1%)   Uruguay (98%)
+  26  admin/HASH:(HIH1DDWN)      5048  (0.1%)   Uruguay (100%)
+  27  admin/admin12345           4857  (0.1%)   Vietnam (72%)
+  28  admin/abc123               4681  (0.1%)   Vietnam (73%)
+  29  admin/123123               4651  (0.1%)   Vietnam (60%)
+  30  admin/000000               4587  (0.1%)   Vietnam (25%)
+  31  admin/4226                 4446  (0.1%)   Uruguay (100%)
+  32  admin/HASH:(6Q3aCeLF)      4446  (0.1%)   Uruguay (100%)
+  33  admin/admin1               4417  (0.1%)   Vietnam (31%)
+  34  admin/333999               4145  (0.1%)   Vietnam (100%)
+  35  admin/12345678             4135  (0.1%)   Vietnam (39%)
+  36  admin/abcd1234             4032  (0.1%)   Vietnam (79%)
+  37  admin/54321                3351  (0.1%)   India (24%)
+  38  admin/123456789            3346  (0.1%)   Vietnam (69%)
+  39  admin/1397                 3324  (0.1%)   Uruguay (99%)
+  40  admin/HASH:(7cVpAJbN)      3303  (0.1%)   Great Britain (99%)
+  41  admin/9999                 3010  (0.1%)   Vietnam (55%)
+  42  admin/102030               2862  (0.1%)   Brazil (79%)
+  43  admin/aa888888             2724  (0.1%)   Taiwan (99%)
+  44  admin/123654               2591  (0.0%)   Vietnam (32%)
+  45  admin/8888                 2454  (0.0%)   Vietnam (31%)
+  46  admin/HASH:(uZeLoOFn)      2302  (0.0%)   Vietnam (100%)
+  47  admin/137484               2293  (0.0%)   Uruguay (100%)
+  48  admin/HASH:(APCtN4Wu)      2249  (0.0%)   Uruguay (100%)
+  49  admin/0808                 2222  (0.0%)   Uruguay (84%)
+  50  admin/1122                 2197  (0.0%)   Vietnam (21%)
+  51  admin/1987                 2173  (0.0%)   Sri Lanka (65%)
+  52  admin/HASH:(r8VnpD49)      2071  (0.0%)   Uruguay (100%)
+  53  admin/88888888             2050  (0.0%)   Vietnam (50%)
+  54  admin/admin1234            1984  (0.0%)   Vietnam (26%)
+  55  admin/0504                 1970  (0.0%)   Uruguay (99%)
+  56  admin/1974                 1903  (0.0%)   Sri Lanka (56%)
+  57  admin/nimda                1897  (0.0%)   India (34%)
+  58  admin/HASH:(EONE4gCu)      1868  (0.0%)   Sri Lanka (100%)
+  59  admin/159753               1861  (0.0%)   Brazil (37%)
+  60  admin/123122               1845  (0.0%)   Vietnam (100%)
+  61  admin/13579                1792  (0.0%)   Vietnam (17%)
+  62  admin/1010                 1791  (0.0%)   Sri Lanka (44%)
+  63  admin/777777               1790  (0.0%)   Vietnam (43%)
+  64  admin/2016                 1750  (0.0%)   Morocco (24%)
+  65  admin/493593               1713  (0.0%)   Vietnam (100%)
+  66  admin/HASH:(LUd6ouxz)      1697  (0.0%)   Vietnam (100%)
+  67  admin/2017                 1655  (0.0%)   Vietnam (16%)
+  68  admin/1212                 1645  (0.0%)   Uruguay (20%)
+  69  admin/HASH:(oq4dRhQ1)      1643  (0.0%)   Uruguay (100%)
+  70  admin/498641               1569  (0.0%)   Brazil (99%)
+  71  admin/1976                 1564  (0.0%)   Sri Lanka (34%)
+  72  admin/HASH:(XzWokUha)      1551  (0.0%)   Thailand (100%)
+  73  admin/168168               1546  (0.0%)   Vietnam (52%)
+  74  admin/tech                 1527  (0.0%)   Vietnam (100%)
+  75  admin/HASH:(QAY7RFSP)      1502  (0.0%)   Sri Lanka (100%)
+  76  admin/HASH:(VMEqwuX0)      1497  (0.0%)   Thailand (100%)
+  77  admin/121212               1491  (0.0%)   Vietnam (33%)
+  78  admin/HASH:(Kv3kQY7J)      1490  (0.0%)   Uruguay (100%)
+  79  admin/HASH:(en2E8kAh)      1472  (0.0%)   Uruguay (100%)
+  80  admin/HASH:(p05Ed1Pr)      1462  (0.0%)   Vietnam (100%)
+  81  admin/qwerty               1458  (0.0%)   Uruguay (23%)
+  82  admin/1581                 1418  (0.0%)   Uruguay (100%)
+  83  admin/999999999            1397  (0.0%)   Vietnam (96%)
+  84  admin/666888               1385  (0.0%)   Vietnam (85%)
+  85  admin/2580                 1374  (0.0%)   Brazil (20%)
+  86  admin/admin@123            1366  (0.0%)   India (59%)
+  87  admin/HASH:(IZuFAfhZ)      1325  (0.0%)   India (100%)
+  88  admin/55555                1324  (0.0%)   Sri Lanka (25%)
+  89  admin/2015                 1310  (0.0%)   Morocco (26%)
+  90  admin/HASH:(jRbIWcqv)      1286  (0.0%)   Uruguay (100%)
+  91  admin/1208                 1271  (0.0%)   Uruguay (94%)
+  92  admin/abc12345             1250  (0.0%)   Vietnam (70%)
+  93  admin/1973                 1238  (0.0%)   Uruguay (53%)
+  94  admin/1453                 1205  (0.0%)   Turkey (96%)
+  95  admin/7777777              1176  (0.0%)   Sri Lanka (49%)
+  96  admin/987654               1174  (0.0%)   India (22%)
+  97  admin/2222                 1161  (0.0%)   Uruguay (24%)
+  98  admin/1995                 1159  (0.0%)   Sri Lanka (79%)
+  99  admin/123abc               1152  (0.0%)   Vietnam (95%)
+ 100  admin/1234567890           1150  (0.0%)   Vietnam (50%)
+
+As you can see there are quite a few common passwords that my botnet 
+wasn't able to crack in the amount of time that would normally be 
+allocated for such tasks. Just as with the Dahua hashes you should
+be able to crack the remainder using JTR if you're able to spend the 
+time and money on such things.
+
+For Uruguay it's notable that admin/siera seems to be a very common
+login, and I suspect that this is a local vendor default. The logins 
+admin/123456 and admin/admin are also so common that they are likely 
+to be other regional vendor choices. Adding together the 4 top login 
+probabilities we get a total of 60.9% (51.7 + 3.9 + 2.9 + 2.4) which 
+is again slightly better than all the vendors we've reviewed so far.
+
+
+--[ 6 - Device Passwords: TBK DVR
+
+I learned of a vulnerability in TBK DVRs (whitelabeled under many brands)
+on May 2 2018 which also allows for the extraction of user lists from 
+vulnerable units (hat tip to Bleeping Computer). Although I'm officially 
+retired the opportunity for collecting data was interesting enough (as 
+I'm writing about this very topic) so I added a quick soft bricking 
+payload for extracting the highest privilege login from the vulnerable 
+TBK DVRs. The payload also tampers with the device displays (changes 
+camera names and the device name to 'HACKED') and then tries to 
+disconnect the device by altering its networking configuration. Based 
+on the data from the first 48 hours the payload seems reasonably 
+effective.
+
+As the payload has only been active for 48 hours there's obviously no
+monthly stats to discuss. So far only 36,153 unique IP:ports have been
+processed. Here are the top countries affected so far:
+
+   #  Country                  Count  Ratio    Most Common Login
+
+   1  Turkey                   28711 (79.4%)   admin/ (43%)
+   2  Taiwan                    1550  (4.3%)   admin/ (52%)
+   3  Malaysia                  1295  (3.6%)   admin/ (53%)
+   4  India                     1036  (2.9%)   admin/ (73%)
+   5  Vietnam                    864  (2.4%)   admin/ (48%)
+   6  Brazil                     718  (2.0%)   admin/saodvr362 (33%)
+   7  Israel                     548  (1.5%)   admin/12345 (40%)
+   8  Hungary                    235  (0.7%)   admin/14253614 (49%)
+   9  Germany                    182  (0.5%)   admin/ (37%)
+  10  Russia                     157  (0.4%)   admin/ (32%)
+  11  Italy                      149  (0.4%)   admin/ (29%)
+  12  Romania                    102  (0.3%)   admin/ (31%)
+  13  South Africa                94  (0.3%)   admin/123456 (32%)
+  14  Sri Lanka                   82  (0.2%)   admin/ (54%)
+  15  Thailand                    69  (0.2%)   admin/ (67%)
+  16  Iran                        33  (0.1%)   admin/ (24%)
+  17  Mauritius                   32  (0.1%)   admin/ (34%)
+  18  United States               27  (0.1%)   admin/ (22%)
+  19  Morocco                     26  (0.1%)   admin/ (42%)
+  20  Australia                   21  (0.1%)   admin/ (81%)
+
+Based on the small size of the sample and the very short timespan it's 
+dangerous to draw any conclusions from it, but so far it the TBK DVRs
+seem to be mainly a Turkish problem.
+
+Here are the Top 100 passwords:
+
+   1  admin/                    15644 (43.3%)   Turkey (79%)
+   2  admin/ce                   2346  (6.5%)   Turkey (99%)
+   3  admin/admin                1249  (3.5%)   Turkey (87%)
+   4  admin/123456                822  (2.3%)   Turkey (64%)
+   5  admin/12345                 415  (1.1%)   Israel (53%)
+   6  admin/1234                  320  (0.9%)   Turkey (73%)
+   7  admin/h1a2k3                275  (0.8%)   Turkey (100%)
+   8  admin/saodvr362             235  (0.7%)   Brazil (100%)
+   9  admin/1453                  160  (0.4%)   Turkey (100%)
+  10  admin/saodvr3               153  (0.4%)   Brazil (100%)
+  11  admin/254saodvr             144  (0.4%)   Brazil (100%)
+  12  admin/14253614              114  (0.3%)   Hungary (100%)
+  13  admin/888888                 92  (0.3%)   Turkey (49%)
+  14  admin/1111                   89  (0.2%)   Turkey (47%)
+  15  admin/112233                 74  (0.2%)   Turkey (85%)
+  16  admin/111111                 71  (0.2%)   Turkey (80%)
+  17  admin/000000                 68  (0.2%)   Turkey (85%)
+  18  admin/1                      65  (0.2%)   Turkey (91%)
+  19  admin/666666                 58  (0.2%)   Turkey (86%)
+  20  admin/admin12345             55  (0.2%)   Vietnam (85%)
+  21  admin/plx                    55  (0.2%)   Turkey (100%)
+  22  admin/241313                 53  (0.1%)   Turkey (98%)
+  23  admin/11112222               52  (0.1%)   Hungary (100%)
+  24  admin/Cam2015                47  (0.1%)   Turkey (100%)
+  25  admin/1001                   47  (0.1%)   Turkey (100%)
+  26  admin/1400                   41  (0.1%)   Turkey (100%)
+  27  admin/2580                   41  (0.1%)   Turkey (95%)
+  28  admin/cyber                  39  (0.1%)   Turkey (100%)
+  29  admin/9132                   38  (0.1%)   Turkey (100%)
+  30  admin/25893690               37  (0.1%)   Hungary (100%)
+  31  admin/654321                 37  (0.1%)   Turkey (70%)
+  32  admin/emflotur               36  (0.1%)   Brazil (100%)
+  33  admin/2018                   36  (0.1%)   Turkey (100%)
+  34  admin/0000                   36  (0.1%)   Turkey (50%)
+  35  admin/A2025g                 35  (0.1%)   Turkey (100%)
+  36  admin/56748314               32  (0.1%)   Hungary (100%)
+  37  admin/12345678               29  (0.1%)   Turkey (83%)
+  38  admin/1212                   28  (0.1%)   Turkey (86%)
+  39  admin/2001                   27  (0.1%)   Turkey (100%)
+  40  admin/13579                  27  (0.1%)   Turkey (96%)
+  41  1234/5678                    26  (0.1%)   Taiwan (100%)
+  42  admin/123                    26  (0.1%)   Turkey (58%)
+  43  admin/123321                 26  (0.1%)   Turkey (92%)
+  44  admin/4321                   25  (0.1%)   Turkey (88%)
+  45  admin/102030                 24  (0.1%)   Turkey (88%)
+  46  admin/1907                   23  (0.1%)   Turkey (100%)
+  47  admin/154915                 23  (0.1%)   Turkey (100%)
+  48  admin/3434                   23  (0.1%)   Turkey (100%)
+  49  admin/1122                   23  (0.1%)   Turkey (96%)
+  50  admin/yemen07                22  (0.1%)   Turkey (100%)
+  51  admin/11223344               21  (0.1%)   Turkey (86%)
+  52  admin/1071                   20  (0.1%)   Turkey (100%)
+  53  admin/2115                   20  (0.1%)   Turkey (100%)
+  54  admin/2000                   20  (0.1%)   Turkey (100%)
+  55  admin/atel13                 19  (0.1%)   Turkey (100%)
+  56  admin/343434                 18  (0.0%)   Turkey (100%)
+  57  admin/100100                 18  (0.0%)   Israel (100%)
+  58  admin/12345asd               17  (0.0%)   Turkey (94%)
+  59  admin/5858                   17  (0.0%)   Turkey (94%)
+  60  admin/138168                 17  (0.0%)   Malaysia (100%)
+  61  admin/14531453               17  (0.0%)   Turkey (100%)
+  62  admin/5353                   17  (0.0%)   Turkey (100%)
+  63  admin/admin123               17  (0.0%)   Turkey (35%)
+  64  admin/123654                 17  (0.0%)   Turkey (59%)
+  65  admin/merper90               16  (0.0%)   Turkey (100%)
+  66  admin/8899109a               15  (0.0%)   Taiwan (100%)
+  67  admin/cyz                    15  (0.0%)   Turkey (100%)
+  68  admin/*.*Arw                 15  (0.0%)   Turkey (100%)
+  69  admin/inan                   14  (0.0%)   Turkey (100%)
+  70  admin/123456789              14  (0.0%)   Turkey (71%)
+  71  admin/552644                 14  (0.0%)   Turkey (100%)
+  72  admin/1082                   14  (0.0%)   Turkey (100%)
+  73  admin/1976                   13  (0.0%)   Turkey (92%)
+  74  admin/251012                 13  (0.0%)   Turkey (100%)
+  75  admin/Merkez5967             13  (0.0%)   Turkey (100%)
+  76  admin/2123                   13  (0.0%)   Turkey (100%)
+  77  admin/and112233              13  (0.0%)   Turkey (100%)
+  78  admin/kor78                  13  (0.0%)   Turkey (92%)
+  79  admin/Adm236                 12  (0.0%)   Turkey (100%)
+  80  admin/88888888               12  (0.0%)   Turkey (58%)
+  81  admin/5266                   12  (0.0%)   Turkey (100%)
+  82  admin/3838                   12  (0.0%)   Turkey (100%)
+  83  admin/2017                   12  (0.0%)   Turkey (100%)
+  84  admin/10307810               12  (0.0%)   Turkey (100%)
+  85  admin/999999                 11  (0.0%)   Turkey (73%)
+  86  admin/1234567                11  (0.0%)   Turkey (100%)
+  87  admin/1978                   11  (0.0%)   Turkey (100%)
+  88  admin/5555                   11  (0.0%)   Turkey (91%)
+  89  admin/11211121               11  (0.0%)   Turkey (100%)
+  90  admin/2002                   11  (0.0%)   Turkey (100%)
+  91  admin/159357                 11  (0.0%)   Turkey (100%)
+  92  admin/555555                 11  (0.0%)   Turkey (73%)
+  93  admin/3202                   11  (0.0%)   Turkey (100%)
+  94  admin/4444                   11  (0.0%)   Turkey (82%)
+  95  admin/1974                   11  (0.0%)   Turkey (100%)
+  96  admin/2016                   11  (0.0%)   Turkey (91%)
+  97  admin/3412                   11  (0.0%)   Turkey (100%)
+  98  admin/1234567a               11  (0.0%)   Turkey (100%)
+  99  admin/admin1                 10  (0.0%)   Turkey (70%)
+ 100  admin/11111                  10  (0.0%)   Turkey (50%)
+
+With this quick initial sampling of vulnerable units the default login of 
+admin with no password seems to be present in 43.3% of the devices. This
+ratio is significantly better than the probability of the other 
+manufacturers, but given the small sample size the number may well be
+misleading. Further iterations in the payload's fingerprinting may also
+be required to cover additional vendors. Also recall that for the other 
+device manufacturers Turkey's default password probabilities were 
+generally better than average (Avtech 70%, Wificam 50%, Dahua 59% and 
+XiongMai 52%) so a Turkey-centric device pool would not necessarily be 
+comparable against other countries.
+
+
+--[ 7 - Device Passwords in Summary
+
+We've looked at extracted password databases from devices belonging
+to 5 different manufacturers. In all cases the deployment of factory 
+default passwords was tragically common. The manufacturers can be 
+ranked based on the probability of default password use as follows:
+
+ Rank   Name          Default Logins
+
+  1.    TBK*              43.3%    *) Limited sample
+  2.    XiongMai          60.9%
+  3.    Dahua             62.7%
+  4.    Wificam           64.4%
+  5.    Avtech            68.2%
+
+The TBK sample isn't large or diverse enough to speculate if its UX
+and UI could be significantly better than the security instructions of
+other manufacturers, but even for the other manufacturers the differences
+are interesting. XiongMai seems slightly (but still statistically 
+significantly) more successful than Avtech in encouraging a device owner 
+to update the factory default password, although the latter's probability 
+was particularly dragged down by outlier Sri Lanka. 
+
+Whatever the UX differences then may be, the overall statistics plainly 
+prove that default logins simply don't work as a security feature. Even 
+in the very best of cases some % of the devices will always end up on 
+the open Internet with the easily guessable factory default passwords. 
+For anyone thinking about minimum security standards for IoT devices the 
+banning of common default password accounts should be a high priority 
+item. 
+
+Could anybody imagine a new car model being launched and it not being 
+immediately recalled if it turns out that only 1/3 of the drivers were 
+capable of locking its doors? In the case of Avtech more than 2/3 of the 
+device owners never managed to secure the device in the manner intended 
+by the manufacturer. Default logins are a fundamentally flawed security 
+design and the practice of shipping devices with non-unique factory 
+passwords must stop. It's relatively trivial to generate unique factory 
+logins as part of the manufacturing process (the PCB MCUs etc have to be 
+flashed anyway, and the process which generates a unique device MAC can 
+also generate a unique login and customizing the unit sticker costs at 
+most $0.25 per unit in China) so there's simply no excuse to continue 
+with the dangerous practice.
+
+Where do we go next, then? In the previous part I spoke about government 
+regulation being the only viable long-term solution to the IoT problem, 
+and one sobering fact about the current mess is that a very small % of 
+the market for many of the most dangerous devices resides in the US. As 
+such, an argument might be made that regulatory interventions in 
+countries such as India, Brazil, Urugay and Vietnam may have a greater 
+impact for the Internet's overall health than new safety standards in the 
+US or the EU. We'll get into the more interesting details of this 
+argument in next part by taking an overall look at the current IoT 
+problem and the dollar costs involved with it. 
+
+
+--[ 8 - Addendum: AntibIoTic
+
+One proposal that I should've mentioned in the previous part (but ran out 
+of time) was a whitepaper titled 'AntibIoTic: Protecting IoT Devices 
+Against DDoS Attacks' by Michele De Donno, Nicola Dragoni, Alberta 
+Giaretta and Manuel Mazzara. I'd like to reach out to the authors (in 
+case they ever read this) to say that your paper was a professional 
+effort and that I read it back in June 2017 when it became available. 
+It's worth a read for anyone who is interested in this general topic. 
+You can download it at https://arxiv.org/pdf/1708.05050.pdf
+
+AntibIoTic is a conceptual proposal for a benign botnet which would scan 
+the Internet looking for weak IoT devices in an attempt to secure them. 
+Vulnerable devices would then be mitigated in stages which I've attempted 
+to summarize below:
+
+1. Sanitize device - take over device and attempt to remove any malware
+   from it.
+
+2. Awareness notification - try to communicate with the device owner and 
+   get them to perform some corrective actions.
+   
+3. Credentials change on a rebooted device - if owner doesn't react then
+   try to change any weak credentials to stronger ones, and if possible
+   lock down the device so that it cannot be hacked again.
+   
+4. Firmware update of a reinfected device - if the above doesn't work,
+   then try to upgrade the firmware of the vulnerable device in an 
+   attempt to secure it.
+   
+The authors propose that AntibIoTic should mirror a Mirai-like control
+hierarchy with a central C2 setup. 
+
+Most interesting (from my perspective) was that the authors also 
+presented a comparison against other 'vigilante' efforts such as my own
+in a chart titled 'Table 1. Comparison between AntibIoTic and similar
+solutions.' I've reproduced their table below:
+
+                                                       Linux.
+                                  BrickerBot  Hajime  Wifatch  AntibIoTic
+
+Publicly documented                   -         -        -         V  
+
+Create awareness and                  -         -        V         V 
+  encourage synergy
+
+Notify infected device                -         V        V         V 
+  owners
+
+Temporary security operations         V         V        V         V
+
+Permanent security operations         -         -        -         V
+
+The authors then reasonably state 'we do not claim that our solution is
+absolutely better than the others, basically because we have not enough
+data to assert it.' The authors earn my respect for their exemplary 
+scientific integrity.
+
+My project (dubbed 'BrickerBot') would arguably deserve ticks in more 
+slots than one (although to be fair the authors didn't have had much 
+information about it at the time when they wrote the paper a year ago).
+I agree that my public documentation has been lacking but I'm working
+on improving that weakness. I've created some awareness. I've certainly
+experimented with notifying device owners. And best of all, my security 
+operations have been more permanent than most ;). Joking aside, the 
+point here is that it's misleading to use ticks to signal something as 
+true or false when in the real world most of the evaluations are fuzzy. 
+If you ultimately found that you had a 3% success rate would you still 
+award yourself a 100% tick in all your boxes?
+
+In the real world you'd be spending much of your time on step 1 (taking 
+over devices and removing malware from them, much like Hajime and 
+Reincarna/Wifatch). For things like routers your options of communicating 
+with the device owner will usually be limited to hijacking web browser 
+traffic with a redirect (and that's only IF there is a good network stack 
+on the device). There's little guarantee that your replacement message 
+will appear correctly on whatever cell phone, game console etc that the 
+owner is using. Oh, and do remember to translate your instructions for 
+fixing the tens thousands of different device models, firmwares and ISP-
+specific builds to at least the top 50 languages. You only need to work 
+as a tier 1 tech support person for a single week to understand that 
+providing step-by-step instructions for some random person to remotely
+secure an IoT device will have grim odds of succeeding.
+
+At a time when IoT device numbers are increasing exponentially you'll 
+also find that the research overhead required to produce reliable 
+processes for steps 2-4 (or even 1) will be overwhelming. Even if all 
+you had to deal with was a single vulnerable device with a few firmwares 
+you'd still probably find dozens of different ISP and region-specific 
+variants of the firmwares. How would you do your QA? Where would you
+get your region-specific test hardware from? Now do the math for the 
+projected IoT situation of 2025.
+
+The whitepaper's idealism and optimism is rooted in the false premise
+that the IoT problem can be solved through traditional methods and
+paradigms. It assumes that there's a relatively small and homogenous
+amount of devices with predictable hardware responses. It assumes a
+significant portion of device owners are at least minimally tech savvy
+and diligent. It basically misperceives IoT as 'a little bit like the 
+Linux servers and desktops but smaller and cheaper' (which is a form
+of technical ethnocentrism by people who grew up with computing devices 
+of the 90s and 2000s). And yes, arguably the old whitehat creed of 
+'every device is sacred' has served the world well, but the world has 
+changed.
+
+I believe 2016 marked a watershed year with regard to our ability to cope
+with the security risks posed by the exponentially growing numbers of 
+cheap IoT devices. Traditional mitigation methods simply weren't enough 
+then, and people who are predicting IoT trends can plainly see that they 
+won't be enough in the future. Whether you like it or not a new era is 
+already here and we're forced to rethink our norms and our relationship 
+with the problem space. Every malformed 'babby Linux' can no longer be 
+saved (and yes, I wholeheartedly agree that's a sad thought). 
+
